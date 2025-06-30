@@ -1,0 +1,578 @@
+openapi: 3.1.0
+info:
+  title: Cimeika API
+  description: API для інтеграції GPT у існуючий інтерфейс чату та управління системою поєднаних компонентів
+  version: 1.0.0
+servers:
+  - url: https://api.cimeika.com/v1
+    description: Основний сервер
+paths:
+  /chat/completion:
+    post:
+      operationId: createChatCompletion
+      summary: Створення запиту до GPT для відповіді у чаті
+      description: Endpoint для створення запиту до GPT для отримання відповіді у чаті
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                model:
+                  type: string
+                  description: Модель GPT для використання
+                  example: text-davinci-003
+                prompt:
+                  type: string
+                  description: Запит для моделі GPT
+                  example: Напиши доповідь про сучасні технології штучного інтелекту.
+                max_tokens:
+                  type: integer
+                  description: Максимальна кількість токенів у відповіді
+                  example: 100
+                temperature:
+                  type: number
+                  description: Температура вибірки
+                  example: 0.7
+      responses:
+        "200":
+          description: Відповідь від GPT
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: cmpl-5t6fN9FPjsMxlm8Zy1dJ1Z7P
+                  object:
+                    type: string
+                    example: text_completion
+                  created:
+                    type: integer
+                    example: 1591685959
+                  model:
+                    type: string
+                    example: text-davinci-003
+                  choices:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        text:
+                          type: string
+                          example: Сучасні технології штучного інтелекту включають глибинне навчання, нейронні мережі та обробку природної мови...
+                        index:
+                          type: integer
+                          example: 0
+                        logprobs:
+                          type: object
+                          nullable: true
+                        finish_reason:
+                          type: string
+                          example: length
+  /data/collect:
+    post:
+      operationId: collectData
+      summary: Збір даних для аналізу
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dataSource:
+                  type: string
+                  description: Джерело даних
+                  example: API
+                data:
+                  type: object
+                  description: Дані для збору
+      responses:
+        "200":
+          description: Дані успішно зібрані
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Статус операції
+                    example: success
+  /data/log:
+    post:
+      operationId: logData
+      summary: Фіксація зібраних даних
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dataId:
+                  type: string
+                  description: ID зібраних даних
+                  example: data-12345
+                logDetails:
+                  type: object
+                  description: Деталі фіксації даних
+      responses:
+        "200":
+          description: Дані успішно зафіксовані
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Статус операції
+                    example: success
+  /data/analyze:
+    post:
+      operationId: analyzeData
+      summary: Аналіз даних
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dataId:
+                  type: string
+                  description: ID зібраних даних
+                  example: data-12345
+      responses:
+        "200":
+          description: Дані успішно проаналізовані
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  analysis:
+                    type: object
+                    description: Результати аналізу
+  /data/save:
+    post:
+      operationId: saveData
+      summary: Збереження даних в базі даних
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dataId:
+                  type: string
+                  description: ID зібраних даних
+                  example: data-12345
+                storageDetails:
+                  type: object
+                  description: Деталі збереження даних
+      responses:
+        "200":
+          description: Дані успішно збережені
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Статус операції
+                    example: success
+  /data/transfer:
+    post:
+      operationId: transferData
+      summary: Передача даних до іншої системи
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dataId:
+                  type: string
+                  description: ID зібраних даних
+                  example: data-12345
+                destination:
+                  type: string
+                  description: Місце призначення даних
+                  example: external-system
+                transferDetails:
+                  type: object
+                  description: Деталі передачі даних
+      responses:
+        "200":
+          description: Дані успішно передані
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Статус операції
+                    example: success
+  /data/predict:
+    post:
+      operationId: predictData
+      summary: Прогнозування на основі зібраних даних
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dataId:
+                  type: string
+                  description: ID зібраних даних
+                  example: data-12345
+                modelId:
+                  type: string
+                  description: ID моделі прогнозування
+                  example: model-67890
+                predictionParameters:
+                  type: object
+                  description: Параметри для прогнозування
+      responses:
+        "200":
+          description: Прогноз успішно створений
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  prediction:
+                    type: object
+                    description: Результати прогнозування
+  /components:
+    get:
+      operationId: getComponents
+      summary: Отримати список всіх компонентів
+      responses:
+        "200":
+          description: Список компонентів успішно отриманий
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Component"
+    post:
+      operationId: createComponent
+      summary: Створити новий компонент
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Component"
+      responses:
+        "201":
+          description: Компонент успішно створений
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Component"
+  /components/{id}:
+    get:
+      operationId: getComponentById
+      summary: Отримати інформацію про компонент за ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Інформація про компонент успішно отримана
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Component"
+    put:
+      operationId: updateComponent
+      summary: Оновити інформацію про компонент за ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Component"
+      responses:
+        "200":
+          description: Компонент успішно оновлений
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Component"
+    delete:
+      operationId: deleteComponent
+      summary: Видалити компонент за ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Компонент успішно видалений
+  /components/{id}/link:
+    post:
+      operationId: linkComponent
+      summary: Зв'язати компонент з іншим компонентом
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                targetComponentId:
+                  type: string
+                  description: ID компоненту, з яким потрібно зв'язати
+                  example: component-98765
+                linkType:
+                  type: string
+                  description: Тип зв'язку (наприклад, залежність, асоціація)
+                  example: dependency
+      responses:
+        "200":
+          description: Компоненти успішно зв'язані
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Статус операції
+                    example: linked
+  /components/{id}/unlink:
+    post:
+      operationId: unlinkComponent
+      summary: Розірвати зв'язок між компонентами
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                targetComponentId:
+                  type: string
+                  description: ID компоненту, з яким потрібно розірвати зв'язок
+                  example: component-98765
+      responses:
+        "200":
+          description: Зв'язок між компонентами успішно розірвано
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Статус операції
+                    example: unlinked
+  /components/{id}/attributes:
+    get:
+      operationId: getComponentAttributes
+      summary: Отримати атрибути компоненту за ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Атрибути компоненту успішно отримані
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Attribute"
+  /weather/current:
+    get:
+      operationId: getCurrentWeather
+      summary: Отримати поточні погодні дані
+      parameters:
+        - name: city
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Назва міста
+            example: London
+      responses:
+        "200":
+          description: Поточні погодні дані успішно отримані
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  weather:
+                    type: string
+                    description: Опис погоди
+                    example: clear sky
+                  temperature:
+                    type: number
+                    description: Температура в градусах Цельсія
+                    example: 20.5
+  /astrology/forecast:
+    get:
+      operationId: getAstrologicalForecast
+      summary: Отримати астрологічний прогноз
+      parameters:
+        - name: sign
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Знак зодіаку
+            example: aries
+      responses:
+        "200":
+          description: Астрологічний прогноз успішно отриманий
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  forecast:
+                    type: string
+                    description: Опис астрологічного прогнозу
+                    example: Today is a good day for new beginnings.
+  /time/current:
+    get:
+      operationId: getCurrentTime
+      summary: Отримати поточний час
+      responses:
+        "200":
+          description: Поточний час успішно отриманий
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  time:
+                    type: string
+                    description: Поточний час
+                    example: 2023-09-15T12:34:56Z
+  /data/weather:
+    get:
+      operationId: getWeatherData
+      summary: Отримати погодні дані
+      parameters:
+        - name: city
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Назва міста
+            example: London
+      responses:
+        "200":
+          description: Погодні дані успішно отримані
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  weather:
+                    type: string
+                    description: Опис погоди
+                    example: clear sky
+                  temperature:
+                    type: number
+                    description: Температура в градусах Цельсія
+                    example: 20.5
+  /data/astrology:
+    get:
+      operationId: getAstrologyData
+      summary: Отримати астрологічні дані
+      parameters:
+        - name: sign
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Знак зодіаку
+            example: aries
+      responses:
+        "200":
+          description: Астрологічні дані успішно отримані
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  forecast:
+                    type: string
+                    description: Опис астрологічного прогнозу
+                    example: Today is a good day for new beginnings.
+components:
+  schemas:
+    Component:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Унікальний ідентифікатор компоненту
+          example: component-12345
+        name:
+          type: string
+          description: Назва компоненту
+          example: Компонент 1
+        type:
+          type: string
+          description: Тип компоненту
+          example: базовий
+        attributes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Attribute"
+    Attribute:
+      type: object
+      properties:
+        key:
+          type: string
+          description: Назва атрибуту
+          example: атрибут-1
+        value:
+          type: string
+          description: Значення атрибуту
+          example: значення-1
