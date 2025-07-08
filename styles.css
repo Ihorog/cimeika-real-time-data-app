@@ -1,0 +1,12 @@
+/* Custom styles for Cimeika */
+.hero {
+    background-image: url('https://source.unsplash.com/random/1920x1080?nature');
+    background-size: cover;
+    background-position: center;
+}
+.loading {
+    color: #4b5563; /* Tailwind gray-600 */
+}
+.error-message {
+    color: #b91c1c; /* Tailwind red-700 */
+}
