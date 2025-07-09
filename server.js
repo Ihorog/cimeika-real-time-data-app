@@ -1,7 +1,16 @@
 const express = require('express');
+const path = require('path');
 const bodyParser = require('body-parser');
 const app = express();
 app.use(bodyParser.json());
+
+// Serve static files like index.html, pages and components
+app.use(express.static(__dirname));
+
+// Root path serves index.html for convenience
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // Simple in-memory stores
 const components = new Map();
