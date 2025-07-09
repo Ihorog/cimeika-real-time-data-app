@@ -13,13 +13,23 @@ describe('Cimeika API', () => {
     expect(res.body.token).toBeDefined();
   });
 
-  it('chat completion', async () => {
-    const res = await request(app)
-      .post('/chat/completion')
-      .send({ prompt: 'Hello' });
-    expect(res.status).toBe(200);
-    expect(res.body.choices).toBeDefined();
-  });
+  це ( 'завершення чату' ,  async  ( )  =>  {
+    const  res  =  запит очікування  ( додаток )
+      .повідомлення ( '/чат/завершення ' )
+      . надіслати ( {  підказка : 'Привіт'  } ) ;
+    очікувати ( res.status ) .toBe ( 200 ) ;​​​
+    очікувати ( res.body.choices ) .toBeDefined ( ) ;​​​​​
+  } ) ;
+
+  це ( 'завершення чату без запиту повертає 400' ,  async  ( )  =>  {
+    const  res  =  запит очікування  ( додаток )
+      .повідомлення ( '/чат/завершення ' )
+      .відправити ( { } ) ;​
+    очікувати ( res.status ) .toBe ( 400 ) ;​​​
+    очікувати ( res.body.error ) .toBeDefined ( ) ;​​​​​
+    // За потреби, перевірте наявність конкретного повідомлення про помилку:
+    // expect(res.body.error).toBe('Потрібне запрошення');
+  } ) ;
 
   it('create component', async () => {
     const res = await request(app)
