@@ -9,6 +9,10 @@
 # ============================================================
 set -euo pipefail
 
+# Ensure script runs from its directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
 # --- Перевірка необхідних інструментів -------------------------------------
 for cmd in git curl python3 pip; do
   if ! command -v "$cmd" >/dev/null 2>&1; then
@@ -16,6 +20,12 @@ for cmd in git curl python3 pip; do
     exit 1
   fi
 done
+
+# huggingface-cli will be installed below; ensure it's available
+if ! command -v huggingface-cli >/dev/null 2>&1; then
+  echo "ℹ️  Installing huggingface_hub..."
+  python3 -m pip install --quiet --upgrade huggingface_hub >/dev/null
+fi
 
 # --- 0. Перевірка необхідних змінних середовища -----------------------------
 for var in HF_WRITE_TOKEN OPENAI_API_KEY; do
@@ -33,17 +43,17 @@ HF_SPACE_FULL="Ihorog/${SPACE_NAME}"
 HF_SPACE_GIT="https://huggingface.co/spaces/${HF_SPACE_FULL}.git"
 SPACE_API_URL="https://ihorog--${SPACE_NAME}.hf.space"  # default URL
 
-# --- 2. Інсталяція CLI ------------------------------------------------------
-python3 -m pip install --quiet --upgrade huggingface_hub >/dev/null
-
-# --- 3. Логін ---------------------------------------------------------------
+# --- 2. Логін ---------------------------------------------------------------
 huggingface-cli login --token "$HF_WRITE_TOKEN" --stdout >/dev/null
 
 # --- 4. Клон репозиторію ----------------------------------------------------
-if [[ ! -d "$REPO_DIR" ]]; then
-  git clone "$REPO_URL"
+if [[ ! -d .git ]]; then
+  if [[ ! -d "$REPO_DIR" ]]; then
+    git clone "$REPO_URL" "$REPO_DIR"
+  fi
+  cd "$REPO_DIR"
 fi
-cd "$REPO_DIR"
+REPO_DIR="$(basename "$PWD")"
 
 echo "📥  Репозиторій готовий: $REPO_DIR"
 
