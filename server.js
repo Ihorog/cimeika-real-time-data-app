@@ -3,8 +3,18 @@ const axios = require('axios');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const WEATHER_API_KEY = process.env.WEATHER_API_KEY || 'YOUR_WEATHER_API_KEY';
-const ASTROLOGY_API_KEY = process.env.ASTROLOGY_API_KEY || 'YOUR_ASTROLOGY_API_KEY';
+const WEATHER_API_KEY = process.env.WEATHER_API_KEY;
+const ASTROLOGY_API_KEY = process.env.ASTROLOGY_API_KEY;
+
+if (!WEATHER_API_KEY || WEATHER_API_KEY === 'YOUR_WEATHER_API_KEY') {
+  console.error('Error: WEATHER_API_KEY environment variable is missing or set to a placeholder value.');
+  process.exit(1);
+}
+
+if (!ASTROLOGY_API_KEY || ASTROLOGY_API_KEY === 'YOUR_ASTROLOGY_API_KEY') {
+  console.error('Error: ASTROLOGY_API_KEY environment variable is missing or set to a placeholder value.');
+  process.exit(1);
+}
 
 app.get('/api/weather', async (req, res) => {
   const city = req.query.city || 'London';
