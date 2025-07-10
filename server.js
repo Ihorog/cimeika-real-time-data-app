@@ -27,7 +27,13 @@ const handlers = {
     res.json({ weather: 'clear sky', temperature: 20.5, city });
   },
   notFound: (c, req, res) => res.status(404).json({ error: 'Not found' }),
-  validationFail: (c, req, res) => res.status(400).json({ error: c.validation.errors }),
+  validationFail: (c, req, res) => {
+    // Return a sanitized error message instead of the raw error structure
+    const errorMessages = Array.isArray(c.validation.errors)
+      ? c.validation.errors.map(e => e.message || 'Invalid input')
+      : ['Invalid input'];
+    res.status(400).json({ error: errorMessages });
+  },
 };
 
 api.register(handlers);
