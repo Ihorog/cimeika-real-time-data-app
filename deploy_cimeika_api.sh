@@ -7,7 +7,16 @@
 #    export OPENAI_API_KEY="<ваш OpenAI key>"
 #    # (необов’язково) export WEATHER_API_KEY="<OpenWeather key>"
 # ============================================================
+
 set -euo pipefail
+
+# Return to the original directory on exit
+ORIGINAL_DIR="$(pwd)"
+trap 'cd "$ORIGINAL_DIR"' EXIT
+
+# Ensure script runs from its directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
 
 # --- Перевірка необхідних інструментів -------------------------------------
 for cmd in git curl python3 pip; do
@@ -16,6 +25,35 @@ for cmd in git curl python3 pip; do
     exit 1
   fi
 done
+
+# huggingface-cli will be installed below; ensure it's available
+if ! command -v huggingface-cli >/dev/null 2>&1; then
+  echo "ℹ️  huggingface-cli not found. Attempting to install huggingface_hub in a virtual environment..."
+
+  # Try to use a virtual environment if possible
+  if command -v python3 >/dev/null 2>&1 && python3 -m venv --help >/dev/null 2>&1; then
+    VENV_DIR="$SCRIPT_DIR/.hf_venv"
+    if [ ! -d "$VENV_DIR" ]; then
+      python3 -m venv "$VENV_DIR"
+    fi
+    # shellcheck source=/dev/null
+    . "$VENV_DIR/bin/activate"
+    python3 -m pip install --quiet --upgrade pip >/dev/null
+    python3 -m pip install --quiet --upgrade huggingface_hub >/dev/null
+    deactivate
+    export PATH="$VENV_DIR/bin:$PATH"
+  else
+    # Fallback: try to install globally, but warn about permissions
+    echo "⚠️  Could not create a virtual environment. Trying to install huggingface_hub globally (may require sudo or fail if permissions are restricted)..."
+    python3 -m pip install --quiet --upgrade huggingface_hub >/dev/null
+  fi
+
+  # Check again if huggingface-cli is now available
+  if ! command -v huggingface-cli >/dev/null 2>&1; then
+    echo "❌ huggingface-cli is still not available. Please install huggingface_hub manually or ensure you have the necessary permissions."
+    exit 1
+  fi
+fi
 
 # --- 0. Перевірка необхідних змінних середовища -----------------------------
 for var in HF_WRITE_TOKEN OPENAI_API_KEY; do
@@ -33,21 +71,32 @@ HF_SPACE_FULL="Ihorog/${SPACE_NAME}"
 HF_SPACE_GIT="https://huggingface.co/spaces/${HF_SPACE_FULL}.git"
 SPACE_API_URL="https://ihorog--${SPACE_NAME}.hf.space"  # default URL
 
-# --- 2. Інсталяція CLI ------------------------------------------------------
-python3 -m pip install --quiet --upgrade huggingface_hub >/dev/null
-
-# --- 3. Логін ---------------------------------------------------------------
+# --- 2. Логін ---------------------------------------------------------------
 huggingface-cli login --token "$HF_WRITE_TOKEN" --stdout >/dev/null
 
-# --- 4. Клон репозиторію ----------------------------------------------------
-if [[ ! -d "$REPO_DIR" ]]; then
-  git clone "$REPO_URL"
+# --- 3. Клон репозиторію ----------------------------------------------------
+if [[ -d .git ]]; then
+  CURRENT_URL=$(git config --get remote.origin.url)
+  if [[ "$CURRENT_URL" != "$REPO_URL" ]]; then
+    echo "⚠️  Поточний репозиторій не відповідає $REPO_URL. Клоную правильний репозиторій..."
+    cd ..
+    if [[ -d "$REPO_DIR" ]]; then
+      rm -rf "$REPO_DIR"
+    fi
+    git clone "$REPO_URL" "$REPO_DIR"
+    cd "$REPO_DIR"
+  fi
+else
+  if [[ ! -d "$REPO_DIR" ]]; then
+    git clone "$REPO_URL" "$REPO_DIR"
+  fi
+  cd "$REPO_DIR"
 fi
-cd "$REPO_DIR"
+REPO_DIR="$(basename "$PWD")"
 
 echo "📥  Репозиторій готовий: $REPO_DIR"
 
-# --- 5. Створення / підключення Docker‑Space -------------------------------
+# --- 4. Створення / підключення Docker‑Space -------------------------------
 if ! huggingface-cli repo info "$HF_SPACE_FULL" &>/dev/null; then
   echo "🚀  Створюємо Space $HF_SPACE_FULL (Docker)..."
   huggingface-cli repo create "$HF_SPACE_FULL" --type space --space-sdk docker
@@ -61,7 +110,7 @@ echo "🚚  Відправляю код у Space…"
 
 git push hf main --force
 
-# --- 6. Секрети -------------------------------------------------------------
+# --- 5. Секрети -------------------------------------------------------------
 for secret in OPENAI_API_KEY HF_WRITE_TOKEN WEATHER_API_KEY; do
   if [[ -n "${!secret:-}" ]]; then
     huggingface-cli repo secret set -r "$HF_SPACE_FULL" "$secret" "${!secret}" >/dev/null
@@ -70,9 +119,9 @@ done
 
 echo "🔑  Секрети оновлено."
 
-# --- 7. Очікування запуску Space -------------------------------------------
+# --- 6. Очікування запуску Space -------------------------------------------
 printf "⏳  Чекаю запуску Space (макс 90 с)…"
-for i in {1..18}; do
+for _ in {1..18}; do
   STATUS=$(huggingface-cli space status "$HF_SPACE_FULL" 2>/dev/null | grep -o "Running" || true)
   [[ "$STATUS" == "Running" ]] && break
   printf "."; sleep 5
@@ -86,7 +135,7 @@ fi
 
 echo "✅  Space запущено: $SPACE_API_URL"
 
-# --- 8. Локальні залежності та тести ---------------------------------------
+# --- 7. Локальні залежності та тести ---------------------------------------
 if [[ -f requirements.txt ]]; then
   python3 -m pip install --quiet -r requirements.txt >/dev/null
 fi
@@ -99,5 +148,5 @@ else
   echo "⚠️  Тести не знайдено, пропускаю pytest."
 fi
 
-echo "\n🚀  Успіх! API працює: $SPACE_API_URL"
+printf "\n🚀  Успіх! API працює: %s\n" "$SPACE_API_URL"
 
