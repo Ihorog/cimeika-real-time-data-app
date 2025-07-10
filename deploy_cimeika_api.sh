@@ -35,7 +35,6 @@ if ! command -v huggingface-cli >/dev/null 2>&1; then
     . "$VENV_DIR/bin/activate"
     python3 -m pip install --quiet --upgrade pip >/dev/null
     python3 -m pip install --quiet --upgrade huggingface_hub >/dev/null
-    deactivate
     export PATH="$VENV_DIR/bin:$PATH"
   else
     # Fallback: try to install globally, but warn about permissions
