@@ -44,6 +44,23 @@ To set up the Cimeika project locally, follow these steps:
    npm start
    ```
 
+## Running the API Backend
+
+This project includes an Express server scaffolded from the OpenAPI definition
+`cimeika-api.yaml`. The backend provides stub implementations for the API
+endpoints and validates requests against the specification.
+
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+2. **Start the server**:
+   ```bash
+   npm start
+   ```
+   The server will listen on `http://localhost:3000` by default.
+
 ## Usage
 
 1. **Access the Application**: Visit `http://localhost:3000` in your web browser.
@@ -80,6 +97,8 @@ cimeika/
 ├── styles.css                # Custom styles for the application
 ├── scripts.js                # JavaScript for dynamic functionality
 ├── index.html               # Main HTML entry point
+├── server.js                # Express server generated from OpenAPI
+├── package.json             # Node.js configuration
 ├── api_keys.json           # Configuration file for API keys
 ├── cimeika-api.yaml         # OpenAPI definition for the API
 └── .devcontainer.json       # Configuration for development container
@@ -90,6 +109,8 @@ cimeika/
 - `index.html`: The main HTML document that loads the application.
 - `styles.css`: Contains custom styles and animations to enhance the UI.
 - `scripts.js`: JavaScript file for handling dynamic content loading, API interactions, and user interactions.
+- `server.js`: Express-based API server generated from the OpenAPI file.
+- `package.json`: Lists the Node.js dependencies and start script.
 - `api_keys.json`: Stores sensitive API keys required for external services. Ensure these are not pushed to public repositories.
 
 ## License
