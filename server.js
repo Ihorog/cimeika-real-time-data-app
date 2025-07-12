@@ -36,6 +36,13 @@ app.post('/chat/completion', (req, res) => {
   res.json({ id: 'chat1', object: 'text_completion', created: Date.now(), model: 'mock', choices: [{ text: `Echo: ${prompt}`, index: 0, logprobs: null, finish_reason: 'length' }] });
 });
 
+// Hugging Face completion endpoint (mock)
+app.post('/ai/huggingface/completion', (req, res) => {
+  const { prompt } = req.body || {};
+  if (!prompt) return res.status(400).json({ error: 'prompt required' });
+  res.json({ id: 'hf1', object: 'text_completion', created: Date.now(), model: 'mock-hf', choices: [{ text: `HF Echo: ${prompt}`, index: 0, logprobs: null, finish_reason: 'length' }] });
+});
+
 // Data pipeline endpoints
 app.post('/data/collect', (req, res) => {
   const id = 'data-' + dataCounter++;
