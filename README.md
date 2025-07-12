@@ -35,7 +35,7 @@ To set up the Cimeika project locally, follow these steps:
    - `axios`: For making requests to external APIs
 
 4. **Configuration**:
-   Update the `api_keys.json` file with valid API keys for the services used in the application.
+   Copy `api_keys.example.json` to `api_keys.json` and insert your actual API keys there. Make sure `api_keys.json` is excluded from version control via `.gitignore`.
 
 5. **Start the Application**:
    You can run the application using:
@@ -79,7 +79,7 @@ cimeika/
 ├── styles.css                # Custom styles for the application
 ├── scripts.js                # JavaScript for dynamic functionality
 ├── index.html               # Main HTML entry point
-├── api_keys.json           # Configuration file for API keys
+├── api_keys.example.json   # Template for API keys (copy to api_keys.json)
 ├── cimeika-api.yaml         # OpenAPI definition for the API
 └── .devcontainer.json       # Configuration for development container
 ```
@@ -89,7 +89,7 @@ cimeika/
 - `index.html`: The main HTML document that loads the application.
 - `styles.css`: Contains custom styles and animations to enhance the UI.
 - `scripts.js`: JavaScript file for handling dynamic content loading, API interactions, and user interactions.
-- `api_keys.json`: Stores sensitive API keys required for external services. Ensure these are not pushed to public repositories.
+- `api_keys.example.json`: Template for API keys. Copy this file to `api_keys.json` with your private keys and keep `api_keys.json` out of version control.
 
 ## License
 
