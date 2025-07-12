@@ -7,6 +7,33 @@ servers:
   - url: https://api.cimeika.com/v1
     description: Основний сервер
 paths:
+  /auth/login:
+    post:
+      operationId: authLogin
+      summary: Аутентифікація користувача
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Ім'я користувача
+                password:
+                  type: string
+                  description: Пароль
+      responses:
+        "200":
+          description: Успішна автентифікація
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
   /chat/completion:
     post:
       operationId: createChatCompletion
@@ -55,6 +82,71 @@ paths:
                   model:
                     type: string
                     example: text-davinci-003
+                  choices:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        text:
+                          type: string
+                          example: Сучасні технології штучного інтелекту включають глибинне навчання, нейронні мережі та обробку природної мови...
+                        index:
+                          type: integer
+                          example: 0
+                        logprobs:
+                          type: object
+                          nullable: true
+                        finish_reason:
+                          type: string
+                          example: length
+  /ai/huggingface/completion:
+    post:
+      operationId: createHuggingFaceCompletion
+      summary: Створення запиту до Hugging Face GPT для відповіді у чаті
+      description: Endpoint для створення запиту до Hugging Face GPT для отримання відповіді у чаті
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                model:
+                  type: string
+                  description: Модель GPT на Hugging Face для використання
+                  example: gpt-neo-2.7B
+                prompt:
+                  type: string
+                  description: Запит для моделі GPT
+                  example: Напиши доповідь про сучасні технології штучного інтелекту.
+                max_tokens:
+                  type: integer
+                  description: Максимальна кількість токенів у відповіді
+                  example: 150
+                temperature:
+                  type: number
+                  description: Температура вибірки
+                  example: 0.6
+      responses:
+        "200":
+          description: Відповідь від Hugging Face GPT
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: hf-5t6fN9FPjsMxlm8Zy1dJ1Z7P
+                  object:
+                    type: string
+                    example: text_completion
+                  created:
+                    type: integer
+                    example: 1591685959
+                  model:
+                    type: string
+                    example: gpt-neo-2.7B
                   choices:
                     type: array
                     items:
