@@ -78,24 +78,38 @@ The project is structured as follows:
 
 ```
 cimeika/
-├── components/
-│   ├── footer.html          # Footer component template
-│   ├── header.html          # Header component template
-├── pages/
-│   ├── home.html            # Main landing page content
-├── styles.css                # Custom styles for the application
-├── scripts.js                # JavaScript for dynamic functionality
-├── index.html               # Main HTML entry point
+├── public/
+│   ├── components/
+│   │   ├── footer.html          # Footer component template
+│   │   └── header.html          # Header component template
+│   ├── pages/
+│   │   └── home.html            # Main landing page content
+│   ├── styles.css               # Custom styles for the application
+│   ├── scripts.js               # JavaScript for dynamic functionality
+│   └── index.html               # Main HTML entry point
 ├── cimeika-api.yaml         # OpenAPI definition for the API
 └── .devcontainer.json       # Configuration for development container
 ```
 
-### File Descriptions:
+-### File Descriptions:
 
-- `index.html`: The main HTML document that loads the application.
-- `styles.css`: Contains custom styles and animations to enhance the UI.
-- `scripts.js`: JavaScript file for handling dynamic content loading, API interactions, and user interactions.
+- `public/index.html`: The main HTML document that loads the application.
+- `public/styles.css`: Contains custom styles and animations to enhance the UI.
+- `public/scripts.js`: JavaScript file for handling dynamic content loading, API interactions, and user interactions.
 - `.env`: Stores your private API keys (`OPENWEATHER_KEY`, `ASTROLOGY_KEY`). This file should not be committed to version control.
+- `.env`: Stores your private API keys (`OPENWEATHER_KEY`, `ASTROLOGY_KEY`). This file should not be committed to version control.
+
+## Deployment
+
+You can deploy the API to a [Hugging Face Space](https://huggingface.co/spaces) using the provided helper script. Before running the script, export your write token and OpenAI key:
+
+```bash
+export HF_WRITE_TOKEN=<your-hf-token>
+export OPENAI_API_KEY=<your-openai-key>
+./deploy_cimeika_api.sh
+```
+
+The script pushes the repository to your Space and sets the necessary secrets so the application runs remotely.
 
 ## License
 

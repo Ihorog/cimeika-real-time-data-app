@@ -6,12 +6,12 @@ require('dotenv').config();
 const app = express();
 app.use(bodyParser.json());
 
-// Serve static files like index.html, pages and components
-app.use(express.static(__dirname));
+// Serve static files from the public directory
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Root path serves index.html for convenience
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Endpoint to expose config values for client
