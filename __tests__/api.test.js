@@ -21,6 +21,21 @@ describe('Cimeika API', () => {
     expect(res.body.choices).toBeDefined();
   });
 
+  it('get config', async () => {
+    const res = await request(app).get('/config');
+    expect(res.status).toBe(200);
+    expect(res.body.weatherEndpoint).toBeDefined();
+    expect(res.body.astrologyEndpoint).toBeDefined();
+  });
+
+  it('huggingface completion', async () => {
+    const res = await request(app)
+      .post('/ai/huggingface/completion')
+      .send({ prompt: 'Hello' });
+    expect(res.status).toBe(200);
+    expect(res.body.choices).toBeDefined();
+  });
+
   it('chat completion without prompt returns 400', async () => {
     const res = await request(app)
       .post('/chat/completion')

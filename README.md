@@ -33,9 +33,16 @@ To set up the Cimeika project locally, follow these steps:
    Dependencies (found in package.json):
    - `express`: For server-side logic
    - `axios`: For making requests to external APIs
+   - `dotenv`: For environment variable loading
 
 4. **Configuration**:
-   Update the `api_keys.json` file with valid API keys for the services used in the application.
+   Copy `.env.example` to `.env` and fill in your API keys:
+   ```bash
+   cp .env.example .env
+   ```
+   Then edit `.env` to set `OPENWEATHER_KEY` and `ASTROLOGY_KEY`.
+   When deploying with `deploy_cimeika_api.sh`, also set `OPENAI_API_KEY` and `HF_WRITE_TOKEN` (optionally `WEATHER_API_KEY`).
+   The `.env` file is ignored by git.
 
 5. **Start the Application**:
    You can run the application using:
@@ -62,6 +69,7 @@ The project depends on the following packages (as specified in `package.json`):
 
 - `express`: "^4.17.1"  (for server handling)
 - `axios`: "^0.21.1" (for making HTTP requests)
+- `dotenv`: "^16.3.1" (for loading environment variables)
 
 Additionally, the CSS framework utilized is [Tailwind CSS](https://tailwindcss.com/).
 
@@ -79,7 +87,6 @@ cimeika/
 ├── styles.css                # Custom styles for the application
 ├── scripts.js                # JavaScript for dynamic functionality
 ├── index.html               # Main HTML entry point
-├── api_keys.json           # Configuration file for API keys
 ├── cimeika-api.yaml         # OpenAPI definition for the API
 └── .devcontainer.json       # Configuration for development container
 ```
@@ -89,7 +96,8 @@ cimeika/
 - `index.html`: The main HTML document that loads the application.
 - `styles.css`: Contains custom styles and animations to enhance the UI.
 - `scripts.js`: JavaScript file for handling dynamic content loading, API interactions, and user interactions.
-- `api_keys.json`: Stores sensitive API keys required for external services. Ensure these are not pushed to public repositories.
+- `.env`: Copy of `.env.example` containing your private API keys (`OPENWEATHER_KEY`, `ASTROLOGY_KEY`). This file should not be committed to version control.
+- `.env.example`: Template showing the required variables, including notes for `deploy_cimeika_api.sh`.
 
 ## License
 
