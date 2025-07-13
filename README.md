@@ -4,6 +4,8 @@ emoji: "🌟"
 colorFrom: blue
 colorTo: indigo
 sdk: docker
+sdk_version: "0.4.1"
+app_file: Dockerfile
 pinned: false
 ---
 
