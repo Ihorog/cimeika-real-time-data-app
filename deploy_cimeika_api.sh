@@ -55,6 +55,13 @@ if [[ ! -d .git ]]; then
 fi
 REPO_DIR="$(basename "$PWD")"
 
+# ensure Dockerfile exists for the Docker-based Space
+DOCKERFILE="Dockerfile"
+if [[ ! -f "$DOCKERFILE" ]]; then
+  echo "❌  $DOCKERFILE not found in $(pwd)."
+  exit 1
+fi
+
 echo "📥  Репозиторій готовий: $REPO_DIR"
 
 # --- 5. Створення / підключення Docker‑Space -------------------------------
