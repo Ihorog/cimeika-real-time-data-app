@@ -101,15 +101,25 @@ cimeika/
 
 ## Deployment
 
-You can deploy the API to a [Hugging Face Space](https://huggingface.co/spaces) using the provided helper script. Before running the script, export your write token and OpenAI key:
+The script `deploy_cimeika_api.sh` automates publishing this API to a [Hugging Face Space](https://huggingface.co/spaces). Set the required tokens in your shell and then run the script:
 
 ```bash
 export HF_WRITE_TOKEN=<your-hf-token>
 export OPENAI_API_KEY=<your-openai-key>
+# optional – for weather endpoints
+export WEATHER_API_KEY=<your-openweather-key>
 ./deploy_cimeika_api.sh
 ```
 
-The script pushes the repository to your Space and sets the necessary secrets so the application runs remotely.
+### What the script does
+
+1. Checks that `git`, `curl`, `python3` and `pip` are available and installs `huggingface_hub` if missing.
+2. Logs in to Hugging Face with `huggingface-cli login` using `HF_WRITE_TOKEN`.
+3. Clones this repository if needed and creates (or reuses) a Docker-based Space.
+4. Pushes the code to the Space and sets the above secrets.
+5. Waits for the Space to start and then installs dependencies and runs any Python tests.
+
+After completion the script prints the URL of your running Space so you can verify the deployment.
 
 ## License
 
