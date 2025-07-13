@@ -1,0 +1,700 @@
+openapi: 3.0.0
+info:
+  title: Cimeika API
+  description: API для інтеграції GPT у існуючий інтерфейс чату та управління системою
+    поєднаних компонентів
+  version: 1.0.0
+servers:
+- url: https://virtserver.swaggerhub.com/Cimeika/ci_api/1.0.0
+  description: SwaggerHub API Auto Mocking
+- url: https://api.cimeika.com/v1
+  description: Основний сервер
+paths:
+  /auth/login:
+    post:
+      summary: Аутентифікація користувача
+      operationId: authLogin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/auth_login_body"
+        required: true
+      responses:
+        "200":
+          description: Успішна автентифікація
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200"
+  /chat/completion:
+    post:
+      summary: Створення запиту до GPT для відповіді у чаті
+      description: Endpoint для створення запиту до GPT для отримання відповіді у
+        чаті
+      operationId: createChatCompletion
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/chat_completion_body"
+        required: true
+      responses:
+        "200":
+          description: Відповідь від GPT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_1"
+  /ai/huggingface/completion:
+    post:
+      summary: Створення запиту до Hugging Face GPT для відповіді у чаті
+      description: Endpoint для створення запиту до Hugging Face GPT для отримання
+        відповіді у чаті
+      operationId: createHuggingFaceCompletion
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/huggingface_completion_body"
+        required: true
+      responses:
+        "200":
+          description: Відповідь від Hugging Face GPT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_2"
+  /data/collect:
+    post:
+      summary: Збір даних для аналізу
+      operationId: collectData
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/data_collect_body"
+        required: true
+      responses:
+        "200":
+          description: Дані успішно зібрані
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_3"
+  /data/log:
+    post:
+      summary: Фіксація зібраних даних
+      operationId: logData
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/data_log_body"
+        required: true
+      responses:
+        "200":
+          description: Дані успішно зафіксовані
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_3"
+  /data/analyze:
+    post:
+      summary: Аналіз даних
+      operationId: analyzeData
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/data_analyze_body"
+        required: true
+      responses:
+        "200":
+          description: Дані успішно проаналізовані
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_4"
+  /data/save:
+    post:
+      summary: Збереження даних в базі даних
+      operationId: saveData
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/data_save_body"
+        required: true
+      responses:
+        "200":
+          description: Дані успішно збережені
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_3"
+  /data/transfer:
+    post:
+      summary: Передача даних до іншої системи
+      operationId: transferData
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/data_transfer_body"
+        required: true
+      responses:
+        "200":
+          description: Дані успішно передані
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_3"
+  /data/predict:
+    post:
+      summary: Прогнозування на основі зібраних даних
+      operationId: predictData
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/data_predict_body"
+        required: true
+      responses:
+        "200":
+          description: Прогноз успішно створений
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_5"
+  /components:
+    get:
+      summary: Отримати список всіх компонентів
+      operationId: getComponents
+      responses:
+        "200":
+          description: Список компонентів успішно отриманий
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Component"
+    post:
+      summary: Створити новий компонент
+      operationId: createComponent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Component"
+        required: true
+      responses:
+        "201":
+          description: Компонент успішно створений
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Component"
+  /components/{id}:
+    get:
+      summary: Отримати інформацію про компонент за ID
+      operationId: getComponentById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Інформація про компонент успішно отримана
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Component"
+    put:
+      summary: Оновити інформацію про компонент за ID
+      operationId: updateComponent
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Component"
+        required: true
+      responses:
+        "200":
+          description: Компонент успішно оновлений
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Component"
+    delete:
+      summary: Видалити компонент за ID
+      operationId: deleteComponent
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "204":
+          description: Компонент успішно видалений
+  /components/{id}/link:
+    post:
+      summary: Зв'язати компонент з іншим компонентом
+      operationId: linkComponent
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/id_link_body"
+        required: true
+      responses:
+        "200":
+          description: Компоненти успішно зв'язані
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_6"
+  /components/{id}/unlink:
+    post:
+      summary: Розірвати зв'язок між компонентами
+      operationId: unlinkComponent
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/id_unlink_body"
+        required: true
+      responses:
+        "200":
+          description: Зв'язок між компонентами успішно розірвано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_7"
+  /components/{id}/attributes:
+    get:
+      summary: Отримати атрибути компоненту за ID
+      operationId: getComponentAttributes
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Атрибути компоненту успішно отримані
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Attribute"
+  /weather/current:
+    get:
+      summary: Отримати поточні погодні дані
+      operationId: getCurrentWeather
+      parameters:
+      - name: city
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          description: Назва міста
+          example: London
+      responses:
+        "200":
+          description: Поточні погодні дані успішно отримані
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_8"
+  /astrology/forecast:
+    get:
+      summary: Отримати астрологічний прогноз
+      operationId: getAstrologicalForecast
+      parameters:
+      - name: sign
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          description: Знак зодіаку
+          example: aries
+      responses:
+        "200":
+          description: Астрологічний прогноз успішно отриманий
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_9"
+  /time/current:
+    get:
+      summary: Отримати поточний час
+      operationId: getCurrentTime
+      responses:
+        "200":
+          description: Поточний час успішно отриманий
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_10"
+  /data/weather:
+    get:
+      summary: Отримати погодні дані
+      operationId: getWeatherData
+      parameters:
+      - name: city
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          description: Назва міста
+          example: London
+      responses:
+        "200":
+          description: Погодні дані успішно отримані
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_8"
+  /data/astrology:
+    get:
+      summary: Отримати астрологічні дані
+      operationId: getAstrologyData
+      parameters:
+      - name: sign
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          description: Знак зодіаку
+          example: aries
+      responses:
+        "200":
+          description: Астрологічні дані успішно отримані
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_9"
+components:
+  schemas:
+    Component:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Унікальний ідентифікатор компоненту
+          example: component-12345
+        name:
+          type: string
+          description: Назва компоненту
+          example: Компонент 1
+        type:
+          type: string
+          description: Тип компоненту
+          example: базовий
+        attributes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Attribute"
+    Attribute:
+      type: object
+      properties:
+        key:
+          type: string
+          description: Назва атрибуту
+          example: атрибут-1
+        value:
+          type: string
+          description: Значення атрибуту
+          example: значення-1
+    auth_login_body:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Ім'я користувача
+        password:
+          type: string
+          description: Пароль
+    inline_response_200:
+      type: object
+      properties:
+        token:
+          type: string
+    chat_completion_body:
+      type: object
+      properties:
+        model:
+          type: string
+          description: Модель GPT для використання
+          example: text-davinci-003
+        prompt:
+          type: string
+          description: Запит для моделі GPT
+          example: Напиши доповідь про сучасні технології штучного інтелекту.
+        max_tokens:
+          type: integer
+          description: Максимальна кількість токенів у відповіді
+          example: 100
+        temperature:
+          type: number
+          description: Температура вибірки
+          example: 0.7
+    inline_response_200_1:
+      type: object
+      properties:
+        id:
+          type: string
+          example: cmpl-5t6fN9FPjsMxlm8Zy1dJ1Z7P
+        object:
+          type: string
+          example: text_completion
+        created:
+          type: integer
+          example: 1591685959
+        model:
+          type: string
+          example: text-davinci-003
+        choices:
+          type: array
+          items:
+            $ref: "#/components/schemas/inline_response_200_1_choices"
+    huggingface_completion_body:
+      type: object
+      properties:
+        model:
+          type: string
+          description: Модель GPT на Hugging Face для використання
+          example: gpt-neo-2.7B
+        prompt:
+          type: string
+          description: Запит для моделі GPT
+          example: Напиши доповідь про сучасні технології штучного інтелекту.
+        max_tokens:
+          type: integer
+          description: Максимальна кількість токенів у відповіді
+          example: 150
+        temperature:
+          type: number
+          description: Температура вибірки
+          example: 0.6
+    inline_response_200_2:
+      type: object
+      properties:
+        id:
+          type: string
+          example: hf-5t6fN9FPjsMxlm8Zy1dJ1Z7P
+        object:
+          type: string
+          example: text_completion
+        created:
+          type: integer
+          example: 1591685959
+        model:
+          type: string
+          example: gpt-neo-2.7B
+        choices:
+          type: array
+          items:
+            $ref: "#/components/schemas/inline_response_200_1_choices"
+    data_collect_body:
+      type: object
+      properties:
+        dataSource:
+          type: string
+          description: Джерело даних
+          example: API
+        data:
+          type: object
+          description: Дані для збору
+    inline_response_200_3:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операції
+          example: success
+    data_log_body:
+      type: object
+      properties:
+        dataId:
+          type: string
+          description: ID зібраних даних
+          example: data-12345
+        logDetails:
+          type: object
+          description: Деталі фіксації даних
+    data_analyze_body:
+      type: object
+      properties:
+        dataId:
+          type: string
+          description: ID зібраних даних
+          example: data-12345
+    inline_response_200_4:
+      type: object
+      properties:
+        analysis:
+          type: object
+          description: Результати аналізу
+    data_save_body:
+      type: object
+      properties:
+        dataId:
+          type: string
+          description: ID зібраних даних
+          example: data-12345
+        storageDetails:
+          type: object
+          description: Деталі збереження даних
+    data_transfer_body:
+      type: object
+      properties:
+        dataId:
+          type: string
+          description: ID зібраних даних
+          example: data-12345
+        destination:
+          type: string
+          description: Місце призначення даних
+          example: external-system
+        transferDetails:
+          type: object
+          description: Деталі передачі даних
+    data_predict_body:
+      type: object
+      properties:
+        dataId:
+          type: string
+          description: ID зібраних даних
+          example: data-12345
+        modelId:
+          type: string
+          description: ID моделі прогнозування
+          example: model-67890
+        predictionParameters:
+          type: object
+          description: Параметри для прогнозування
+    inline_response_200_5:
+      type: object
+      properties:
+        prediction:
+          type: object
+          description: Результати прогнозування
+    id_link_body:
+      type: object
+      properties:
+        targetComponentId:
+          type: string
+          description: "ID компоненту, з яким потрібно зв'язати"
+          example: component-98765
+        linkType:
+          type: string
+          description: "Тип зв'язку (наприклад, залежність, асоціація)"
+          example: dependency
+    inline_response_200_6:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операції
+          example: linked
+    id_unlink_body:
+      type: object
+      properties:
+        targetComponentId:
+          type: string
+          description: "ID компоненту, з яким потрібно розірвати зв'язок"
+          example: component-98765
+    inline_response_200_7:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операції
+          example: unlinked
+    inline_response_200_8:
+      type: object
+      properties:
+        weather:
+          type: string
+          description: Опис погоди
+          example: clear sky
+        temperature:
+          type: number
+          description: Температура в градусах Цельсія
+          example: 20.5
+    inline_response_200_9:
+      type: object
+      properties:
+        forecast:
+          type: string
+          description: Опис астрологічного прогнозу
+          example: Today is a good day for new beginnings.
+    inline_response_200_10:
+      type: object
+      properties:
+        time:
+          type: string
+          description: Поточний час
+          example: 2023-09-15T12:34:56Z
+    inline_response_200_1_choices:
+      type: object
+      properties:
+        text:
+          type: string
+          example: "Сучасні технології штучного інтелекту включають глибинне навча\
+            ння, нейронні мережі та обробку природної мови..."
+        index:
+          type: integer
+          example: 0
+        logprobs:
+          type: object
+          nullable: true
+        finish_reason:
+          type: string
+          example: length
