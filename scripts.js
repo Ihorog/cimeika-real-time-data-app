@@ -1,4 +1,6 @@
-document.addEventListener('DOMContentLoaded', function() {
+let config = {};
+
+document.addEventListener('DOMContentLoaded', async function() {
     // Load components first
     loadComponent('components/header.html', '#header-container')
         .then(() => setupMobileMenu())
@@ -13,9 +15,21 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load initial page
     loadPage('pages/home.html');
 
+    try {
+        config = await fetchConfig();
+    } catch (e) {
+        console.error('Config load failed:', e);
+    }
+
     // Start real-time data updates
     setupRealTimeData();
 });
+
+async function fetchConfig() {
+    const res = await fetch('/config');
+    if (!res.ok) throw new Error('Failed to load config');
+    return res.json();
+}
 
 // Component loader
 async function loadComponent(componentPath, containerSelector) {
@@ -115,11 +129,12 @@ async function updateWeather() {
     if (!weatherElement) return;
 
     try {
-        const response = await fetch('https://api.openweathermap.org/data/2.5/weather?q=London&appid=YOUR_API_KEY');
+        const endpoint = config.weatherEndpoint || '/weather/current';
+        const response = await fetch(endpoint);
         if (!response.ok) throw new Error('Weather data unavailable');
-        
+
         const data = await response.json();
-        weatherElement.textContent = `${data.weather[0].description}, ${Math.round(data.main.temp - 273.15)}°C`;
+        weatherElement.textContent = `${data.weather}, ${data.temperature}°C`;
         weatherElement.classList.remove('loading');
     } catch (error) {
         console.error('Weather error:', error);
@@ -134,9 +149,10 @@ async function updateAstrology() {
     if (!astrologyElement) return;
 
     try {
-        const response = await fetch('https://api.freeastrologyapi.com/forecast?sign=aries&apikey=YOUR_API_KEY');
+        const endpoint = config.astrologyEndpoint || '/astrology/forecast';
+        const response = await fetch(endpoint);
         if (!response.ok) throw new Error('Astrological data unavailable');
-        
+
         const data = await response.json();
         astrologyElement.textContent = data.forecast;
         astrologyElement.classList.remove('loading');
