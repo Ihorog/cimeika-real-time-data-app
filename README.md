@@ -106,6 +106,7 @@ You can deploy the API to a [Hugging Face Space](https://huggingface.co/spaces) 
 ```bash
 export HF_WRITE_TOKEN=<your-hf-token>
 export OPENAI_API_KEY=<your-openai-key>
+export OPENWEATHER_KEY=<your-openweather-key>
 ./deploy_cimeika_api.sh
 ```
 
