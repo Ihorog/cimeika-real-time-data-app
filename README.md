@@ -105,12 +105,19 @@ export WEATHER_API_KEY=<your-openweather-key>
 ./deploy_cimeika_api.sh
 ```
 
+The script builds the container using the included `Dockerfile`. To test the Docker image locally, run:
+
+```bash
+docker build -t cimeika .
+docker run -p 3000:3000 cimeika
+```
+
 ### What the script does
 
 1. Checks that `git`, `curl`, `python3` and `pip` are available and installs `huggingface_hub` if missing.
 2. Logs in to Hugging Face with `huggingface-cli login` using `HF_WRITE_TOKEN`.
 3. Clones this repository if needed and creates (or reuses) a Docker-based Space.
-4. Pushes the code to the Space and sets the above secrets.
+4. Pushes the code (including the `Dockerfile`) to the Space and sets the above secrets.
 5. Waits for the Space to start and then installs dependencies and runs any Python tests.
 
 After completion the script prints the URL of your running Space so you can verify the deployment.
