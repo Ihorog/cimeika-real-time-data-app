@@ -1,3 +1,12 @@
+---
+title: Cimeika API
+emoji: "🌟"
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
+
 # Cimeika
 
 Cimeika is a modern web application that integrates various real-time data services, including weather updates, time information, and astrological forecasts. The platform is designed to enhance the user experience through dynamic content and a visually appealing interface using Tailwind CSS.
