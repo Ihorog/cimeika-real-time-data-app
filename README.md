@@ -66,8 +66,8 @@ To set up the Cimeika project locally, follow these steps:
 
 The project depends on the following packages (as specified in `package.json`):
 
-- `express`: "^4.17.1"  (for server handling)
-- `axios`: "^0.21.1" (for making HTTP requests)
+- `express`: "^4.18.2" (for server handling)
+- `axios`: "^1.10.0" (for making HTTP requests)
 - `dotenv`: "^16.3.1" (for loading environment variables)
 
 Additionally, the CSS framework utilized is [Tailwind CSS](https://tailwindcss.com/).
