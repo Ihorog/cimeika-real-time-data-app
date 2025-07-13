@@ -91,12 +91,11 @@ cimeika/
 └── .devcontainer.json       # Configuration for development container
 ```
 
--### File Descriptions:
+### File Descriptions:
 
 - `public/index.html`: The main HTML document that loads the application.
 - `public/styles.css`: Contains custom styles and animations to enhance the UI.
 - `public/scripts.js`: JavaScript file for handling dynamic content loading, API interactions, and user interactions.
-- `.env`: Stores your private API keys (`OPENWEATHER_KEY`, `ASTROLOGY_KEY`). This file should not be committed to version control.
 - `.env`: Stores your private API keys (`OPENWEATHER_KEY`, `ASTROLOGY_KEY`). This file should not be committed to version control.
 
 ## Deployment
