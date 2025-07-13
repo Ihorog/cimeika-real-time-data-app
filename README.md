@@ -36,11 +36,12 @@ To set up the Cimeika project locally, follow these steps:
    - `dotenv`: For environment variable loading
 
 4. **Configuration**:
-   Create a `.env` file in the project root with the following variables:
+   Copy `.env.example` to `.env` and fill in your API keys:
    ```bash
-   OPENWEATHER_KEY=your_openweather_api_key
-   ASTROLOGY_KEY=your_astrology_api_key
+   cp .env.example .env
    ```
+   Then edit `.env` to set `OPENWEATHER_KEY` and `ASTROLOGY_KEY`.
+   When deploying with `deploy_cimeika_api.sh`, also set `OPENAI_API_KEY` and `HF_WRITE_TOKEN` (optionally `WEATHER_API_KEY`).
    The `.env` file is ignored by git.
 
 5. **Start the Application**:
@@ -95,7 +96,8 @@ cimeika/
 - `index.html`: The main HTML document that loads the application.
 - `styles.css`: Contains custom styles and animations to enhance the UI.
 - `scripts.js`: JavaScript file for handling dynamic content loading, API interactions, and user interactions.
-- `.env`: Stores your private API keys (`OPENWEATHER_KEY`, `ASTROLOGY_KEY`). This file should not be committed to version control.
+- `.env`: Copy of `.env.example` containing your private API keys (`OPENWEATHER_KEY`, `ASTROLOGY_KEY`). This file should not be committed to version control.
+- `.env.example`: Template showing the required variables, including notes for `deploy_cimeika_api.sh`.
 
 ## License
 
