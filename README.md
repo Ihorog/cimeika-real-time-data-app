@@ -33,9 +33,15 @@ To set up the Cimeika project locally, follow these steps:
    Dependencies (found in package.json):
    - `express`: For server-side logic
    - `axios`: For making requests to external APIs
+   - `dotenv`: For environment variable loading
 
 4. **Configuration**:
-   Copy `api_keys.example.json` to `api_keys.json` and insert your actual API keys there. Make sure `api_keys.json` is excluded from version control via `.gitignore`.
+   Create a `.env` file in the project root with the following variables:
+   ```bash
+   OPENWEATHER_KEY=your_openweather_api_key
+   ASTROLOGY_KEY=your_astrology_api_key
+   ```
+   The `.env` file is ignored by git.
 
 5. **Start the Application**:
    You can run the application using:
@@ -62,6 +68,7 @@ The project depends on the following packages (as specified in `package.json`):
 
 - `express`: "^4.17.1"  (for server handling)
 - `axios`: "^0.21.1" (for making HTTP requests)
+- `dotenv`: "^16.3.1" (for loading environment variables)
 
 Additionally, the CSS framework utilized is [Tailwind CSS](https://tailwindcss.com/).
 
@@ -79,7 +86,6 @@ cimeika/
 ├── styles.css                # Custom styles for the application
 ├── scripts.js                # JavaScript for dynamic functionality
 ├── index.html               # Main HTML entry point
-├── api_keys.example.json   # Template for API keys (copy to api_keys.json)
 ├── cimeika-api.yaml         # OpenAPI definition for the API
 └── .devcontainer.json       # Configuration for development container
 ```
@@ -89,7 +95,7 @@ cimeika/
 - `index.html`: The main HTML document that loads the application.
 - `styles.css`: Contains custom styles and animations to enhance the UI.
 - `scripts.js`: JavaScript file for handling dynamic content loading, API interactions, and user interactions.
-- `api_keys.example.json`: Template for API keys. Copy this file to `api_keys.json` with your private keys and keep `api_keys.json` out of version control.
+- `.env`: Stores your private API keys (`OPENWEATHER_KEY`, `ASTROLOGY_KEY`). This file should not be committed to version control.
 
 ## License
 
