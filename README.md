@@ -87,8 +87,7 @@ cimeika/
 │   ├── styles.css               # Custom styles for the application
 │   ├── scripts.js               # JavaScript for dynamic functionality
 │   └── index.html               # Main HTML entry point
-├── cimeika-api.yaml         # OpenAPI definition for the API
-└── .devcontainer.json       # Configuration for development container
+└── cimeika-api.yaml         # OpenAPI definition for the API
 ```
 
 ### File Descriptions:
