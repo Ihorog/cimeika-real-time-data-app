@@ -117,6 +117,7 @@ export OPENAI_API_KEY=<your-openai-key>
 export WEATHER_API_KEY=<your-openweather-key>
 # optional – for astrology endpoints
 export ASTROLOGY_KEY=<your-astrology-key>
+# optional; enables astrology-related endpoints
 ./deploy_cimeika_api.sh
 ```
 
