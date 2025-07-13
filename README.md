@@ -1,7 +1,3 @@
-Built by https://www.blackbox.ai
-
----
-
 # Cimeika
 
 Cimeika is a modern web application that integrates various real-time data services, including weather updates, time information, and astrological forecasts. The platform is designed to enhance the user experience through dynamic content and a visually appealing interface using Tailwind CSS.
@@ -99,7 +95,7 @@ cimeika/
 
 ## Deployment
 
-The script `deploy_cimeika_api.sh` automates publishing this API to a [Hugging Face Space](https://huggingface.co/spaces). Set the required tokens in your shell and then run the script:
+Run `deploy_cimeika_api.sh` from the repository root to publish the API to a [Hugging Face Space](https://huggingface.co/spaces). Set the required tokens in your shell and then run the script:
 
 ```bash
 export HF_WRITE_TOKEN=<your-hf-token>
