@@ -66,6 +66,7 @@ To set up the Cimeika project locally, follow these steps:
 - **Responsive Design**: Optimized layout for both desktop and mobile devices using Tailwind CSS.
 - **Smooth Animations**: Interactive UI components with hover effects and animations.
 - **API Integrations**: Connects with multiple APIs to gather and display real-time data.
+- **OpenAPI Documentation**: Available at `/openapi` and browsable through Swagger UI at `/docs`.
 
 ## Dependencies
 

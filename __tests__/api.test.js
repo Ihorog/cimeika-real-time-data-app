@@ -121,4 +121,10 @@ describe('Cimeika API', () => {
     expect(res.status).toBe(200);
     expect(res.body.prediction).toBeDefined();
   });
+
+  it('serves openapi spec', async () => {
+    const res = await request(app).get('/openapi');
+    expect(res.status).toBe(200);
+    expect(res.text).toMatch(/openapi:\s*3/);
+  });
 });
