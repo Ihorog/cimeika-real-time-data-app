@@ -523,11 +523,12 @@ paths:
       parameters:
         - name: city
           in: query
-          required: true
+          required: false
           schema:
             type: string
             description: Назва міста
             example: London
+            default: London
       responses:
         "200":
           description: Поточні погодні дані успішно отримані
@@ -551,11 +552,12 @@ paths:
       parameters:
         - name: sign
           in: query
-          required: true
+          required: false
           schema:
             type: string
             description: Знак зодіаку
             example: aries
+            default: aries
       responses:
         "200":
           description: Астрологічний прогноз успішно отриманий
