@@ -10,8 +10,15 @@ async function main() {
     console.log('Login token:', loginRes.data.token);
 
     // Request a completion from Hugging Face endpoint
-    const hfRes = await axios.post(`${BASE_URL}/ai/huggingface/completion`, { prompt: 'Hello from API scenario' });
-    console.log('HF completion:', hfRes.data.choices[0].text);
+    const hfRes = await axios.get(`${BASE_URL}/ai/huggingface/models`);
+    console.log('Available HF models:', hfRes.data.models.length);
+
+    // Test completion with a specific model
+    const completionRes = await axios.post(`${BASE_URL}/ai/huggingface/completion`, { 
+      prompt: 'Hello from API scenario',
+      model: hfRes.data.models[0].id
+    });
+    console.log('HF completion:', completionRes.data.choices[0].text);
 
     // Create a component
     const createRes = await axios.post(`${BASE_URL}/components`, { name: 'scenario-component', type: 'demo' });
