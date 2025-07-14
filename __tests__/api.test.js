@@ -36,6 +36,20 @@ describe('Cimeika API', () => {
     expect(res.body.choices).toBeDefined();
   });
 
+  it('weather endpoint returns 503 when api key missing', async () => {
+    delete process.env.OPENWEATHER_KEY;
+    const res = await request(app).get('/weather/current');
+    expect(res.status).toBe(503);
+    expect(res.body.error).toMatch(/key not configured/i);
+  });
+
+  it('astrology endpoint returns 503 when api key missing', async () => {
+    delete process.env.ASTROLOGY_KEY;
+    const res = await request(app).get('/astrology/forecast');
+    expect(res.status).toBe(503);
+    expect(res.body.error).toMatch(/key not configured/i);
+  });
+
   it('chat completion without prompt returns 400', async () => {
     const res = await request(app)
       .post('/chat/completion')

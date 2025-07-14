@@ -193,7 +193,11 @@ app.get('/weather/current', async (req, res) => {
   try {
     const city = req.query.city || 'London';
     const key = process.env.OPENWEATHER_KEY;
-    if (!key) throw new Error('OPENWEATHER_KEY not configured');
+    if (!key) {
+      return res
+        .status(503)
+        .json({ error: 'OpenWeather API key not configured' });
+    }
     const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${key}`;
     const response = await axios.get(url);
     const data = response.data;
@@ -210,7 +214,11 @@ app.get('/astrology/forecast', async (req, res) => {
   try {
     const sign = req.query.sign || 'aries';
     const key = process.env.ASTROLOGY_KEY;
-    if (!key) throw new Error('ASTROLOGY_KEY not configured');
+    if (!key) {
+      return res
+        .status(503)
+        .json({ error: 'Astrology API key not configured' });
+    }
     const url = `https://api.freeastrologyapi.com/forecast?sign=${sign}&apikey=${key}`;
     const response = await axios.get(url);
     res.json({ forecast: response.data.forecast });
