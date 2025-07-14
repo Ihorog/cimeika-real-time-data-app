@@ -524,9 +524,11 @@ paths:
         - name: city
           in: query
           required: false
+          description: >-
+            Назва міста. Якщо параметр не вказано, сервер за замовчуванням
+            використовує London.
           schema:
             type: string
-            description: Назва міста
             example: London
             default: London
       responses:
@@ -553,9 +555,11 @@ paths:
         - name: sign
           in: query
           required: false
+          description: >-
+            Знак зодіаку. Якщо параметр не вказано, сервер за замовчуванням
+            використовує aries.
           schema:
             type: string
-            description: Знак зодіаку
             example: aries
             default: aries
       responses:
