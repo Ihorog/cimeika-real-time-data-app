@@ -156,6 +156,20 @@ node scripts/api_scenario.js
 The script performs a mock login, requests a Hugging Face completion, creates a
 demo component and collects a small data payload.
 
+## Testing
+
+To run the automated tests make sure all Node.js dependencies are installed:
+
+```bash
+npm install
+```
+
+Once dependencies are in place you can execute the test suite with:
+
+```bash
+npm test
+```
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
