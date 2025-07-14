@@ -80,7 +80,9 @@ echo "🚚  Відправляю код у Space…"
 git push hf main --force
 
 # --- 6. Секрети -------------------------------------------------------------
-for secret in OPENAI_API_KEY HF_WRITE_TOKEN OPENWEATHER_KEY ASTROLOGY_KEY; do
+
+SECRETS=(OPENAI_API_KEY HF_WRITE_TOKEN WEATHER_API_KEY ASTROLOGY_KEY)
+for secret in "${SECRETS[@]}"; do
   if [[ -n "${!secret:-}" ]]; then
     huggingface-cli repo secret set -r "$HF_SPACE_FULL" "$secret" "${!secret}" >/dev/null
   fi
