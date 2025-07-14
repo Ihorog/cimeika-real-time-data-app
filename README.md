@@ -48,7 +48,9 @@ To set up the Cimeika project locally, follow these steps:
    cp .env.example .env
    ```
    Then edit `.env` to set `OPENWEATHER_KEY` and `ASTROLOGY_KEY`.
-   Optionally adjust `PORT` if you need a different server port (default `3000`).
+   Optionally set `HUGGINGFACE_TOKEN` if you want the Hugging Face completion
+   endpoint to call the real API.
+   Adjust `PORT` if you need a different server port (default `3000`).
    The `.env` file is ignored by git.
 
 5. **Start the Application**:
@@ -104,7 +106,7 @@ cimeika/
 - `public/index.html`: The main HTML document that loads the application.
 - `public/styles.css`: Contains custom styles and animations to enhance the UI.
 - `public/scripts.js`: JavaScript file for handling dynamic content loading, API interactions, and user interactions.
-- `.env`: Stores your private API keys (`OPENWEATHER_KEY`, `ASTROLOGY_KEY`) and optional settings such as `PORT`. This file should not be committed to version control. A `.env.example` template is provided for reference.
+- `.env`: Stores your private API keys (`OPENWEATHER_KEY`, `ASTROLOGY_KEY`, `HUGGINGFACE_TOKEN`) and optional settings such as `PORT`. This file should not be committed to version control. A `.env.example` template is provided for reference.
 
 ## Deployment
 
@@ -117,7 +119,8 @@ export OPENAI_API_KEY=<your-openai-key>
 export OPENWEATHER_KEY=<your-openweather-key>
 # optional – for astrology endpoints
 export ASTROLOGY_KEY=<your-astrology-key>
-# optional; enables astrology-related endpoints
+# optional – for Hugging Face completions
+export HUGGINGFACE_TOKEN=<your-hf-api-token>
 ./deploy_cimeika_api.sh
 ```
 
@@ -137,6 +140,20 @@ docker run -p 3000:3000 cimeika
 5. Waits for the Space to start and then installs dependencies and runs any Python tests.
 
 After completion the script prints the URL of your running Space so you can verify the deployment.
+
+## API Scenario
+
+To see a quick example of calling the API with environment variables, run the
+`scripts/api_scenario.js` script. This assumes you have the server running
+locally (default `http://localhost:3000`). Optionally set `BASE_URL` in your
+`.env` file if the server is hosted elsewhere.
+
+```bash
+node scripts/api_scenario.js
+```
+
+The script performs a mock login, requests a Hugging Face completion, creates a
+demo component and collects a small data payload.
 
 ## License
 

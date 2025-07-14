@@ -7,6 +7,7 @@
 #    export OPENAI_API_KEY="<ваш OpenAI key>"
 #    # (необов’язково) export OPENWEATHER_KEY="<OpenWeather key>"
 #    # (необов’язково) export ASTROLOGY_KEY="<Astrology key>"
+#    # (необов’язково) export HUGGINGFACE_TOKEN="<HF Inference API token>"
 # ============================================================
 set -euo pipefail
 
@@ -81,7 +82,7 @@ git push hf main --force
 
 # --- 6. Секрети -------------------------------------------------------------
 
-SECRETS=(OPENAI_API_KEY HF_WRITE_TOKEN WEATHER_API_KEY ASTROLOGY_KEY)
+SECRETS=(OPENAI_API_KEY HF_WRITE_TOKEN OPENWEATHER_KEY ASTROLOGY_KEY HUGGINGFACE_TOKEN)
 for secret in "${SECRETS[@]}"; do
   if [[ -n "${!secret:-}" ]]; then
     huggingface-cli repo secret set -r "$HF_SPACE_FULL" "$secret" "${!secret}" >/dev/null
