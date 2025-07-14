@@ -114,7 +114,7 @@ Run `deploy_cimeika_api.sh` from the repository root to publish the API to a [Hu
 export HF_WRITE_TOKEN=<your-hf-token>
 export OPENAI_API_KEY=<your-openai-key>
 # optional – for weather endpoints
-export WEATHER_API_KEY=<your-openweather-key>
+export OPENWEATHER_KEY=<your-openweather-key>
 # optional – for astrology endpoints
 export ASTROLOGY_KEY=<your-astrology-key>
 # optional; enables astrology-related endpoints

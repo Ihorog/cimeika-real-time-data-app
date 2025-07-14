@@ -5,7 +5,7 @@
 #  ПЕРЕД ЗАПУСКОМ:
 #    export HF_WRITE_TOKEN="<ваш HF write token>"
 #    export OPENAI_API_KEY="<ваш OpenAI key>"
-#    # (необов’язково) export WEATHER_API_KEY="<OpenWeather key>"
+#    # (необов’язково) export OPENWEATHER_KEY="<OpenWeather key>"
 #    # (необов’язково) export ASTROLOGY_KEY="<Astrology key>"
 # ============================================================
 set -euo pipefail
@@ -80,6 +80,7 @@ echo "🚚  Відправляю код у Space…"
 git push hf main --force
 
 # --- 6. Секрети -------------------------------------------------------------
+
 SECRETS=(OPENAI_API_KEY HF_WRITE_TOKEN WEATHER_API_KEY ASTROLOGY_KEY)
 for secret in "${SECRETS[@]}"; do
   if [[ -n "${!secret:-}" ]]; then
