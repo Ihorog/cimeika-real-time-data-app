@@ -23,6 +23,9 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Start real-time data updates
     setupRealTimeData();
+
+    // Load AI models
+    loadAIModels();
 });
 
 async function fetchConfig() {
@@ -69,6 +72,9 @@ async function loadPage(url) {
                 </button>
             </div>`;
     }
+
+    // Load AI models after page content is loaded
+    setTimeout(loadAIModels, 1000);
 }
 
 // Navigation setup
@@ -162,3 +168,168 @@ async function updateAstrology() {
         astrologyElement.classList.add('error-message');
     }
 }
+
+// AI Models and Chat Functions
+
+// Load available AI models
+async function loadAIModels() {
+    const modelSelect = document.getElementById('model-select');
+    if (!modelSelect) return;
+
+    try {
+        const response = await fetch('/ai/huggingface/models');
+        if (!response.ok) throw new Error('Failed to load models');
+
+        const data = await response.json();
+        modelSelect.innerHTML = '';
+        
+        data.models.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.id;
+            option.textContent = `${model.name} - ${model.description}`;
+            modelSelect.appendChild(option);
+        });
+
+        // Set default model
+        if (data.models.length > 0) {
+            modelSelect.value = data.models[0].id;
+        }
+    } catch (error) {
+        console.error('Error loading AI models:', error);
+        modelSelect.innerHTML = '<option value="">Error loading models</option>';
+    }
+}
+
+// Send chat message
+async function sendChatMessage() {
+    const chatInput = document.getElementById('chat-input');
+    const modelSelect = document.getElementById('model-select');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatLoading = document.getElementById('chat-loading');
+
+    if (!chatInput || !modelSelect || !chatMessages) return;
+
+    const message = chatInput.value.trim();
+    const selectedModel = modelSelect.value;
+
+    if (!message) {
+        alert('Please enter a message');
+        return;
+    }
+
+    if (!selectedModel) {
+        alert('Please select a model');
+        return;
+    }
+
+    // Clear initial message if it's the first interaction
+    if (chatMessages.querySelector('.text-gray-500')) {
+        chatMessages.innerHTML = '';
+    }
+
+    // Add user message
+    addMessageToChat('user', message);
+    
+    // Clear input and show loading
+    chatInput.value = '';
+    chatLoading.classList.remove('hidden');
+
+    try {
+        const response = await fetch('/ai/huggingface/completion', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                prompt: message,
+                model: selectedModel,
+                max_tokens: 150,
+                temperature: 0.7
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to get AI response');
+        }
+
+        const data = await response.json();
+        const aiResponse = data.choices[0]?.text || 'No response generated';
+
+        // Add AI response
+        addMessageToChat('ai', aiResponse, selectedModel);
+
+    } catch (error) {
+        console.error('Chat error:', error);
+        addMessageToChat('error', `Error: ${error.message}`);
+    } finally {
+        chatLoading.classList.add('hidden');
+    }
+}
+
+// Add message to chat
+function addMessageToChat(type, message, model = '') {
+    const chatMessages = document.getElementById('chat-messages');
+    if (!chatMessages) return;
+
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `mb-4 ${type === 'user' ? 'text-right' : 'text-left'}`;
+
+    let messageClass = 'inline-block p-3 rounded-lg max-w-[80%]';
+    let icon = '';
+    let label = '';
+
+    switch (type) {
+        case 'user':
+            messageClass += ' bg-blue-600 text-white';
+            icon = '<i class="fas fa-user mr-2"></i>';
+            label = 'You';
+            break;
+        case 'ai':
+            messageClass += ' bg-gray-200 text-gray-800';
+            icon = '<i class="fas fa-robot mr-2"></i>';
+            label = model ? `AI (${model.split('/').pop()})` : 'AI';
+            break;
+        case 'error':
+            messageClass += ' bg-red-100 text-red-800 border border-red-300';
+            icon = '<i class="fas fa-exclamation-triangle mr-2"></i>';
+            label = 'Error';
+            break;
+    }
+
+    messageDiv.innerHTML = `
+        <div class="${messageClass}">
+            <div class="text-xs opacity-75 mb-1">${icon}${label}</div>
+            <div>${message}</div>
+            <div class="text-xs opacity-75 mt-1">${new Date().toLocaleTimeString()}</div>
+        </div>
+    `;
+
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Clear chat messages
+function clearChat() {
+    const chatMessages = document.getElementById('chat-messages');
+    if (!chatMessages) return;
+
+    chatMessages.innerHTML = '<p class="text-gray-500 italic">Start a conversation with the AI assistant...</p>';
+}
+
+// Handle Enter key in chat input
+document.addEventListener('DOMContentLoaded', function() {
+    const chatInput = document.getElementById('chat-input');
+    if (chatInput) {
+        chatInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendChatMessage();
+            }
+        });
+    }
+});
+
+// Make functions globally available
+window.sendChatMessage = sendChatMessage;
+window.clearChat = clearChat;

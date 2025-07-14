@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const axios = require('axios');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
+const { HfInference } = require('@huggingface/inference');
 require('dotenv').config();
 const app = express();
 const swaggerDocument = YAML.load(path.join(__dirname, 'cimeika-api.yaml'));
@@ -57,38 +58,65 @@ app.post('/chat/completion', (req, res) => {
   res.json({ id: 'chat1', object: 'text_completion', created: Date.now(), model: 'mock', choices: [{ text: `Echo: ${prompt}`, index: 0, logprobs: null, finish_reason: 'length' }] });
 });
 
-// Hugging Face completion endpoint (mock)
+// Hugging Face completion endpoint (enhanced)
 app.post('/ai/huggingface/completion', async (req, res) => {
-  const { prompt, model = 'gpt2', max_tokens = 150, temperature = 0.6 } = req.body || {};
+  const { prompt, model = 'microsoft/DialoGPT-medium', max_tokens = 150, temperature = 0.6 } = req.body || {};
   if (!prompt) return res.status(400).json({ error: 'prompt required' });
 
   const token = process.env.HUGGINGFACE_TOKEN;
   if (!token) {
     // Fallback mock response when no token is configured
     return res.json({
-      id: 'hf1',
+      id: 'hf-mock-' + Date.now(),
       object: 'text_completion',
       created: Date.now(),
       model: 'mock-hf',
-      choices: [{ text: `HF Echo: ${prompt}`, index: 0, logprobs: null, finish_reason: 'length' }]
+      choices: [{ text: `HF Mock Response: ${prompt}`, index: 0, logprobs: null, finish_reason: 'length' }]
     });
   }
 
   try {
-    const url = `https://api-inference.huggingface.co/models/${model}`;
-    const response = await axios.post(
-      url,
-      { inputs: prompt, parameters: { max_new_tokens: max_tokens, temperature } },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    // Initialize Hugging Face client
+    const hf = new HfInference(token);
 
     let generated = '';
-    if (Array.isArray(response.data) && response.data.length > 0 && response.data[0].generated_text) {
-      generated = response.data[0].generated_text;
-    } else if (typeof response.data === 'object' && response.data.generated_text) {
-      generated = response.data.generated_text;
+    
+    // Handle different model types
+    if (model.includes('gpt') || model.includes('DialoGPT') || model.includes('blenderbot')) {
+      // Text generation models
+      const response = await hf.textGeneration({
+        model: model,
+        inputs: prompt,
+        parameters: {
+          max_new_tokens: max_tokens,
+          temperature: temperature,
+          return_full_text: false
+        }
+      });
+      generated = response.generated_text || '';
+    } else if (model.includes('t5') || model.includes('pegasus') || model.includes('bart')) {
+      // Text-to-text generation models (summarization, translation, etc.)
+      const response = await hf.textGeneration({
+        model: model,
+        inputs: prompt,
+        parameters: {
+          max_new_tokens: max_tokens,
+          temperature: temperature
+        }
+      });
+      generated = response.generated_text || '';
     } else {
-      generated = JSON.stringify(response.data);
+      // Default to text generation
+      const response = await hf.textGeneration({
+        model: model,
+        inputs: prompt,
+        parameters: {
+          max_new_tokens: max_tokens,
+          temperature: temperature,
+          return_full_text: false
+        }
+      });
+      generated = response.generated_text || '';
     }
 
     res.json({
@@ -99,9 +127,59 @@ app.post('/ai/huggingface/completion', async (req, res) => {
       choices: [{ text: generated, index: 0, logprobs: null, finish_reason: 'length' }]
     });
   } catch (err) {
-    console.error('HF API error:', err.response?.data || err.message);
-    res.status(500).json({ error: 'Hugging Face API error' });
+    console.error('HF API error:', err.message);
+    // More detailed error handling
+    if (err.message.includes('Model') && err.message.includes('not found')) {
+      res.status(404).json({ error: `Model '${model}' not found or not available` });
+    } else if (err.message.includes('rate limit') || err.message.includes('quota')) {
+      res.status(429).json({ error: 'Rate limit exceeded or quota reached' });
+    } else if (err.message.includes('unauthorized') || err.message.includes('invalid token')) {
+      res.status(401).json({ error: 'Invalid Hugging Face token' });
+    } else {
+      res.status(500).json({ error: 'Hugging Face API error', details: err.message });
+    }
   }
+});
+
+// New endpoint: List available Hugging Face models
+app.get('/ai/huggingface/models', (req, res) => {
+  const popularModels = [
+    {
+      id: 'microsoft/DialoGPT-medium',
+      name: 'DialoGPT Medium',
+      description: 'Conversational AI model for dialogue generation',
+      type: 'text-generation'
+    },
+    {
+      id: 'gpt2',
+      name: 'GPT-2',
+      description: 'OpenAI GPT-2 model for text generation',
+      type: 'text-generation'
+    },
+    {
+      id: 'facebook/blenderbot-400M-distill',
+      name: 'BlenderBot 400M',
+      description: 'Facebook\'s conversational AI model',
+      type: 'text-generation'
+    },
+    {
+      id: 'google/flan-t5-base',
+      name: 'FLAN-T5 Base',
+      description: 'Google\'s instruction-tuned T5 model',
+      type: 'text2text-generation'
+    },
+    {
+      id: 'facebook/bart-large-cnn',
+      name: 'BART Large CNN',
+      description: 'BART model fine-tuned for summarization',
+      type: 'summarization'
+    }
+  ];
+
+  res.json({
+    models: popularModels,
+    total: popularModels.length
+  });
 });
 
 // Data pipeline endpoints

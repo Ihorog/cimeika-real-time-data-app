@@ -36,6 +36,33 @@ describe('Cimeika API', () => {
     expect(res.body.choices).toBeDefined();
   });
 
+  it('huggingface completion with custom model', async () => {
+    const res = await request(app)
+      .post('/ai/huggingface/completion')
+      .send({ prompt: 'Hello', model: 'microsoft/DialoGPT-medium' });
+    expect(res.status).toBe(200);
+    expect(res.body.choices).toBeDefined();
+    // When no token is set, it returns mock response
+    expect(res.body.model).toBe('mock-hf');
+  });
+
+  it('huggingface completion without prompt returns 400', async () => {
+    const res = await request(app)
+      .post('/ai/huggingface/completion')
+      .send({});
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('prompt required');
+  });
+
+  it('get huggingface models', async () => {
+    const res = await request(app).get('/ai/huggingface/models');
+    expect(res.status).toBe(200);
+    expect(res.body.models).toBeDefined();
+    expect(Array.isArray(res.body.models)).toBe(true);
+    expect(res.body.total).toBeDefined();
+    expect(res.body.models.length).toBeGreaterThan(0);
+  });
+
   it('chat completion without prompt returns 400', async () => {
     const res = await request(app)
       .post('/chat/completion')

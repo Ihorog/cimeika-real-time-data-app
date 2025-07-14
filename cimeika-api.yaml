@@ -114,7 +114,7 @@ paths:
                 model:
                   type: string
                   description: Модель GPT на Hugging Face для використання
-                  example: gpt-neo-2.7B
+                  example: microsoft/DialoGPT-medium
                 prompt:
                   type: string
                   description: Запит для моделі GPT
@@ -146,7 +146,7 @@ paths:
                     example: 1591685959
                   model:
                     type: string
-                    example: gpt-neo-2.7B
+                    example: microsoft/DialoGPT-medium
                   choices:
                     type: array
                     items:
@@ -164,6 +164,97 @@ paths:
                         finish_reason:
                           type: string
                           example: length
+        "400":
+          description: Невірний запит (відсутній prompt)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: prompt required
+        "401":
+          description: Невірний або відсутній токен Hugging Face
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid Hugging Face token
+        "404":
+          description: Модель не знайдена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Model 'model-name' not found or not available
+        "429":
+          description: Перевищено ліміт запитів
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Rate limit exceeded or quota reached
+        "500":
+          description: Помилка API Hugging Face
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Hugging Face API error
+                  details:
+                    type: string
+                    example: Detailed error message
+  /ai/huggingface/models:
+    get:
+      operationId: getHuggingFaceModels
+      summary: Отримати список доступних моделей Hugging Face
+      description: Endpoint для отримання списку популярних та рекомендованих моделей Hugging Face
+      responses:
+        "200":
+          description: Список моделей успішно отриманий
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  models:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Ідентифікатор моделі
+                          example: microsoft/DialoGPT-medium
+                        name:
+                          type: string
+                          description: Назва моделі
+                          example: DialoGPT Medium
+                        description:
+                          type: string
+                          description: Опис моделі
+                          example: Conversational AI model for dialogue generation
+                        type:
+                          type: string
+                          description: Тип моделі
+                          example: text-generation
+                  total:
+                    type: integer
+                    description: Загальна кількість моделей
+                    example: 5
   /data/collect:
     post:
       operationId: collectData
