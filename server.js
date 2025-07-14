@@ -58,10 +58,50 @@ app.post('/chat/completion', (req, res) => {
 });
 
 // Hugging Face completion endpoint (mock)
-app.post('/ai/huggingface/completion', (req, res) => {
-  const { prompt } = req.body || {};
+app.post('/ai/huggingface/completion', async (req, res) => {
+  const { prompt, model = 'gpt2', max_tokens = 150, temperature = 0.6 } = req.body || {};
   if (!prompt) return res.status(400).json({ error: 'prompt required' });
-  res.json({ id: 'hf1', object: 'text_completion', created: Date.now(), model: 'mock-hf', choices: [{ text: `HF Echo: ${prompt}`, index: 0, logprobs: null, finish_reason: 'length' }] });
+
+  const token = process.env.HUGGINGFACE_TOKEN;
+  if (!token) {
+    // Fallback mock response when no token is configured
+    return res.json({
+      id: 'hf1',
+      object: 'text_completion',
+      created: Date.now(),
+      model: 'mock-hf',
+      choices: [{ text: `HF Echo: ${prompt}`, index: 0, logprobs: null, finish_reason: 'length' }]
+    });
+  }
+
+  try {
+    const url = `https://api-inference.huggingface.co/models/${model}`;
+    const response = await axios.post(
+      url,
+      { inputs: prompt, parameters: { max_new_tokens: max_tokens, temperature } },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    let generated = '';
+    if (Array.isArray(response.data) && response.data.length > 0 && response.data[0].generated_text) {
+      generated = response.data[0].generated_text;
+    } else if (typeof response.data === 'object' && response.data.generated_text) {
+      generated = response.data.generated_text;
+    } else {
+      generated = JSON.stringify(response.data);
+    }
+
+    res.json({
+      id: `hf-${Date.now()}`,
+      object: 'text_completion',
+      created: Date.now(),
+      model,
+      choices: [{ text: generated, index: 0, logprobs: null, finish_reason: 'length' }]
+    });
+  } catch (err) {
+    console.error('HF API error:', err.response?.data || err.message);
+    res.status(500).json({ error: 'Hugging Face API error' });
+  }
 });
 
 // Data pipeline endpoints
