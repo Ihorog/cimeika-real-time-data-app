@@ -590,6 +590,27 @@ paths:
                     type: string
                     description: Поточний час
                     example: 2023-09-15T12:34:56Z
+  /config:
+    get:
+      operationId: getConfig
+      summary: Отримати конфігураційні значення
+      description: Повертає відносні ендпоінти для сервісів погоди й астрології
+      responses:
+        "200":
+          description: Конфігурація успішно отримана
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  weatherEndpoint:
+                    type: string
+                    description: Шлях для отримання поточної погоди
+                    example: /weather/current
+                  astrologyEndpoint:
+                    type: string
+                    description: Шлях для отримання астрологічного прогнозу
+                    example: /astrology/forecast
   /data/weather:
     get:
       operationId: getWeatherData
