@@ -601,16 +601,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  weatherEndpoint:
-                    type: string
-                    description: Шлях для отримання поточної погоди
-                    example: /weather/current
-                  astrologyEndpoint:
-                    type: string
-                    description: Шлях для отримання астрологічного прогнозу
-                    example: /astrology/forecast
+                $ref: "#/components/schemas/ConfigResponse"
   /data/weather:
     get:
       operationId: getWeatherData
@@ -695,3 +686,14 @@ components:
           type: string
           description: Значення атрибуту
           example: значення-1
+    ConfigResponse:
+      type: object
+      properties:
+        weatherEndpoint:
+          type: string
+          description: Шлях для отримання поточної погоди
+          example: /weather/current
+        astrologyEndpoint:
+          type: string
+          description: Шлях для отримання астрологічного прогнозу
+          example: /astrology/forecast
