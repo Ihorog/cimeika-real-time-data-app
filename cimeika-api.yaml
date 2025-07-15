@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Cimeika API
   description: API для інтеграції GPT у існуючий інтерфейс чату та управління системою поєднаних компонентів
-  version: 1.0.0
+  version: 1.1.0
 servers:
   - url: https://api.cimeika.com/v1
     description: Основний сервер
@@ -601,7 +601,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ConfigResponse"
+                type: object
+                properties:
+                  weatherEndpoint:
+                    type: string
+                    description: Шлях для отримання поточної погоди
+                    example: /weather/current
+                  astrologyEndpoint:
+                    type: string
+                    description: Шлях для отримання астрологічного прогнозу
+                    example: /astrology/forecast
   /data/weather:
     get:
       operationId: getWeatherData
@@ -686,14 +695,3 @@ components:
           type: string
           description: Значення атрибуту
           example: значення-1
-    ConfigResponse:
-      type: object
-      properties:
-        weatherEndpoint:
-          type: string
-          description: Шлях для отримання поточної погоди
-          example: /weather/current
-        astrologyEndpoint:
-          type: string
-          description: Шлях для отримання астрологічного прогнозу
-          example: /astrology/forecast

@@ -73,6 +73,7 @@ To set up the Cimeika project locally, follow these steps:
 - **API Integrations**: Connects with multiple APIs to gather and display real-time data.
 - **OpenAPI Documentation**: Available at `/openapi` and browsable through Swagger UI at `/docs`.
 - **Configuration Endpoint**: `GET /config` returns the relative paths for the weather and astrology services used by the frontend.
+- **API Version**: OpenAPI specification version is `1.1.0` (see `cimeika-api.yaml`).
 
 ## Dependencies
 
