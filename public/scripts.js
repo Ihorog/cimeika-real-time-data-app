@@ -74,7 +74,12 @@ async function loadPage(url) {
     }
 
     // Load AI models after page content is loaded
-    setTimeout(loadAIModels, 1000);
+    if (!modelsLoaded) {
+        setTimeout(() => {
+            loadAIModels();
+            modelsLoaded = true;
+        }, 1000);
+    }
 }
 
 // Navigation setup
