@@ -127,7 +127,7 @@ app.post('/ai/huggingface/completion', async (req, res) => {
       choices: [{ text: generated, index: 0, logprobs: null, finish_reason: 'length' }]
     });
   } catch (err) {
-    console.error('HF API error:', err.message);
+    console.error('HF API error:', err.message, err.response?.data || 'No additional response data');
     // More detailed error handling
     if (err.message.includes('Model') && err.message.includes('not found')) {
       res.status(404).json({ error: `Model '${model}' not found or not available` });
