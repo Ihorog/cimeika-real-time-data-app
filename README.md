@@ -47,11 +47,11 @@ To set up the Cimeika project locally, follow these steps:
    ```bash
    cp .env.example .env
    ```
-   Then edit `.env` to set `OPENWEATHER_KEY` and `ASTROLOGY_KEY`.
-   Optionally set `HUGGINGFACE_TOKEN` if you want the Hugging Face completion
-   endpoint to call the real API.
-   Adjust `PORT` if you need a different server port (default `3000`).
-   The `.env` file is ignored by git.
+Then edit `.env` to set `OPENWEATHER_KEY`, `ASTROLOGY_KEY`,
+`OPENAI_API_KEY` and `HF_WRITE_TOKEN`.
+Optionally set `HUGGINGFACE_TOKEN` if you want the Hugging Face completion
+endpoint to call the real API. Adjust `PORT` if you need a different server
+port (default `3000`). The `.env` file is ignored by git.
 
 5. **Start the Application**:
    You can run the application using:
@@ -108,7 +108,10 @@ cimeika/
 - `public/index.html`: The main HTML document that loads the application.
 - `public/styles.css`: Contains custom styles and animations to enhance the UI.
 - `public/scripts.js`: JavaScript file for handling dynamic content loading, API interactions, and user interactions.
-- `.env`: Stores your private API keys (`OPENWEATHER_KEY`, `ASTROLOGY_KEY`, `HUGGINGFACE_TOKEN`) and optional settings such as `PORT`. This file should not be committed to version control. A `.env.example` template is provided for reference.
+- `.env`: Stores your private API keys (`OPENWEATHER_KEY`, `ASTROLOGY_KEY`,
+  `OPENAI_API_KEY`, `HF_WRITE_TOKEN`, `HUGGINGFACE_TOKEN`) and optional
+  settings such as `PORT`. This file should not be committed to version
+  control. A `.env.example` template is provided for reference.
 
 ## Deployment
 
