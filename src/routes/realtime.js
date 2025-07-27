@@ -3,11 +3,11 @@ const axios = require('axios');
 const router = express.Router();
 
 router.get('/weather/current', async (req, res) => {
-  const key = process.env.OPENWEATHER_KEY;
+  const key = process.env.WEATHER_API_KEY;
   if (!key) {
     return res
       .status(503)
-      .json({ error: 'service unavailable: missing OPENWEATHER_KEY' });
+      .json({ error: 'service unavailable: missing WEATHER_API_KEY' });
   }
 
   try {
@@ -25,11 +25,11 @@ router.get('/weather/current', async (req, res) => {
 });
 
 router.get('/astrology/forecast', async (req, res) => {
-  const key = process.env.ASTROLOGY_KEY;
+  const key = process.env.ASTROLOGY_API_KEY;
   if (!key) {
     return res
       .status(503)
-      .json({ error: 'service unavailable: missing ASTROLOGY_KEY' });
+      .json({ error: 'service unavailable: missing ASTROLOGY_API_KEY' });
   }
 
   try {
