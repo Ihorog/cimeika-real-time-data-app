@@ -61,4 +61,20 @@ describe('Realtime API', () => {
     expect(res.status).toBe(500);
     expect(res.body.error).toBe('Astrological data unavailable');
   });
+
+  it('returns 503 when OPENWEATHER_KEY missing', async () => {
+    delete process.env.OPENWEATHER_KEY;
+    const res = await request(app).get('/weather/current?city=London');
+    expect(res.status).toBe(503);
+    expect(res.body.error).toBe('service unavailable: missing OPENWEATHER_KEY');
+    process.env.OPENWEATHER_KEY = 'test';
+  });
+
+  it('returns 503 when ASTROLOGY_KEY missing', async () => {
+    delete process.env.ASTROLOGY_KEY;
+    const res = await request(app).get('/astrology/forecast?sign=aries');
+    expect(res.status).toBe(503);
+    expect(res.body.error).toBe('service unavailable: missing ASTROLOGY_KEY');
+    process.env.ASTROLOGY_KEY = 'test';
+  });
 });

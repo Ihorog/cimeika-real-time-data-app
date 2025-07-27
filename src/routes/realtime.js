@@ -3,10 +3,15 @@ const axios = require('axios');
 const router = express.Router();
 
 router.get('/weather/current', async (req, res) => {
+  const key = process.env.OPENWEATHER_KEY;
+  if (!key) {
+    return res
+      .status(503)
+      .json({ error: 'service unavailable: missing OPENWEATHER_KEY' });
+  }
+
   try {
     const city = req.query.city || 'London';
-    const key = process.env.OPENWEATHER_KEY;
-    if (!key) throw new Error('OPENWEATHER_KEY not configured');
     const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${key}`;
     const response = await axios.get(url);
     const data = response.data;
@@ -20,10 +25,15 @@ router.get('/weather/current', async (req, res) => {
 });
 
 router.get('/astrology/forecast', async (req, res) => {
+  const key = process.env.ASTROLOGY_KEY;
+  if (!key) {
+    return res
+      .status(503)
+      .json({ error: 'service unavailable: missing ASTROLOGY_KEY' });
+  }
+
   try {
     const sign = req.query.sign || 'aries';
-    const key = process.env.ASTROLOGY_KEY;
-    if (!key) throw new Error('ASTROLOGY_KEY not configured');
     const url = `https://api.freeastrologyapi.com/forecast?sign=${sign}&apikey=${key}`;
     const response = await axios.get(url);
     res.json({ forecast: response.data.forecast });
