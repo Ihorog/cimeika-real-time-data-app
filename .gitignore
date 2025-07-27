@@ -1,3 +1,6 @@
 node_modules/
 api_keys.json
 .env
+
+# Ensure lockfile is tracked
+!package-lock.json
