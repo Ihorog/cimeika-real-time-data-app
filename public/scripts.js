@@ -75,10 +75,14 @@ async function loadPage(url) {
 
     // Load AI models after page content is loaded
     if (!modelsLoaded) {
-        setTimeout(() => {
-            loadAIModels();
-            modelsLoaded = true;
-        }, 1000);
+        const observer = new MutationObserver((mutations, obs) => {
+            if (document.querySelector('main').innerHTML.trim() !== '') {
+                loadAIModels();
+                modelsLoaded = true;
+                obs.disconnect(); // Stop observing once models are loaded
+            }
+        });
+        observer.observe(document.querySelector('main'), { childList: true, subtree: true });
     }
 }
 
