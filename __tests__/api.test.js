@@ -76,6 +76,22 @@ describe('Cimeika API', () => {
     expect(res.status).toBe(204);
   });
 
+  it('data collect without dataSource returns 400', async () => {
+    const res = await request(app)
+      .post('/data/collect')
+      .send({ data: { foo: 1 } });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBeDefined();
+  });
+
+  it('data log without dataId returns 400', async () => {
+    const res = await request(app)
+      .post('/data/log')
+      .send({ logDetails: {} });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBeDefined();
+  });
+
   it('data collect', async () => {
     const res = await request(app)
       .post('/data/collect')
