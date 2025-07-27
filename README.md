@@ -47,7 +47,7 @@ To set up the Cimeika project locally, follow these steps:
    ```bash
    cp .env.example .env
    ```
-Then edit `.env` to set `OPENWEATHER_KEY`, `ASTROLOGY_KEY`,
+Then edit `.env` to set `WEATHER_API_KEY`, `ASTROLOGY_API_KEY`,
 `OPENAI_API_KEY` and `HF_WRITE_TOKEN`.
 Optionally set `HUGGINGFACE_TOKEN` if you want the Hugging Face completion
 endpoint to call the real API. Adjust `PORT` if you need a different server
@@ -108,8 +108,8 @@ cimeika/
 - `public/index.html`: The main HTML document that loads the application.
 - `public/styles.css`: Contains custom styles and animations to enhance the UI.
 - `public/scripts.js`: JavaScript file for handling dynamic content loading, API interactions, and user interactions.
-- `.env`: Stores your private API keys (`OPENWEATHER_KEY`, `ASTROLOGY_KEY`,
-  `OPENAI_API_KEY`, `HF_WRITE_TOKEN`, `HUGGINGFACE_TOKEN`) and optional
+ - `.env`: Stores your private API keys (`WEATHER_API_KEY`, `ASTROLOGY_API_KEY`,
+   `OPENAI_API_KEY`, `HF_WRITE_TOKEN`, `HUGGINGFACE_TOKEN`) and optional
   settings such as `PORT`. This file should not be committed to version
   control. A `.env.example` template is provided for reference.
 
@@ -121,9 +121,9 @@ Run `deploy_cimeika_api.sh` from the repository root to publish the API to a [Hu
 export HF_WRITE_TOKEN=<your-hf-token>
 export OPENAI_API_KEY=<your-openai-key>
 # optional – for weather endpoints
-export OPENWEATHER_KEY=<your-openweather-key>
+export WEATHER_API_KEY=<your-openweather-key>
 # optional – for astrology endpoints
-export ASTROLOGY_KEY=<your-astrology-key>
+export ASTROLOGY_API_KEY=<your-astrology-key>
 # optional – for Hugging Face completions
 export HUGGINGFACE_TOKEN=<your-hf-api-token>
 ./deploy_cimeika_api.sh
