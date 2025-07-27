@@ -23,8 +23,8 @@ To set up the Cimeika project locally, follow these steps:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/cimeika.git
-   cd cimeika
+   git clone https://github.com/Ihorog/cimeika-real-time-data-app.git
+   cd cimeika-real-time-data-app
    ```
 
 2. **Set up Development Environment**:
