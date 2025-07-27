@@ -77,4 +77,28 @@ describe('Realtime API', () => {
     expect(res.body.error).toBe('service unavailable: missing ASTROLOGY_KEY');
     process.env.ASTROLOGY_KEY = 'test';
   });
+
+  it('returns stubbed weather data with city parameter', async () => {
+    const res = await request(app).get('/data/weather?city=Kyiv');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ city: 'Kyiv', weather: 'clear sky', temperature: 20.5 });
+  });
+
+  it('returns 400 if city missing', async () => {
+    const res = await request(app).get('/data/weather');
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('city required');
+  });
+
+  it('returns stubbed astrology data with sign parameter', async () => {
+    const res = await request(app).get('/data/astrology?sign=aries');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ sign: 'aries', forecast: 'Today is a good day for new beginnings.' });
+  });
+
+  it('returns 400 if sign missing', async () => {
+    const res = await request(app).get('/data/astrology');
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('sign required');
+  });
 });

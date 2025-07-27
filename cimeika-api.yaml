@@ -539,6 +539,10 @@ paths:
               schema:
                 type: object
                 properties:
+                  city:
+                    type: string
+                    description: Назва міста
+                    example: London
                   weather:
                     type: string
                     description: Опис погоди
@@ -570,6 +574,10 @@ paths:
               schema:
                 type: object
                 properties:
+                  sign:
+                    type: string
+                    description: Знак зодіаку
+                    example: aries
                   forecast:
                     type: string
                     description: Опис астрологічного прогнозу
@@ -631,6 +639,10 @@ paths:
               schema:
                 type: object
                 properties:
+                  city:
+                    type: string
+                    description: Назва міста
+                    example: London
                   weather:
                     type: string
                     description: Опис погоди
@@ -659,6 +671,10 @@ paths:
               schema:
                 type: object
                 properties:
+                  sign:
+                    type: string
+                    description: Знак зодіаку
+                    example: aries
                   forecast:
                     type: string
                     description: Опис астрологічного прогнозу

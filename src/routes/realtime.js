@@ -47,11 +47,15 @@ router.get('/time/current', (req, res) => {
 });
 
 router.get('/data/weather', (req, res) => {
-  res.json({ weather: 'clear sky', temperature: 20.5 });
+  const { city } = req.query;
+  if (!city) return res.status(400).json({ error: 'city required' });
+  res.json({ city, weather: 'clear sky', temperature: 20.5 });
 });
 
 router.get('/data/astrology', (req, res) => {
-  res.json({ forecast: 'Today is a good day for new beginnings.' });
+  const { sign } = req.query;
+  if (!sign) return res.status(400).json({ error: 'sign required' });
+  res.json({ sign, forecast: 'Today is a good day for new beginnings.' });
 });
 
 module.exports = router;
