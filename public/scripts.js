@@ -323,17 +323,7 @@ function clearChat() {
 }
 
 // Handle Enter key in chat input
-document.addEventListener('DOMContentLoaded', function() {
-    const chatInput = document.getElementById('chat-input');
-    if (chatInput) {
-        chatInput.addEventListener('keydown', function(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                sendChatMessage();
-            }
-        });
-    }
-});
+// Removed as part of consolidation into the first `DOMContentLoaded` listener.
 
 // Make functions globally available
 window.sendChatMessage = sendChatMessage;
