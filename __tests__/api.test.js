@@ -70,6 +70,45 @@ describe('Cimeika API', () => {
     expect(res.body.name).toBe('comp1-upd');
   });
 
+  it('link component', async () => {
+    const res = await request(app)
+      .post(`/components/${createdComponentId}/link`);
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('linked');
+  });
+
+  it('link non-existent component returns 404', async () => {
+    const res = await request(app)
+      .post('/components/bad-id/link');
+    expect(res.status).toBe(404);
+  });
+
+  it('unlink component', async () => {
+    const res = await request(app)
+      .post(`/components/${createdComponentId}/unlink`);
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('unlinked');
+  });
+
+  it('unlink non-existent component returns 404', async () => {
+    const res = await request(app)
+      .post('/components/bad-id/unlink');
+    expect(res.status).toBe(404);
+  });
+
+  it('get component attributes', async () => {
+    const res = await request(app)
+      .get(`/components/${createdComponentId}/attributes`);
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
+  it('attributes for non-existent component returns 404', async () => {
+    const res = await request(app)
+      .get('/components/bad-id/attributes');
+    expect(res.status).toBe(404);
+  });
+
   it('delete component', async () => {
     const res = await request(app)
       .delete(`/components/${createdComponentId}`);
