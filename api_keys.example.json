@@ -1,4 +1,4 @@
 {
-  "weatherApiKey": "",
-  "otherApiKey": ""
+  "openWeatherKey": "YOUR_KEY_HERE",
+  "otherApiKey": "YOUR_KEY_HERE"
 }

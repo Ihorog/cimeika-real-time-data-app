@@ -1,10 +1,12 @@
 # Ignore node modules
 node_modules/
 
-# Ignore environment and secret key files
+# Ignore environment files
 .env
 .env.*
 !/.env.example
+
+# Ignore API key files
 api_keys.json
 api_keys.*.json
 
