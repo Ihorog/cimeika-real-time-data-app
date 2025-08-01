@@ -121,4 +121,3 @@ else
 fi
 
 printf "\n🚀  Успіх! API працює: %s\n" "$SPACE_API_URL"
-
