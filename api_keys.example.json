@@ -1,4 +1,4 @@
 {
-  "openWeatherKey": "YOUR_OPENWEATHER_KEY",
-  "freeAstrologyKey": "YOUR_ASTROLOGY_KEY"
+  "weatherApiKey": "",
+  "otherApiKey": ""
 }

@@ -53,8 +53,9 @@ Optionally set `HUGGINGFACE_TOKEN` if you want the Hugging Face completion
 endpoint to call the real API. Adjust `PORT` if you need a different server
 port (default `3000`). The `.env` file is ignored by git.
 
-   A sample `api_keys.json` is also included with blank fields if you prefer
-   storing keys in JSON format. This file is likewise listed in `.gitignore`.
+   An `api_keys.example.json` template is provided. Copy it to `api_keys.json` and
+   fill in your keys if you prefer storing them in JSON format. The `.gitignore`
+   file prevents `api_keys.json` from being committed.
 
 5. **Start the Application**:
    You can run the application using:
