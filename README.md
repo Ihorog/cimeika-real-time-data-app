@@ -166,13 +166,13 @@ demo component and collects a small data payload.
 
 ## Testing
 
-To run the automated tests make sure all Node.js dependencies are installed:
+This project uses [Jest](https://jestjs.io/) for its test suite. Make sure all Node.js dependencies are installed:
 
 ```bash
 npm install
 ```
 
-Once dependencies are in place you can execute the test suite with:
+Run the Jest tests with:
 
 ```bash
 npm test
