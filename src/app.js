@@ -105,6 +105,8 @@ app.use('/components', componentsRouter);
 app.use('/data', dataRouter);
 app.use('/', realtimeRouter);
 
+app.use((req, res) => res.status(404).json({ error: 'not found' }));
+
 module.exports = app;
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
