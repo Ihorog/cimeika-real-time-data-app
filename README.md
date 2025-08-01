@@ -50,11 +50,10 @@ Ensure that you have **Node.js 16 or later** installed.
    cp .env.example .env
    ```
    Then edit `.env` to set `WEATHER_API_KEY`, `ASTROLOGY_API_KEY`,
-   `OPENAI_API_KEY`, `HF_WRITE_TOKEN` and `HUGGINGFACE_TOKEN`.
-   The `/ai/huggingface/completion` endpoint requires `HUGGINGFACE_TOKEN` and
-   will return `503` if it is not configured. Adjust `PORT` if you need a
-   different server port (default `3000`). The `.env` file is ignored by git.
 
+   Optionally set `HUGGINGFACE_TOKEN` if you want the Hugging Face completion
+    endpoint to call the real API. Adjust `PORT` if you need a different server
+    port (default `7860`). The `.env` file is ignored by gi
    If you prefer JSON-based configuration, copy `api_keys.example.json` to
    `api_keys.json` and replace the placeholder values (e.g.,
    `"openWeatherKey": "YOUR_KEY_HERE"`) with your real API keys:
@@ -71,7 +70,7 @@ Ensure that you have **Node.js 16 or later** installed.
 
 ## Usage
 
-1. **Access the Application**: Visit `http://localhost:3000` in your web browser.
+1. **Access the Application**: Visit `http://localhost:7860` in your web browser.
 2. **Interact with Real-Time Data**: The homepage will load with dynamic sections for Weather, Time, and Astrological Forecast featuring a loading animation until the data is fetched.
 3. **Navigate through the Application**: Use the dynamic header and footer for navigation to various sections (if implemented).
 
@@ -143,8 +142,8 @@ export HUGGINGFACE_TOKEN=<your-hf-api-token>
 The script builds the container using the included `Dockerfile`. To test the Docker image locally, run:
 
 ```bash
-docker build -t cimeika .
-docker run -p 3000:3000 cimeika
+  docker build -t cimeika .
+  docker run -p 7860:7860 cimeika
 ```
 
 ### What the script does
@@ -161,7 +160,7 @@ After completion the script prints the URL of your running Space so you can veri
 
 To see a quick example of calling the API with environment variables, run the
 `scripts/api_scenario.js` script. This assumes you have the server running
-locally (default `http://localhost:3000`). Optionally set `BASE_URL` in your
+locally (default `http://localhost:7860`). Optionally set `BASE_URL` in your
 `.env` file if the server is hosted elsewhere.
 
 ```bash
