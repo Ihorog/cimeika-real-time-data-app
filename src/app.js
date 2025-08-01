@@ -59,14 +59,11 @@ app.post('/ai/huggingface/completion', async (req, res) => {
 
   const token = process.env.HUGGINGFACE_TOKEN;
   if (!token) {
-    // Fallback mock response when no token is configured
-    return res.json({
-      id: 'hf1',
-      object: 'text_completion',
-      created: Date.now(),
-      model: 'mock-hf',
-      choices: [{ text: `HF Echo: ${prompt}`, index: 0, logprobs: null, finish_reason: 'length' }]
-    });
+    console.error(
+      'HUGGINGFACE_TOKEN is not set. Set it in your environment, e.g.,',
+      'export HUGGINGFACE_TOKEN="<your-hf-api-token>" or add it to your .env file.'
+    );
+    return res.status(503).json({ error: 'HUGGINGFACE_TOKEN not configured' });
   }
 
   try {

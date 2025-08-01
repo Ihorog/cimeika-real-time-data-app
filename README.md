@@ -50,11 +50,10 @@ Ensure that you have **Node.js 16 or later** installed.
    cp .env.example .env
    ```
    Then edit `.env` to set `WEATHER_API_KEY`, `ASTROLOGY_API_KEY`,
-   `OPENAI_API_KEY` and `HF_WRITE_TOKEN`.
+
    Optionally set `HUGGINGFACE_TOKEN` if you want the Hugging Face completion
     endpoint to call the real API. Adjust `PORT` if you need a different server
-    port (default `7860`). The `.env` file is ignored by git.
-
+    port (default `7860`). The `.env` file is ignored by gi
    If you prefer JSON-based configuration, copy `api_keys.example.json` to
    `api_keys.json` and replace the placeholder values (e.g.,
    `"openWeatherKey": "YOUR_KEY_HERE"`) with your real API keys:
@@ -120,8 +119,9 @@ cimeika/
 - `public/scripts.js`: JavaScript file for handling dynamic content loading, API interactions, and user interactions.
  - `.env`: Stores your private API keys (`WEATHER_API_KEY`, `ASTROLOGY_API_KEY`,
    `OPENAI_API_KEY`, `HF_WRITE_TOKEN`, `HUGGINGFACE_TOKEN`) and optional
-  settings such as `PORT`. This file should not be committed to version
-  control. A `.env.example` template is provided for reference.
+   settings such as `PORT`. `HUGGINGFACE_TOKEN` must be set for the
+   `/ai/huggingface/completion` route. This file should not be committed to
+   version control. A `.env.example` template is provided for reference.
 
 ## Deployment
 
@@ -134,7 +134,7 @@ export OPENAI_API_KEY=<your-openai-key>
 export WEATHER_API_KEY=<your-openweather-key>
 # optional – for astrology endpoints
 export ASTROLOGY_API_KEY=<your-astrology-key>
-# optional – for Hugging Face completions
+# required – for Hugging Face completions
 export HUGGINGFACE_TOKEN=<your-hf-api-token>
 ./deploy_cimeika_api.sh
 ```

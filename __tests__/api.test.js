@@ -29,6 +29,18 @@ describe('Cimeika API', () => {
     expect(res.body.error).toBeDefined();
   });
 
+  it('huggingface completion without token returns 503', async () => {
+    const original = process.env.HUGGINGFACE_TOKEN;
+    delete process.env.HUGGINGFACE_TOKEN;
+    const res = await request(app)
+      .post('/ai/huggingface/completion')
+      .send({ prompt: 'Hello' });
+    expect(res.status).toBe(503);
+    expect(res.body.error).toMatch(/HUGGINGFACE_TOKEN/);
+    if (original) process.env.HUGGINGFACE_TOKEN = original;
+    else delete process.env.HUGGINGFACE_TOKEN;
+  });
+
   it('create component', async () => {
     const res = await request(app)
       .post('/components')
