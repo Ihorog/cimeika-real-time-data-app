@@ -170,6 +170,30 @@ describe('Cimeika API', () => {
     expect(res.body.prediction).toBeDefined();
   });
 
+  it('weather endpoint returns city in message', async () => {
+    const res = await request(app).get('/weather/current?city=Kyiv');
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/Kyiv/);
+  });
+
+  it('astrology forecast returns sign in message', async () => {
+    const res = await request(app).get('/astrology/forecast?sign=aries');
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/aries/i);
+  });
+
+  it('data weather endpoint returns city in message', async () => {
+    const res = await request(app).get('/data/weather?city=Lviv');
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/Lviv/);
+  });
+
+  it('data astrology endpoint returns sign in message', async () => {
+    const res = await request(app).get('/data/astrology?sign=taurus');
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/taurus/i);
+  });
+
   it('serves openapi spec', async () => {
     const res = await request(app).get('/openapi');
     expect(res.status).toBe(200);
