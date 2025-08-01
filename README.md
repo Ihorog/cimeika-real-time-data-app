@@ -21,6 +21,8 @@ Cimeika provides users with a connected and intelligent experience by aggregatin
 
 To set up the Cimeika project locally, follow these steps:
 
+Ensure that you have **Node.js 16 or later** installed.
+
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/Ihorog/cimeika-real-time-data-app.git
