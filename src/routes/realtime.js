@@ -1,45 +1,20 @@
 const express = require('express');
-const axios = require('axios');
 const router = express.Router();
 
-router.get('/weather/current', async (req, res) => {
-  const key = process.env.WEATHER_API_KEY;
-  if (!key) {
-    return res
-      .status(503)
-      .json({ error: 'service unavailable: missing WEATHER_API_KEY' });
-  }
+// --- Weather and astrology mock endpoints ---------------------------------
 
-  try {
-    const city = req.query.city || 'London';
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${key}`;
-    const response = await axios.get(url);
-    const data = response.data;
-    res.json({
-      weather: data.weather[0].description,
-      temperature: Math.round(data.main.temp - 273.15)
-    });
-  } catch (err) {
-    res.status(500).json({ error: 'Weather data unavailable' });
-  }
+// Return a simple weather message for the requested city
+router.get('/weather/current', (req, res) => {
+  const { city } = req.query;
+  if (!city) return res.status(400).json({ error: 'city required' });
+  res.json({ message: `The current weather in ${city} is sunny with light winds.` });
 });
 
-router.get('/astrology/forecast', async (req, res) => {
-  const key = process.env.ASTROLOGY_API_KEY;
-  if (!key) {
-    return res
-      .status(503)
-      .json({ error: 'service unavailable: missing ASTROLOGY_API_KEY' });
-  }
-
-  try {
-    const sign = req.query.sign || 'aries';
-    const url = `https://api.freeastrologyapi.com/forecast?sign=${sign}&apikey=${key}`;
-    const response = await axios.get(url);
-    res.json({ forecast: response.data.forecast });
-  } catch (err) {
-    res.status(500).json({ error: 'Astrological data unavailable' });
-  }
+// Return a simple astrology forecast for the requested sign
+router.get('/astrology/forecast', (req, res) => {
+  const { sign } = req.query;
+  if (!sign) return res.status(400).json({ error: 'sign required' });
+  res.json({ message: `Your stars look bright today, ${sign}.` });
 });
 
 router.get('/time/current', (req, res) => {
@@ -49,13 +24,13 @@ router.get('/time/current', (req, res) => {
 router.get('/data/weather', (req, res) => {
   const { city } = req.query;
   if (!city) return res.status(400).json({ error: 'city required' });
-  res.json({ city, weather: 'clear sky', temperature: 20.5 });
+  res.json({ message: `Mock weather data for ${city}: clear sky and 20°C.` });
 });
 
 router.get('/data/astrology', (req, res) => {
   const { sign } = req.query;
   if (!sign) return res.status(400).json({ error: 'sign required' });
-  res.json({ sign, forecast: 'Today is a good day for new beginnings.' });
+  res.json({ message: `Mock astrology data for ${sign}: a great day for new beginnings.` });
 });
 
 module.exports = router;
