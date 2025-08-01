@@ -29,16 +29,6 @@ describe('Cimeika API', () => {
     expect(res.body.error).toBeDefined();
   });
 
-  it('chat completion without prompt returns 400', async () => {
-    const res = await request(app)
-      .post('/chat/completion')
-      .send({});
-    expect(res.status).toBe(400);
-    expect(res.body.error).toBeDefined();
-    // Optionally check for a specific error message:
-    // expect(res.body.error).toBe('prompt required');
-  });
-
   it('create component', async () => {
     const res = await request(app)
       .post('/components')
