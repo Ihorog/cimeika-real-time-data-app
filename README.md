@@ -47,15 +47,19 @@ To set up the Cimeika project locally, follow these steps:
    ```bash
    cp .env.example .env
    ```
-Then edit `.env` to set `WEATHER_API_KEY`, `ASTROLOGY_API_KEY`,
-`OPENAI_API_KEY` and `HF_WRITE_TOKEN`.
-Optionally set `HUGGINGFACE_TOKEN` if you want the Hugging Face completion
-endpoint to call the real API. Adjust `PORT` if you need a different server
-port (default `3000`). The `.env` file is ignored by git.
+   Then edit `.env` to set `WEATHER_API_KEY`, `ASTROLOGY_API_KEY`,
+   `OPENAI_API_KEY` and `HF_WRITE_TOKEN`.
+   Optionally set `HUGGINGFACE_TOKEN` if you want the Hugging Face completion
+   endpoint to call the real API. Adjust `PORT` if you need a different server
+   port (default `3000`). The `.env` file is ignored by git.
 
-   An `api_keys.example.json` template is provided. Copy it to `api_keys.json` and
-   fill in your keys if you prefer storing them in JSON format. The `.gitignore`
-   file prevents `api_keys.json` from being committed.
+   If you prefer JSON-based configuration, copy `api_keys.example.json` to
+   `api_keys.json` and replace the placeholder values (e.g.,
+   `"openWeatherKey": "YOUR_KEY_HERE"`) with your real API keys:
+   ```bash
+   cp api_keys.example.json api_keys.json
+   ```
+   The `.gitignore` file prevents `api_keys.json` from being committed.
 
 5. **Start the Application**:
    You can run the application using:
