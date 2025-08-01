@@ -1,4 +1,31 @@
-<section class="container mx-auto px-4 py-12">
-    <h1 class="text-3xl font-bold mb-4">Home</h1>
-    <p>Welcome to Cimeika. Explore real-time data on weather, time and astrology.</p>
+<!-- Hero Section -->
+<section class="hero relative h-[500px] flex items-center justify-center text-white">
+    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+    <div class="relative z-10 text-center px-4">
+        <h1 class="text-5xl font-bold mb-6">Welcome to Cimeika</h1>
+        <p class="text-xl mb-8">Your journey to a connected and intelligent life starts here.</p>
+        <button onclick="startJourney()" class="bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition duration-300">
+            Start Journey
+        </button>
+    </div>
 </section>
+
+<!-- Real-Time Data Section -->
+<section class="container mx-auto px-4 py-12">
+    <h2 class="text-3xl font-bold text-center mb-10">Real-Time Data</h2>
+    <div class="grid md:grid-cols-3 gap-8">
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-semibold mb-4">Weather</h3>
+            <p id="weather-data" class="text-gray-600">Loading...</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-semibold mb-4">Time</h3>
+            <p id="time-data" class="text-gray-600">Loading...</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-semibold mb-4">Astrological Forecast</h3>
+            <p id="astrology-data" class="text-gray-600">Loading...</p>
+        </div>
+    </div>
+</section>
+
