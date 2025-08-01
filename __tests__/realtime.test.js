@@ -32,6 +32,17 @@ describe('Realtime API', () => {
     expect(res.body).toEqual({ weather: 'clear sky', temperature: 20 });
   });
 
+  it('handles city names with spaces', async () => {
+    nock('https://api.openweathermap.org', { encodedQueryParams: true })
+      .get('/data/2.5/weather')
+      .query({ q: 'New%20York', appid: 'test' })
+      .reply(200, { weather: [{ description: 'clear sky' }], main: { temp: 293.15 } });
+
+    const res = await request(app).get('/weather/current?city=New York');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ weather: 'clear sky', temperature: 20 });
+  });
+
   it('handles weather service failure', async () => {
     nock('https://api.openweathermap.org')
       .get(/.*/)
@@ -48,6 +59,17 @@ describe('Realtime API', () => {
       .reply(200, { forecast: 'good day' });
 
     const res = await request(app).get('/astrology/forecast?sign=aries');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ forecast: 'good day' });
+  });
+
+  it('handles sign names with spaces', async () => {
+    nock('https://api.freeastrologyapi.com', { encodedQueryParams: true })
+      .get('/forecast')
+      .query({ sign: 'leo%20rising', apikey: 'test' })
+      .reply(200, { forecast: 'good day' });
+
+    const res = await request(app).get('/astrology/forecast?sign=leo rising');
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ forecast: 'good day' });
   });

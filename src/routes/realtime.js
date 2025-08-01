@@ -12,7 +12,7 @@ router.get('/weather/current', async (req, res) => {
 
   try {
     const city = req.query.city || 'London';
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${key}`;
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${key}`;
     const response = await axios.get(url);
     const data = response.data;
     res.json({
@@ -34,7 +34,7 @@ router.get('/astrology/forecast', async (req, res) => {
 
   try {
     const sign = req.query.sign || 'aries';
-    const url = `https://api.freeastrologyapi.com/forecast?sign=${sign}&apikey=${key}`;
+    const url = `https://api.freeastrologyapi.com/forecast?sign=${encodeURIComponent(sign)}&apikey=${key}`;
     const response = await axios.get(url);
     res.json({ forecast: response.data.forecast });
   } catch (err) {
