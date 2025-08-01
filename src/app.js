@@ -12,6 +12,7 @@ const realtimeRouter = require('./routes/realtime');
 
 const app = express();
 const swaggerDocument = YAML.load(path.join(__dirname, '..', 'cimeika-api.yaml'));
+// Parse JSON request bodies
 app.use(express.json());
 
 // Serve static files from the public directory
