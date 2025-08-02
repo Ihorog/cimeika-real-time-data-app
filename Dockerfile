@@ -1,7 +1,7 @@
 FROM node:20
 WORKDIR /app
 COPY package*.json ./
-RUN npm install --production
+RUN npm ci --omit=dev
 COPY . .
 
 # Allow setting the port at build time, defaulting to Hugging Face's 7860
