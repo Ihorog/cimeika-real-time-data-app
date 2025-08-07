@@ -81,44 +81,28 @@ app.post('/ai/huggingface/completion', async (req, res) => {
 
     let generated = '';
     
-    // Handle different model types
-    if (model.includes('gpt') || model.includes('DialoGPT') || model.includes('blenderbot')) {
-      // Text generation models
-      const response = await hf.textGeneration({
-        model: model,
-        inputs: prompt,
-        parameters: {
-          max_new_tokens: max_tokens,
-          temperature: temperature,
-          return_full_text: false
-        }
-      });
-      generated = response.generated_text || '';
-    } else if (model.includes('t5') || model.includes('pegasus') || model.includes('bart')) {
-      // Text-to-text generation models (summarization, translation, etc.)
-      const response = await hf.textGeneration({
-        model: model,
-        inputs: prompt,
-        parameters: {
-          max_new_tokens: max_tokens,
-          temperature: temperature
-        }
-      });
-      generated = response.generated_text || '';
-    } else {
-      // Default to text generation
-      const response = await hf.textGeneration({
-        model: model,
-        inputs: prompt,
-        parameters: {
-          max_new_tokens: max_tokens,
-          temperature: temperature,
-          return_full_text: false
-        }
-      });
-      generated = response.generated_text || '';
-    }
+    // Define a model registry to map models to their handling logic
+    const modelRegistry = {
+      textGeneration: ['gpt', 'DialoGPT', 'blenderbot'],
+      textToText: ['t5', 'pegasus', 'bart']
+    };
 
+    // Determine the handler based on the model
+    const handler = Object.keys(modelRegistry).find(key =>
+      modelRegistry[key].some(pattern => model.includes(pattern))
+    ) || 'textGeneration'; // Default to text generation
+
+    // Execute the appropriate handler
+    const response = await hf.textGeneration({
+      model: model,
+      inputs: prompt,
+      parameters: {
+        max_new_tokens: max_tokens,
+        temperature: temperature,
+        return_full_text: handler === 'textGeneration' ? false : undefined
+      }
+    });
+    generated = response.generated_text || '';
     res.json({
       id: `hf-${Date.now()}`,
       object: 'text_completion',
