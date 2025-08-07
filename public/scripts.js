@@ -327,7 +327,7 @@ function clearChat() {
 }
 
 // Handle Enter key in chat input
-// Removed as part of consolidation into the first `DOMContentLoaded` listener.
+// Added to the first `DOMContentLoaded` listener for consistency.
 
 // Make functions globally available
 window.sendChatMessage = sendChatMessage;
