@@ -50,6 +50,7 @@ Ensure that you have **Node.js 16 or later** installed.
    cp .env.example .env
    ```
    Then edit `.env` to set `WEATHER_API_KEY`, `ASTROLOGY_API_KEY`,
+   `DEFAULT_CITY` (e.g., `London`) and `DEFAULT_SIGN` (e.g., `aries`).
 
    Set `HUGGINGFACE_TOKEN` if you want the Hugging Face completion
    endpoint to call the real API; if it's absent, the `api_scenario.js` script
@@ -120,10 +121,10 @@ cimeika/
 - `public/scripts.js`: JavaScript file for handling dynamic content loading, API interactions, and user interactions.
  - `.env`: Stores your private API keys (`WEATHER_API_KEY`, `ASTROLOGY_API_KEY`,
    `OPENAI_API_KEY`, `HF_WRITE_TOKEN`, `HUGGINGFACE_TOKEN`) and optional
-   settings such as `PORT`. `HUGGINGFACE_TOKEN` must be set for the
-   `/ai/huggingface/completion` route; if it's missing, scripts like
-   `scripts/api_scenario.js` log a message and exit early. This file should not be
-   committed to version control. A `.env.example` template is provided for
+   settings such as `PORT`, `DEFAULT_CITY` and `DEFAULT_SIGN`. `HUGGINGFACE_TOKEN`
+   must be set for the `/ai/huggingface/completion` route; if it's missing, scripts
+   like `scripts/api_scenario.js` log a message and exit early. This file should
+   not be committed to version control. A `.env.example` template is provided for
    reference.
 
 ## Deployment
@@ -169,13 +170,14 @@ locally (default `http://localhost:7860`). Optionally set `BASE_URL` in your
 creating a component or collecting data.
 
 ```bash
-node scripts/api_scenario.js
+HUGGINGFACE_TOKEN=your_hf_token node scripts/api_scenario.js
 ```
 
-The script performs a mock login, requests a Hugging Face
-completion, creates a demo component and collects a small data payload.
-If `HUGGINGFACE_TOKEN` is absent, it logs the omission and exits before the
-component creation and data collection steps.
+The script performs a mock login, requests a Hugging Face completion,
+creates a demo component and collects a small data payload. When
+`HUGGINGFACE_TOKEN` is absent, the script prints a notice and stops before the
+component creation and data collection steps. You can override the server URL
+by setting `BASE_URL` in your environment or `.env` file.
 
 ## Testing
 
