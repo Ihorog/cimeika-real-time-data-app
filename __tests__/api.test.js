@@ -204,28 +204,58 @@ describe('Cimeika API', () => {
     expect(res.body.prediction).toBeDefined();
   });
 
-  it('weather endpoint returns city in message', async () => {
+  it('weather endpoint returns structured data', async () => {
     const res = await request(app).get('/weather/current?city=Kyiv');
     expect(res.status).toBe(200);
-    expect(res.body.message).toMatch(/Kyiv/);
+    expect(res.body.city).toBe('Kyiv');
+    expect(typeof res.body.weather).toBe('string');
+    expect(typeof res.body.temperature).toBe('number');
   });
 
-  it('astrology forecast returns sign in message', async () => {
-    const res = await request(app).get('/astrology/forecast?sign=aries');
+  it('weather endpoint uses default city when not provided', async () => {
+    const res = await request(app).get('/weather/current');
     expect(res.status).toBe(200);
-    expect(res.body.message).toMatch(/aries/i);
+    expect(res.body.city).toBe('London');
   });
 
-  it('data weather endpoint returns city in message', async () => {
+  it('astrology forecast returns structured data', async () => {
+    const res = await request(app).get('/astrology/forecast?sign=taurus');
+    expect(res.status).toBe(200);
+    expect(res.body.sign).toBe('taurus');
+    expect(typeof res.body.forecast).toBe('string');
+  });
+
+  it('astrology forecast uses default sign when not provided', async () => {
+    const res = await request(app).get('/astrology/forecast');
+    expect(res.status).toBe(200);
+    expect(res.body.sign).toBe('aries');
+  });
+
+  it('data weather endpoint returns structured data', async () => {
     const res = await request(app).get('/data/weather?city=Lviv');
     expect(res.status).toBe(200);
-    expect(res.body.message).toMatch(/Lviv/);
+    expect(res.body.city).toBe('Lviv');
+    expect(typeof res.body.weather).toBe('string');
+    expect(typeof res.body.temperature).toBe('number');
   });
 
-  it('data astrology endpoint returns sign in message', async () => {
+  it('data weather endpoint uses default city when not provided', async () => {
+    const res = await request(app).get('/data/weather');
+    expect(res.status).toBe(200);
+    expect(res.body.city).toBe('London');
+  });
+
+  it('data astrology endpoint returns structured data', async () => {
     const res = await request(app).get('/data/astrology?sign=taurus');
     expect(res.status).toBe(200);
-    expect(res.body.message).toMatch(/taurus/i);
+    expect(res.body.sign).toBe('taurus');
+    expect(typeof res.body.forecast).toBe('string');
+  });
+
+  it('data astrology endpoint uses default sign when not provided', async () => {
+    const res = await request(app).get('/data/astrology');
+    expect(res.status).toBe(200);
+    expect(res.body.sign).toBe('aries');
   });
 
   it('returns config with default endpoints', async () => {
