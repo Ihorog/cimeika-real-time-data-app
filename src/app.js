@@ -110,7 +110,3 @@ app.use('/', realtimeRouter);
 app.use((req, res) => res.status(404).json({ error: 'not found' }));
 
 module.exports = app;
-  if (require.main === module) {
-    const PORT = process.env.PORT || 7860;
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-  }
