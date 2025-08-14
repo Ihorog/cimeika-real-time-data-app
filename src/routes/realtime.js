@@ -9,6 +9,25 @@ axiosRetry(http, { retries: 3, retryDelay: axiosRetry.exponentialDelay });
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const weatherCache = new Map();
 const astrologyCache = new Map();
+const CACHE_SWEEP_INTERVAL_MS = 60 * 1000;
+
+function purgeExpiredEntries() {
+  const now = Date.now();
+  for (const [key, value] of weatherCache.entries()) {
+    if (value.expiry <= now) weatherCache.delete(key);
+  }
+  for (const [key, value] of astrologyCache.entries()) {
+    if (value.expiry <= now) astrologyCache.delete(key);
+  }
+}
+
+function clearCaches() {
+  weatherCache.clear();
+  astrologyCache.clear();
+}
+
+const purgeTimer = setInterval(purgeExpiredEntries, CACHE_SWEEP_INTERVAL_MS);
+if (purgeTimer.unref) purgeTimer.unref();
 
 const DEFAULT_CITY = process.env.DEFAULT_CITY || 'London';
 const DEFAULT_SIGN = process.env.DEFAULT_SIGN || 'aries';
@@ -112,3 +131,6 @@ router.get('/data/astrology', async (req, res) => {
 });
 
 module.exports = router;
+module.exports.clearCaches = clearCaches;
+module.exports._weatherCache = weatherCache;
+module.exports._astrologyCache = astrologyCache;
