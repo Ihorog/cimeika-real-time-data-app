@@ -51,9 +51,9 @@ Ensure that you have **Node.js 16 or later** installed.
    ```
    Then edit `.env` to set `WEATHER_API_KEY`, `ASTROLOGY_API_KEY`,
 
-   Optionally set `HUGGINGFACE_TOKEN` if you want the Hugging Face completion
-   endpoint to call the real API; otherwise the `api_scenario.js` script will
-   skip that step. Adjust `PORT` if you need a different server port (default
+   Set `HUGGINGFACE_TOKEN` if you want the Hugging Face completion
+   endpoint to call the real API; if it's absent, the `api_scenario.js` script
+   logs a notice and exits. Adjust `PORT` if you need a different server port (default
    `7860`). The `.env` file is ignored by git.
    If you prefer JSON-based configuration, copy `api_keys.example.json` to
    `api_keys.json` and replace the placeholder values (e.g.,
@@ -121,8 +121,8 @@ cimeika/
  - `.env`: Stores your private API keys (`WEATHER_API_KEY`, `ASTROLOGY_API_KEY`,
    `OPENAI_API_KEY`, `HF_WRITE_TOKEN`, `HUGGINGFACE_TOKEN`) and optional
    settings such as `PORT`. `HUGGINGFACE_TOKEN` must be set for the
-   `/ai/huggingface/completion` route; otherwise scripts like
-   `scripts/api_scenario.js` will skip that request. This file should not be
+   `/ai/huggingface/completion` route; if it's missing, scripts like
+   `scripts/api_scenario.js` log a message and exit early. This file should not be
    committed to version control. A `.env.example` template is provided for
    reference.
 
@@ -165,15 +165,17 @@ To see a quick example of calling the API with environment variables, run the
 `scripts/api_scenario.js` script. This assumes you have the server running
 locally (default `http://localhost:7860`). Optionally set `BASE_URL` in your
 `.env` file if the server is hosted elsewhere. The script also looks for
-`HUGGINGFACE_TOKEN` and skips the Hugging Face completion step if it's not
-available.
+`HUGGINGFACE_TOKEN`; if it's not available, it logs a message and exits before
+creating a component or collecting data.
 
 ```bash
 node scripts/api_scenario.js
 ```
 
-The script performs a mock login, optionally requests a Hugging Face
+The script performs a mock login, requests a Hugging Face
 completion, creates a demo component and collects a small data payload.
+If `HUGGINGFACE_TOKEN` is absent, it logs the omission and exits before the
+component creation and data collection steps.
 
 ## Testing
 
