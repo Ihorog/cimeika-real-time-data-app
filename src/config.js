@@ -1,7 +1,7 @@
 const Joi = require('joi');
 
 const schema = Joi.object({
-  HUGGINGFACE_TOKEN: Joi.string().required(),
+  HUGGINGFACE_TOKEN: Joi.string(),
   WEATHER_API_KEY: Joi.string().required(),
   ASTROLOGY_API_KEY: Joi.string().required(),
   DEFAULT_CITY: Joi.string().default('London'),

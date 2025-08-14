@@ -52,9 +52,9 @@ Ensure that you have **Node.js 16 or later** installed.
    Then edit `.env` to set `WEATHER_API_KEY`, `ASTROLOGY_API_KEY`,
    `DEFAULT_CITY` (e.g., `London`) and `DEFAULT_SIGN` (e.g., `aries`).
 
-   Set `HUGGINGFACE_TOKEN` if you want the Hugging Face completion
-   endpoint to call the real API; if it's absent, the `api_scenario.js` script
-   logs a notice and exits. Adjust `PORT` if you need a different server port (default
+   `HUGGINGFACE_TOKEN` is optional and only needed for the `/ai/huggingface/completion`
+   route. Without it, that endpoint returns a 503 and scripts like `api_scenario.js`
+   log a notice and exit. Adjust `PORT` if you need a different server port (default
    `7860`). The `.env` file is ignored by git.
    If you prefer JSON-based configuration, copy `api_keys.example.json` to
    `api_keys.json` and replace the placeholder values (e.g.,
@@ -126,9 +126,9 @@ cimeika/
  - `.env`: Stores your private API keys (`WEATHER_API_KEY`, `ASTROLOGY_API_KEY`,
    `OPENAI_API_KEY`, `HF_WRITE_TOKEN`, `HUGGINGFACE_TOKEN`) and optional
    settings such as `PORT`, `DEFAULT_CITY` and `DEFAULT_SIGN`. `HUGGINGFACE_TOKEN`
-   must be set for the `/ai/huggingface/completion` route; if it's missing, scripts
-   like `scripts/api_scenario.js` log a message and exit early. This file should
-   not be committed to version control. A `.env.example` template is provided for
+   is only required for the `/ai/huggingface/completion` route; without it, that
+   route returns a 503 and scripts like `scripts/api_scenario.js` log a warning
+   and exit early. This file should not be committed to version control. A `.env.example` template is provided for
    reference.
 
 ## Deployment
@@ -142,7 +142,7 @@ export OPENAI_API_KEY=<your-openai-key>
 export WEATHER_API_KEY=<your-openweather-key>
 # optional – for astrology endpoints
 export ASTROLOGY_API_KEY=<your-astrology-key>
-# required – for Hugging Face completions (the API scenario script skips this if unset)
+# optional – needed only for Hugging Face completions (the API scenario script skips this if unset)
 export HUGGINGFACE_TOKEN=<your-hf-api-token>
 ./deploy_cimeika_api.sh
 ```

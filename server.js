@@ -8,6 +8,10 @@ if (config.error) {
   process.exit(1);
 }
 
+if (!config.hfToken) {
+  console.warn('HUGGINGFACE_TOKEN not set; Hugging Face route will be unavailable.');
+}
+
 const app = require('./src/app');
 
 const PORT = process.env.PORT || 7860;
