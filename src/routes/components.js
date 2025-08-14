@@ -4,18 +4,22 @@ const router = express.Router();
 const components = new Map();
 let componentCounter = 1;
 
+function validNameType(name, type) {
+  return (
+    typeof name === 'string' &&
+    name.trim() !== '' &&
+    typeof type === 'string' &&
+    type.trim() !== ''
+  );
+}
+
 router.get('/', (req, res) => {
   res.json(Array.from(components.values()));
 });
 
 router.post('/', (req, res) => {
   const { name, type } = req.body;
-  if (
-    typeof name !== 'string' ||
-    name.trim() === '' ||
-    typeof type !== 'string' ||
-    type.trim() === ''
-  ) {
+  if (!validNameType(name, type)) {
     return res.status(400).json({ error: 'name and type are required' });
   }
   const id = 'component-' + componentCounter++;
@@ -38,12 +42,7 @@ router.get('/:id', (req, res) => {
 router.put('/:id', (req, res) => {
   if (!components.has(req.params.id)) return res.status(404).json({ error: 'not found' });
   const { name, type } = req.body;
-  if (
-    typeof name !== 'string' ||
-    name.trim() === '' ||
-    typeof type !== 'string' ||
-    type.trim() === ''
-  ) {
+  if (!validNameType(name, type)) {
     return res.status(400).json({ error: 'name and type are required' });
   }
   const component = {

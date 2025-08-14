@@ -265,6 +265,13 @@ describe('Cimeika API', () => {
     expect(res.body.astrologyEndpoint).toBe('/astrology/forecast');
   });
 
+  it('config exposes weather and astrology endpoints', async () => {
+    const res = await request(app).get('/config');
+    expect(res.status).toBe(200);
+    expect(typeof res.body.weatherEndpoint).toBe('string');
+    expect(typeof res.body.astrologyEndpoint).toBe('string');
+  });
+
   it('serves openapi spec', async () => {
     const res = await request(app).get('/openapi');
     expect(res.status).toBe(200);
