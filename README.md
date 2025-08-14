@@ -69,6 +69,10 @@ Ensure that you have **Node.js 16 or later** installed.
    ```bash
    npm start
    ```
+   or directly with:
+   ```bash
+   node server.js
+   ```
 
 ## Usage
 
