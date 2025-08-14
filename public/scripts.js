@@ -1,6 +1,5 @@
 let config = {};
-const DEFAULT_CITY = 'London';
-const DEFAULT_SIGN = 'aries';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 document.addEventListener('DOMContentLoaded', async function() {
     // Load components first
@@ -31,6 +30,28 @@ async function fetchConfig() {
     const res = await fetch('/config');
     if (!res.ok) throw new Error('Failed to load config');
     return res.json();
+}
+
+function getCache(key) {
+    try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (Date.now() - parsed.timestamp < CACHE_DURATION) {
+            return parsed.data;
+        }
+    } catch (e) {
+        console.error('Cache parse error', e);
+    }
+    return null;
+}
+
+function setCache(key, data) {
+    try {
+        localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
+    } catch (e) {
+        console.error('Cache store error', e);
+    }
 }
 
 // Component loader
@@ -126,9 +147,16 @@ function updateTime() {
 }
 
 // Generic fetch/render helper
-async function fetchAndRender(endpoint, params, elementId, formatter) {
+async function fetchAndRender(endpoint, params, elementId, formatter, cacheKey) {
     const element = document.getElementById(elementId);
     if (!element) return;
+
+    const cached = cacheKey ? getCache(cacheKey) : null;
+    if (cached) {
+        element.textContent = formatter(cached);
+        element.classList.remove('loading', 'error-message');
+        return;
+    }
 
     try {
         const url = new URL(endpoint, window.location.origin);
@@ -142,8 +170,14 @@ async function fetchAndRender(endpoint, params, elementId, formatter) {
         const data = await response.json();
         element.textContent = formatter(data);
         element.classList.remove('loading', 'error-message');
+        if (cacheKey) setCache(cacheKey, data);
     } catch (error) {
         console.error(`${elementId} error:`, error);
+        if (cached) {
+            element.textContent = formatter(cached);
+            element.classList.remove('loading', 'error-message');
+            return;
+        }
         const suffix = Object.values(params || {}).join(', ');
         element.textContent = `Data temporarily unavailable${suffix ? ` for ${suffix}` : ''}`;
         element.classList.add('error-message');
@@ -153,9 +187,10 @@ async function fetchAndRender(endpoint, params, elementId, formatter) {
 // Weather update function
 function updateWeather() {
     const base = config.weatherEndpoint || '/weather/current';
+    const city = config.defaultCity || 'London';
     fetchAndRender(
         base,
-        { city: DEFAULT_CITY },
+        { city },
         'weather-data',
         data => {
             const { city, weather, temperature } = data;
@@ -167,16 +202,18 @@ function updateWeather() {
                 throw new Error('Invalid weather payload');
             }
             return `${city}: ${weather}, ${temperature}°C`;
-        }
+        },
+        `weather_${city}`
     );
 }
 
 // Astrology update function
 function updateAstrology() {
     const base = config.astrologyEndpoint || '/astrology/forecast';
+    const sign = config.defaultSign || 'aries';
     fetchAndRender(
         base,
-        { sign: DEFAULT_SIGN },
+        { sign },
         'astrology-data',
         data => {
             const { sign, forecast } = data;
@@ -184,6 +221,7 @@ function updateAstrology() {
                 throw new Error('Invalid astrology payload');
             }
             return `${sign}: ${forecast}`;
-        }
+        },
+        `astrology_${sign}`
     );
 }

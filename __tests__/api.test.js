@@ -1,9 +1,27 @@
 const request = require('supertest');
 const app = require('../src/app');
+const nock = require('nock');
+const defaultCity = process.env.DEFAULT_CITY || 'London';
+const defaultSign = process.env.DEFAULT_SIGN || 'aries';
 
 describe('Cimeika API', () => {
   let createdComponentId;
   let dataId;
+
+  beforeAll(() => {
+    nock('https://goweather.herokuapp.com')
+      .persist()
+      .get(/\/weather\/.*$/)
+      .reply(200, { temperature: '+20 °C', description: 'Clear' });
+    nock('https://aztro.sameerkumar.website')
+      .persist()
+      .post(/.*/)
+      .reply(200, { description: 'Great day ahead' });
+  });
+
+  afterAll(() => {
+    nock.cleanAll();
+  });
 
   it('auth login', async () => {
     const res = await request(app)
@@ -71,6 +89,30 @@ describe('Cimeika API', () => {
       .send({ name: 'comp', type: 123 });
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/type/);
+  });
+
+  it('create component with non-object attribute returns 400', async () => {
+    const res = await request(app)
+      .post('/components')
+      .send({ name: 'comp', type: 'basic', attributes: ['oops'] });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/attributes/);
+  });
+
+  it('create component with attribute missing key returns 400', async () => {
+    const res = await request(app)
+      .post('/components')
+      .send({ name: 'comp', type: 'basic', attributes: [{ value: 'v' }] });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/key/);
+  });
+
+  it('create component with attribute invalid value returns 400', async () => {
+    const res = await request(app)
+      .post('/components')
+      .send({ name: 'comp', type: 'basic', attributes: [{ key: 'k', value: { nope: true } }] });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/value/);
   });
 
   it('create component', async () => {
@@ -247,7 +289,7 @@ describe('Cimeika API', () => {
   it('weather endpoint uses default city when not provided', async () => {
     const res = await request(app).get('/weather/current');
     expect(res.status).toBe(200);
-    expect(res.body.city).toBe('London');
+    expect(res.body.city).toBe(defaultCity);
   });
 
   it('astrology forecast returns structured data', async () => {
@@ -260,7 +302,7 @@ describe('Cimeika API', () => {
   it('astrology forecast uses default sign when not provided', async () => {
     const res = await request(app).get('/astrology/forecast');
     expect(res.status).toBe(200);
-    expect(res.body.sign).toBe('aries');
+    expect(res.body.sign).toBe(defaultSign);
   });
 
   it('data weather endpoint returns structured data', async () => {
@@ -274,7 +316,7 @@ describe('Cimeika API', () => {
   it('data weather endpoint uses default city when not provided', async () => {
     const res = await request(app).get('/data/weather');
     expect(res.status).toBe(200);
-    expect(res.body.city).toBe('London');
+    expect(res.body.city).toBe(defaultCity);
   });
 
   it('data astrology endpoint returns structured data', async () => {
@@ -287,7 +329,7 @@ describe('Cimeika API', () => {
   it('data astrology endpoint uses default sign when not provided', async () => {
     const res = await request(app).get('/data/astrology');
     expect(res.status).toBe(200);
-    expect(res.body.sign).toBe('aries');
+    expect(res.body.sign).toBe(defaultSign);
   });
 
   it('returns config with default endpoints', async () => {
@@ -295,6 +337,8 @@ describe('Cimeika API', () => {
     expect(res.status).toBe(200);
     expect(res.body.weatherEndpoint).toBe('/weather/current');
     expect(res.body.astrologyEndpoint).toBe('/astrology/forecast');
+    expect(res.body.defaultCity).toBe(defaultCity);
+    expect(res.body.defaultSign).toBe(defaultSign);
   });
 
   it('config exposes weather and astrology endpoints', async () => {

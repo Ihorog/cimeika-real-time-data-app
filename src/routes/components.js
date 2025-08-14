@@ -6,10 +6,15 @@ const router = express.Router();
 const components = new Map();
 let componentCounter = 1;
 
+const attributeSchema = Joi.object({
+  key: Joi.string().required(),
+  value: Joi.alternatives().try(Joi.string(), Joi.number(), Joi.boolean()).required(),
+}).unknown(false);
+
 const componentSchema = Joi.object({
   name: Joi.string().trim().required(),
   type: Joi.string().trim().required(),
-  attributes: Joi.array().optional(),
+  attributes: Joi.array().items(attributeSchema).optional(),
 }).unknown(false);
 
 router.get('/', (req, res) => {

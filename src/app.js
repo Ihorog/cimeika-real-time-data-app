@@ -10,6 +10,9 @@ const componentsRouter = require('./routes/components');
 const dataRouter = require('./routes/data');
 const realtimeRouter = require('./routes/realtime');
 
+const DEFAULT_CITY = process.env.DEFAULT_CITY || 'London';
+const DEFAULT_SIGN = process.env.DEFAULT_SIGN || 'aries';
+
 const app = express();
 const swaggerDocument = YAML.load(path.join(__dirname, '..', 'cimeika-api.yaml'));
 // Parse JSON request bodies
@@ -27,7 +30,9 @@ app.get('/', (req, res) => {
 app.get('/config', (req, res) => {
   res.json({
     weatherEndpoint: '/weather/current',
-    astrologyEndpoint: '/astrology/forecast'
+    astrologyEndpoint: '/astrology/forecast',
+    defaultCity: DEFAULT_CITY,
+    defaultSign: DEFAULT_SIGN
   });
 });
 
