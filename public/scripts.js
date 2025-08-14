@@ -129,16 +129,16 @@ async function updateWeather() {
     if (!weatherElement) return;
 
     try {
-        const endpoint = config.weatherEndpoint || '/weather/current';
-        const response = await fetch(endpoint);
+        const base = config.weatherEndpoint || '/weather/current';
+        const response = await fetch(`${base}?city=London`);
         if (!response.ok) throw new Error('Weather data unavailable');
 
-        const data = await response.json();
-        weatherElement.textContent = `${data.weather}, ${data.temperature}°C`;
+        const { city, weather, temperature } = await response.json();
+        weatherElement.textContent = `${city}: ${weather}, ${temperature}°C`;
         weatherElement.classList.remove('loading');
     } catch (error) {
         console.error('Weather error:', error);
-        weatherElement.textContent = 'Weather data temporarily unavailable';
+        weatherElement.textContent = 'Weather data temporarily unavailable for London';
         weatherElement.classList.add('error-message');
     }
 }
@@ -149,16 +149,16 @@ async function updateAstrology() {
     if (!astrologyElement) return;
 
     try {
-        const endpoint = config.astrologyEndpoint || '/astrology/forecast';
-        const response = await fetch(endpoint);
+        const base = config.astrologyEndpoint || '/astrology/forecast';
+        const response = await fetch(`${base}?sign=aries`);
         if (!response.ok) throw new Error('Astrological data unavailable');
 
-        const data = await response.json();
-        astrologyElement.textContent = data.forecast;
+        const { sign, forecast } = await response.json();
+        astrologyElement.textContent = `${sign}: ${forecast}`;
         astrologyElement.classList.remove('loading');
     } catch (error) {
         console.error('Astrology error:', error);
-        astrologyElement.textContent = 'Astrological forecast temporarily unavailable';
+        astrologyElement.textContent = 'Astrological forecast temporarily unavailable for aries';
         astrologyElement.classList.add('error-message');
     }
 }
