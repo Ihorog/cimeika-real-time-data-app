@@ -1,6 +1,4 @@
 process.env.HUGGINGFACE_TOKEN = process.env.HUGGINGFACE_TOKEN || 'test-token';
-process.env.WEATHER_API_KEY = process.env.WEATHER_API_KEY || 'weather-test';
-process.env.ASTROLOGY_API_KEY = process.env.ASTROLOGY_API_KEY || 'astro-test';
 
 const request = require('supertest');
 jest.mock('../src/routes/huggingface');
