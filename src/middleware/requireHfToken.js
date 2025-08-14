@@ -1,5 +1,7 @@
+const config = require('../config');
+
 function requireHfToken(req, res, next) {
-  const token = process.env.HUGGINGFACE_TOKEN;
+  const token = config.hfToken;
   if (!token) {
     console.error(
       'HUGGINGFACE_TOKEN is not set. Set it in your environment, e.g.,',

@@ -1,6 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const axiosRetry = require('axios-retry');
+const config = require('../config');
 const router = express.Router();
 
 const http = axios.create({ timeout: 5000, proxy: false });
@@ -29,8 +30,8 @@ function clearCaches() {
 const purgeTimer = setInterval(purgeExpiredEntries, CACHE_SWEEP_INTERVAL_MS);
 if (purgeTimer.unref) purgeTimer.unref();
 
-const DEFAULT_CITY = process.env.DEFAULT_CITY || 'London';
-const DEFAULT_SIGN = process.env.DEFAULT_SIGN || 'aries';
+const DEFAULT_CITY = config.defaultCity;
+const DEFAULT_SIGN = config.defaultSign;
 
 // Helper to trim query params and apply defaults
 function normalizeQueryParam(req, key, defaultValue) {
