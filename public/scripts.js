@@ -125,54 +125,65 @@ function updateTime() {
     }
 }
 
-// Weather update function
-async function updateWeather() {
-    const weatherElement = document.getElementById('weather-data');
-    if (!weatherElement) return;
+// Generic fetch/render helper
+async function fetchAndRender(endpoint, params, elementId, formatter) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
 
     try {
-        const base = config.weatherEndpoint || '/weather/current';
-        const response = await fetch(`${base}?city=${DEFAULT_CITY}`);
-        if (!response.ok) throw new Error('Weather data unavailable');
+        const url = new URL(endpoint, window.location.origin);
+        Object.entries(params || {}).forEach(([key, value]) =>
+            url.searchParams.append(key, value)
+        );
+
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Request failed');
 
         const data = await response.json();
-        const { city, weather, temperature } = data;
-        if (
-            typeof weather !== 'string' ||
-            typeof temperature !== 'number' ||
-            typeof city !== 'string'
-        ) {
-            throw new Error('Invalid weather payload');
-        }
-        weatherElement.textContent = `${city}: ${weather}, ${temperature}°C`;
-        weatherElement.classList.remove('loading');
+        element.textContent = formatter(data);
+        element.classList.remove('loading', 'error-message');
     } catch (error) {
-        console.error('Weather error:', error);
-        weatherElement.textContent = `Weather data temporarily unavailable for ${DEFAULT_CITY}`;
-        weatherElement.classList.add('error-message');
+        console.error(`${elementId} error:`, error);
+        const suffix = Object.values(params || {}).join(', ');
+        element.textContent = `Data temporarily unavailable${suffix ? ` for ${suffix}` : ''}`;
+        element.classList.add('error-message');
     }
 }
 
-// Astrology update function
-async function updateAstrology() {
-    const astrologyElement = document.getElementById('astrology-data');
-    if (!astrologyElement) return;
-
-    try {
-        const base = config.astrologyEndpoint || '/astrology/forecast';
-        const response = await fetch(`${base}?sign=${DEFAULT_SIGN}`);
-        if (!response.ok) throw new Error('Astrological data unavailable');
-
-        const data = await response.json();
-        const { sign, forecast } = data;
-        if (typeof forecast !== 'string' || typeof sign !== 'string') {
-            throw new Error('Invalid astrology payload');
+// Weather update function
+function updateWeather() {
+    const base = config.weatherEndpoint || '/weather/current';
+    fetchAndRender(
+        base,
+        { city: DEFAULT_CITY },
+        'weather-data',
+        data => {
+            const { city, weather, temperature } = data;
+            if (
+                typeof weather !== 'string' ||
+                typeof temperature !== 'number' ||
+                typeof city !== 'string'
+            ) {
+                throw new Error('Invalid weather payload');
+            }
+            return `${city}: ${weather}, ${temperature}°C`;
         }
-        astrologyElement.textContent = `${sign}: ${forecast}`;
-        astrologyElement.classList.remove('loading');
-    } catch (error) {
-        console.error('Astrology error:', error);
-        astrologyElement.textContent = `Astrological forecast temporarily unavailable for ${DEFAULT_SIGN}`;
-        astrologyElement.classList.add('error-message');
-    }
+    );
+}
+
+// Astrology update function
+function updateAstrology() {
+    const base = config.astrologyEndpoint || '/astrology/forecast';
+    fetchAndRender(
+        base,
+        { sign: DEFAULT_SIGN },
+        'astrology-data',
+        data => {
+            const { sign, forecast } = data;
+            if (typeof forecast !== 'string' || typeof sign !== 'string') {
+                throw new Error('Invalid astrology payload');
+            }
+            return `${sign}: ${forecast}`;
+        }
+    );
 }
