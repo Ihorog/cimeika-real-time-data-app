@@ -193,6 +193,20 @@ Run the Jest tests with:
 npm test
 ```
 
+### HUGGINGFACE_TOKEN for tests
+
+The `/ai/huggingface/completion` endpoint expects a `HUGGINGFACE_TOKEN`. The test
+suite mocks this route so no token is needed and no log messages are produced.
+If you want to exercise the real endpoint during tests, provide the token:
+
+```bash
+HUGGINGFACE_TOKEN=your_hf_api_token npm test
+```
+
+The mock lives in `src/routes/__mocks__/huggingface.js`. Remove the
+`jest.mock('../src/routes/huggingface')` line in `__tests__/api.test.js` if you
+wish to call the real API.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
