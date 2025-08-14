@@ -1,4 +1,6 @@
 let config = {};
+const DEFAULT_CITY = 'London';
+const DEFAULT_SIGN = 'aries';
 
 document.addEventListener('DOMContentLoaded', async function() {
     // Load components first
@@ -130,15 +132,23 @@ async function updateWeather() {
 
     try {
         const base = config.weatherEndpoint || '/weather/current';
-        const response = await fetch(`${base}?city=London`);
+        const response = await fetch(`${base}?city=${DEFAULT_CITY}`);
         if (!response.ok) throw new Error('Weather data unavailable');
 
-        const { city, weather, temperature } = await response.json();
+        const data = await response.json();
+        const { city, weather, temperature } = data;
+        if (
+            typeof weather !== 'string' ||
+            typeof temperature !== 'number' ||
+            typeof city !== 'string'
+        ) {
+            throw new Error('Invalid weather payload');
+        }
         weatherElement.textContent = `${city}: ${weather}, ${temperature}°C`;
         weatherElement.classList.remove('loading');
     } catch (error) {
         console.error('Weather error:', error);
-        weatherElement.textContent = 'Weather data temporarily unavailable for London';
+        weatherElement.textContent = `Weather data temporarily unavailable for ${DEFAULT_CITY}`;
         weatherElement.classList.add('error-message');
     }
 }
@@ -150,15 +160,19 @@ async function updateAstrology() {
 
     try {
         const base = config.astrologyEndpoint || '/astrology/forecast';
-        const response = await fetch(`${base}?sign=aries`);
+        const response = await fetch(`${base}?sign=${DEFAULT_SIGN}`);
         if (!response.ok) throw new Error('Astrological data unavailable');
 
-        const { sign, forecast } = await response.json();
+        const data = await response.json();
+        const { sign, forecast } = data;
+        if (typeof forecast !== 'string' || typeof sign !== 'string') {
+            throw new Error('Invalid astrology payload');
+        }
         astrologyElement.textContent = `${sign}: ${forecast}`;
         astrologyElement.classList.remove('loading');
     } catch (error) {
         console.error('Astrology error:', error);
-        astrologyElement.textContent = 'Astrological forecast temporarily unavailable for aries';
+        astrologyElement.textContent = `Astrological forecast temporarily unavailable for ${DEFAULT_SIGN}`;
         astrologyElement.classList.add('error-message');
     }
 }

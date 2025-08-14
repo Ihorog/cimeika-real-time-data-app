@@ -5,13 +5,19 @@ const router = express.Router();
 
 // Return current weather data for the requested city (default London)
 router.get('/weather/current', (req, res) => {
-  const city = req.query.city || 'London';
+  const city =
+    typeof req.query.city === 'string' && req.query.city.trim()
+      ? req.query.city.trim()
+      : 'London';
   res.json({ city, weather: 'sunny with light winds', temperature: 20 });
 });
 
 // Return an astrology forecast for the requested sign (default aries)
 router.get('/astrology/forecast', (req, res) => {
-  const sign = req.query.sign || 'aries';
+  const sign =
+    typeof req.query.sign === 'string' && req.query.sign.trim()
+      ? req.query.sign.trim()
+      : 'aries';
   res.json({ sign, forecast: 'Your stars look bright today.' });
 });
 
@@ -20,12 +26,18 @@ router.get('/time/current', (req, res) => {
 });
 
 router.get('/data/weather', (req, res) => {
-  const city = req.query.city || 'London';
+  const city =
+    typeof req.query.city === 'string' && req.query.city.trim()
+      ? req.query.city.trim()
+      : 'London';
   res.json({ city, weather: 'clear sky', temperature: 20 });
 });
 
 router.get('/data/astrology', (req, res) => {
-  const sign = req.query.sign || 'aries';
+  const sign =
+    typeof req.query.sign === 'string' && req.query.sign.trim()
+      ? req.query.sign.trim()
+      : 'aries';
   res.json({ sign, forecast: 'A great day for new beginnings.' });
 });
 

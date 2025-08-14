@@ -528,12 +528,13 @@ paths:
           in: query
           required: false
           description: >-
-            Назва міста. Якщо параметр не вказано, сервер за замовчуванням
-            використовує London.
+            Назва міста. Якщо параметр не вказано або порожній, сервер за
+            замовчуванням використовує London.
           schema:
             type: string
             example: London
             default: London
+            minLength: 1
       responses:
         "200":
           description: Поточні погодні дані успішно отримані
@@ -563,12 +564,13 @@ paths:
           in: query
           required: false
           description: >-
-            Знак зодіаку. Якщо параметр не вказано, сервер за замовчуванням
-            використовує aries.
+            Знак зодіаку. Якщо параметр не вказано або порожній, сервер за
+            замовчуванням використовує aries.
           schema:
             type: string
             example: aries
             default: aries
+            minLength: 1
       responses:
         "200":
           description: Астрологічний прогноз успішно отриманий
@@ -631,12 +633,13 @@ paths:
           in: query
           required: false
           description: >-
-            Назва міста. Якщо параметр не вказано, сервер за замовчуванням
-            використовує London.
+            Назва міста. Якщо параметр не вказано або порожній, сервер за
+            замовчуванням використовує London.
           schema:
             type: string
             example: London
             default: London
+            minLength: 1
       responses:
         "200":
           description: Погодні дані успішно отримані
@@ -666,12 +669,13 @@ paths:
           in: query
           required: false
           description: >-
-            Знак зодіаку. Якщо параметр не вказано, сервер за замовчуванням
-            використовує aries.
+            Знак зодіаку. Якщо параметр не вказано або порожній, сервер за
+            замовчуванням використовує aries.
           schema:
             type: string
             example: aries
             default: aries
+            minLength: 1
       responses:
         "200":
           description: Астрологічні дані успішно отримані

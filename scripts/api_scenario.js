@@ -10,10 +10,14 @@ async function main() {
     console.log('Login token:', loginRes.data.token);
 
     // Request a completion from Hugging Face endpoint (requires HUGGINGFACE_TOKEN)
-    if (!process.env.HUGGINGFACE_TOKEN) {
+    const hfToken = process.env.HUGGINGFACE_TOKEN;
+    if (!hfToken) {
       console.log('HUGGINGFACE_TOKEN not set; skipping Hugging Face completion request.');
     } else {
-      const hfRes = await axios.post(`${BASE_URL}/ai/huggingface/completion`, { prompt: 'Hello from API scenario' });
+      const hfRes = await axios.post(
+        `${BASE_URL}/ai/huggingface/completion`,
+        { prompt: 'Hello from API scenario' }
+      );
       console.log('HF completion:', hfRes.data.choices[0].text);
     }
 
