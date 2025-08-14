@@ -228,6 +228,13 @@ describe('Cimeika API', () => {
     expect(res.body.message).toMatch(/taurus/i);
   });
 
+  it('returns config with default endpoints', async () => {
+    const res = await request(app).get('/config');
+    expect(res.status).toBe(200);
+    expect(res.body.weatherEndpoint).toBe('/weather/current');
+    expect(res.body.astrologyEndpoint).toBe('/astrology/forecast');
+  });
+
   it('serves openapi spec', async () => {
     const res = await request(app).get('/openapi');
     expect(res.status).toBe(200);
