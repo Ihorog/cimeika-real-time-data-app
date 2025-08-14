@@ -4,14 +4,7 @@ module.exports = async (req, res) => {
   const { prompt, model = 'gpt2', max_tokens = 150, temperature = 0.6 } = req.body || {};
   if (!prompt) return res.status(400).json({ error: 'prompt required' });
 
-  const token = process.env.HUGGINGFACE_TOKEN;
-  if (!token) {
-    console.error(
-      'HUGGINGFACE_TOKEN is not set. Set it in your environment, e.g.,',
-      'export HUGGINGFACE_TOKEN="<your-hf-api-token>" or add it to your .env file.'
-    );
-    return res.status(503).json({ error: 'HUGGINGFACE_TOKEN not configured' });
-  }
+  const token = req.hfToken;
 
   try {
     const url = `https://api-inference.huggingface.co/models/${model}`;

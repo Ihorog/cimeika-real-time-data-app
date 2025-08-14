@@ -60,7 +60,7 @@ app.post('/chat/completion', (req, res) => {
 
 
 // Hugging Face completion endpoint
-app.post('/ai/huggingface/completion', huggingfaceCompletion);
+app.post('/ai/huggingface/completion', requireHfToken, huggingfaceCompletion);
 
 // Mount feature routers
 app.use('/auth', authRouter);
