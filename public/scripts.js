@@ -1,7 +1,23 @@
 let config = {};
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
+const storageAvailable = (() => {
+    try {
+        const testKey = '__test';
+        localStorage.setItem(testKey, '1');
+        localStorage.removeItem(testKey);
+        return true;
+    } catch (e) {
+        console.warn('LocalStorage not available:', e);
+        return false;
+    }
+})();
+
 document.addEventListener('DOMContentLoaded', async function() {
+    if (storageAvailable) {
+        cleanupCache();
+        setInterval(cleanupCache, CACHE_DURATION);
+    }
     // Load components first
     loadComponent('components/header.html', '#header-container')
         .then(() => setupMobileMenu())
@@ -33,6 +49,7 @@ async function fetchConfig() {
 }
 
 function getCache(key) {
+    if (!storageAvailable) return null;
     try {
         const raw = localStorage.getItem(key);
         if (!raw) return null;
@@ -40,6 +57,7 @@ function getCache(key) {
         if (Date.now() - parsed.timestamp < CACHE_DURATION) {
             return parsed.data;
         }
+        localStorage.removeItem(key);
     } catch (e) {
         console.error('Cache parse error', e);
     }
@@ -47,10 +65,28 @@ function getCache(key) {
 }
 
 function setCache(key, data) {
+    if (!storageAvailable) return;
     try {
         localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
     } catch (e) {
         console.error('Cache store error', e);
+    }
+}
+
+function cleanupCache() {
+    if (!storageAvailable) return;
+    const now = Date.now();
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        try {
+            const item = JSON.parse(localStorage.getItem(key));
+            if (!item || typeof item.timestamp !== 'number') continue;
+            if (now - item.timestamp >= CACHE_DURATION) {
+                localStorage.removeItem(key);
+            }
+        } catch (e) {
+            // ignore parsing errors
+        }
     }
 }
 
@@ -224,4 +260,12 @@ function updateAstrology() {
         },
         `astrology_${sign}`
     );
+}
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker
+            .register('/service-worker.js')
+            .catch(err => console.error('Service worker registration failed:', err));
+    });
 }
