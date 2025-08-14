@@ -1,6 +1,5 @@
 const express = require('express');
 const path = require('path');
-const bodyParser = require('body-parser');
 const axios = require('axios');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
@@ -13,7 +12,8 @@ const realtimeRouter = require('./routes/realtime');
 
 const app = express();
 const swaggerDocument = YAML.load(path.join(__dirname, '..', 'cimeika-api.yaml'));
-app.use(bodyParser.json());
+// Parse JSON request bodies
+app.use(express.json());
 
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, '..', 'public')));
@@ -59,14 +59,11 @@ app.post('/ai/huggingface/completion', async (req, res) => {
 
   const token = process.env.HUGGINGFACE_TOKEN;
   if (!token) {
-    // Fallback mock response when no token is configured
-    return res.json({
-      id: 'hf1',
-      object: 'text_completion',
-      created: Date.now(),
-      model: 'mock-hf',
-      choices: [{ text: `HF Echo: ${prompt}`, index: 0, logprobs: null, finish_reason: 'length' }]
-    });
+    console.error(
+      'HUGGINGFACE_TOKEN is not set. Set it in your environment, e.g.,',
+      'export HUGGINGFACE_TOKEN="<your-hf-api-token>" or add it to your .env file.'
+    );
+    return res.status(503).json({ error: 'HUGGINGFACE_TOKEN not configured' });
   }
 
   try {
@@ -105,8 +102,10 @@ app.use('/components', componentsRouter);
 app.use('/data', dataRouter);
 app.use('/', realtimeRouter);
 
+app.use((req, res) => res.status(404).json({ error: 'not found' }));
+
 module.exports = app;
-if (require.main === module) {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-}
+  if (require.main === module) {
+    const PORT = process.env.PORT || 7860;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  }

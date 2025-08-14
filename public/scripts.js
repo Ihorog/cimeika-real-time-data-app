@@ -12,8 +12,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Setup navigation after components are loaded
     setupNavigation();
     
-    // Load initial page
-    loadPage('pages/home.html');
+    // Load initial page and wait until it's ready
+    await loadPage('pages/home.html');
 
     try {
         config = await fetchConfig();

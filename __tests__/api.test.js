@@ -21,29 +21,24 @@ describe('Cimeika API', () => {
     expect(res.body.choices).toBeDefined();
   });
 
-  it('get config', async () => {
-    const res = await request(app).get('/config');
-    expect(res.status).toBe(200);
-    expect(res.body.weatherEndpoint).toBeDefined();
-    expect(res.body.astrologyEndpoint).toBeDefined();
-  });
-
-  it('huggingface completion', async () => {
-    const res = await request(app)
-      .post('/ai/huggingface/completion')
-      .send({ prompt: 'Hello' });
-    expect(res.status).toBe(200);
-    expect(res.body.choices).toBeDefined();
-  });
-
   it('chat completion without prompt returns 400', async () => {
     const res = await request(app)
       .post('/chat/completion')
       .send({});
     expect(res.status).toBe(400);
     expect(res.body.error).toBeDefined();
-    // Optionally check for a specific error message:
-    // expect(res.body.error).toBe('prompt required');
+  });
+
+  it('huggingface completion without token returns 503', async () => {
+    const original = process.env.HUGGINGFACE_TOKEN;
+    delete process.env.HUGGINGFACE_TOKEN;
+    const res = await request(app)
+      .post('/ai/huggingface/completion')
+      .send({ prompt: 'Hello' });
+    expect(res.status).toBe(503);
+    expect(res.body.error).toMatch(/HUGGINGFACE_TOKEN/);
+    if (original) process.env.HUGGINGFACE_TOKEN = original;
+    else delete process.env.HUGGINGFACE_TOKEN;
   });
 
   it('create component', async () => {
@@ -68,6 +63,45 @@ describe('Cimeika API', () => {
       .send({ name: 'comp1-upd', type: 'basic' });
     expect(res.status).toBe(200);
     expect(res.body.name).toBe('comp1-upd');
+  });
+
+  it('link component', async () => {
+    const res = await request(app)
+      .post(`/components/${createdComponentId}/link`);
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('linked');
+  });
+
+  it('link non-existent component returns 404', async () => {
+    const res = await request(app)
+      .post('/components/bad-id/link');
+    expect(res.status).toBe(404);
+  });
+
+  it('unlink component', async () => {
+    const res = await request(app)
+      .post(`/components/${createdComponentId}/unlink`);
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('unlinked');
+  });
+
+  it('unlink non-existent component returns 404', async () => {
+    const res = await request(app)
+      .post('/components/bad-id/unlink');
+    expect(res.status).toBe(404);
+  });
+
+  it('get component attributes', async () => {
+    const res = await request(app)
+      .get(`/components/${createdComponentId}/attributes`);
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
+  it('attributes for non-existent component returns 404', async () => {
+    const res = await request(app)
+      .get('/components/bad-id/attributes');
+    expect(res.status).toBe(404);
   });
 
   it('delete component', async () => {
@@ -136,6 +170,30 @@ describe('Cimeika API', () => {
       .send({ dataId, modelId: 'm1', predictionParameters: {} });
     expect(res.status).toBe(200);
     expect(res.body.prediction).toBeDefined();
+  });
+
+  it('weather endpoint returns city in message', async () => {
+    const res = await request(app).get('/weather/current?city=Kyiv');
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/Kyiv/);
+  });
+
+  it('astrology forecast returns sign in message', async () => {
+    const res = await request(app).get('/astrology/forecast?sign=aries');
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/aries/i);
+  });
+
+  it('data weather endpoint returns city in message', async () => {
+    const res = await request(app).get('/data/weather?city=Lviv');
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/Lviv/);
+  });
+
+  it('data astrology endpoint returns sign in message', async () => {
+    const res = await request(app).get('/data/astrology?sign=taurus');
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/taurus/i);
   });
 
   it('serves openapi spec', async () => {

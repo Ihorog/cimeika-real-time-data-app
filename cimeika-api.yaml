@@ -103,7 +103,10 @@ paths:
     post:
       operationId: createHuggingFaceCompletion
       summary: Створення запиту до Hugging Face GPT для відповіді у чаті
-      description: Endpoint для створення запиту до Hugging Face GPT для отримання відповіді у чаті
+      description: >-
+        Endpoint для створення запиту до Hugging Face GPT для отримання
+        відповіді у чаті. Потребує змінної середовища `HUGGINGFACE_TOKEN`;
+        повертає 503, якщо токен не встановлено.
       requestBody:
         required: true
         content:
@@ -539,6 +542,10 @@ paths:
               schema:
                 type: object
                 properties:
+                  city:
+                    type: string
+                    description: Назва міста
+                    example: London
                   weather:
                     type: string
                     description: Опис погоди
@@ -570,6 +577,10 @@ paths:
               schema:
                 type: object
                 properties:
+                  sign:
+                    type: string
+                    description: Знак зодіаку
+                    example: aries
                   forecast:
                     type: string
                     description: Опис астрологічного прогнозу
@@ -631,6 +642,10 @@ paths:
               schema:
                 type: object
                 properties:
+                  city:
+                    type: string
+                    description: Назва міста
+                    example: London
                   weather:
                     type: string
                     description: Опис погоди
@@ -659,6 +674,10 @@ paths:
               schema:
                 type: object
                 properties:
+                  sign:
+                    type: string
+                    description: Знак зодіаку
+                    example: aries
                   forecast:
                     type: string
                     description: Опис астрологічного прогнозу

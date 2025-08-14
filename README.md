@@ -21,10 +21,12 @@ Cimeika provides users with a connected and intelligent experience by aggregatin
 
 To set up the Cimeika project locally, follow these steps:
 
+Ensure that you have **Node.js 16 or later** installed.
+
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/cimeika.git
-   cd cimeika
+   git clone https://github.com/Ihorog/cimeika-real-time-data-app.git
+   cd cimeika-real-time-data-app
    ```
 
 2. **Set up Development Environment**:
@@ -47,11 +49,18 @@ To set up the Cimeika project locally, follow these steps:
    ```bash
    cp .env.example .env
    ```
-Then edit `.env` to set `OPENWEATHER_KEY`, `ASTROLOGY_KEY`,
-`OPENAI_API_KEY` and `HF_WRITE_TOKEN`.
-Optionally set `HUGGINGFACE_TOKEN` if you want the Hugging Face completion
-endpoint to call the real API. Adjust `PORT` if you need a different server
-port (default `3000`). The `.env` file is ignored by git.
+   Then edit `.env` to set `WEATHER_API_KEY`, `ASTROLOGY_API_KEY`,
+
+   Optionally set `HUGGINGFACE_TOKEN` if you want the Hugging Face completion
+    endpoint to call the real API. Adjust `PORT` if you need a different server
+    port (default `7860`). The `.env` file is ignored by gi
+   If you prefer JSON-based configuration, copy `api_keys.example.json` to
+   `api_keys.json` and replace the placeholder values (e.g.,
+   `"openWeatherKey": "YOUR_KEY_HERE"`) with your real API keys:
+   ```bash
+   cp api_keys.example.json api_keys.json
+   ```
+   The `.gitignore` file prevents `api_keys.json` from being committed.
 
 5. **Start the Application**:
    You can run the application using:
@@ -61,7 +70,7 @@ port (default `3000`). The `.env` file is ignored by git.
 
 ## Usage
 
-1. **Access the Application**: Visit `http://localhost:3000` in your web browser.
+1. **Access the Application**: Visit `http://localhost:7860` in your web browser.
 2. **Interact with Real-Time Data**: The homepage will load with dynamic sections for Weather, Time, and Astrological Forecast featuring a loading animation until the data is fetched.
 3. **Navigate through the Application**: Use the dynamic header and footer for navigation to various sections (if implemented).
 
@@ -108,10 +117,11 @@ cimeika/
 - `public/index.html`: The main HTML document that loads the application.
 - `public/styles.css`: Contains custom styles and animations to enhance the UI.
 - `public/scripts.js`: JavaScript file for handling dynamic content loading, API interactions, and user interactions.
-- `.env`: Stores your private API keys (`OPENWEATHER_KEY`, `ASTROLOGY_KEY`,
-  `OPENAI_API_KEY`, `HF_WRITE_TOKEN`, `HUGGINGFACE_TOKEN`) and optional
-  settings such as `PORT`. This file should not be committed to version
-  control. A `.env.example` template is provided for reference.
+ - `.env`: Stores your private API keys (`WEATHER_API_KEY`, `ASTROLOGY_API_KEY`,
+   `OPENAI_API_KEY`, `HF_WRITE_TOKEN`, `HUGGINGFACE_TOKEN`) and optional
+   settings such as `PORT`. `HUGGINGFACE_TOKEN` must be set for the
+   `/ai/huggingface/completion` route. This file should not be committed to
+   version control. A `.env.example` template is provided for reference.
 
 ## Deployment
 
@@ -121,10 +131,10 @@ Run `deploy_cimeika_api.sh` from the repository root to publish the API to a [Hu
 export HF_WRITE_TOKEN=<your-hf-token>
 export OPENAI_API_KEY=<your-openai-key>
 # optional – for weather endpoints
-export OPENWEATHER_KEY=<your-openweather-key>
+export WEATHER_API_KEY=<your-openweather-key>
 # optional – for astrology endpoints
-export ASTROLOGY_KEY=<your-astrology-key>
-# optional – for Hugging Face completions
+export ASTROLOGY_API_KEY=<your-astrology-key>
+# required – for Hugging Face completions
 export HUGGINGFACE_TOKEN=<your-hf-api-token>
 ./deploy_cimeika_api.sh
 ```
@@ -132,8 +142,8 @@ export HUGGINGFACE_TOKEN=<your-hf-api-token>
 The script builds the container using the included `Dockerfile`. To test the Docker image locally, run:
 
 ```bash
-docker build -t cimeika .
-docker run -p 3000:3000 cimeika
+  docker build -t cimeika .
+  docker run -p 7860:7860 cimeika
 ```
 
 ### What the script does
@@ -150,7 +160,7 @@ After completion the script prints the URL of your running Space so you can veri
 
 To see a quick example of calling the API with environment variables, run the
 `scripts/api_scenario.js` script. This assumes you have the server running
-locally (default `http://localhost:3000`). Optionally set `BASE_URL` in your
+locally (default `http://localhost:7860`). Optionally set `BASE_URL` in your
 `.env` file if the server is hosted elsewhere.
 
 ```bash
@@ -162,13 +172,13 @@ demo component and collects a small data payload.
 
 ## Testing
 
-To run the automated tests make sure all Node.js dependencies are installed:
+This project uses [Jest](https://jestjs.io/) for its test suite. Make sure all Node.js dependencies are installed:
 
 ```bash
 npm install
 ```
 
-Once dependencies are in place you can execute the test suite with:
+Run the Jest tests with:
 
 ```bash
 npm test
