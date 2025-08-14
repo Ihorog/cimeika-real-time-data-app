@@ -9,8 +9,22 @@ router.get('/', (req, res) => {
 });
 
 router.post('/', (req, res) => {
+  const { name, type } = req.body;
+  if (
+    typeof name !== 'string' ||
+    name.trim() === '' ||
+    typeof type !== 'string' ||
+    type.trim() === ''
+  ) {
+    return res.status(400).json({ error: 'name and type are required' });
+  }
   const id = 'component-' + componentCounter++;
-  const component = { id, ...req.body };
+  const component = {
+    id,
+    ...req.body,
+    name: name.trim(),
+    type: type.trim(),
+  };
   components.set(id, component);
   res.status(201).json(component);
 });
@@ -23,7 +37,21 @@ router.get('/:id', (req, res) => {
 
 router.put('/:id', (req, res) => {
   if (!components.has(req.params.id)) return res.status(404).json({ error: 'not found' });
-  const component = { id: req.params.id, ...req.body };
+  const { name, type } = req.body;
+  if (
+    typeof name !== 'string' ||
+    name.trim() === '' ||
+    typeof type !== 'string' ||
+    type.trim() === ''
+  ) {
+    return res.status(400).json({ error: 'name and type are required' });
+  }
+  const component = {
+    id: req.params.id,
+    ...req.body,
+    name: name.trim(),
+    type: type.trim(),
+  };
   components.set(req.params.id, component);
   res.json(component);
 });

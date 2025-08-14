@@ -41,6 +41,22 @@ describe('Cimeika API', () => {
     else delete process.env.HUGGINGFACE_TOKEN;
   });
 
+  it('create component without name returns 400', async () => {
+    const res = await request(app)
+      .post('/components')
+      .send({ type: 'basic' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/name and type/);
+  });
+
+  it('create component with empty type returns 400', async () => {
+    const res = await request(app)
+      .post('/components')
+      .send({ name: 'comp' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/name and type/);
+  });
+
   it('create component', async () => {
     const res = await request(app)
       .post('/components')
@@ -55,6 +71,22 @@ describe('Cimeika API', () => {
       .get(`/components/${createdComponentId}`);
     expect(res.status).toBe(200);
     expect(res.body.id).toBe(createdComponentId);
+  });
+
+  it('update component with empty name returns 400', async () => {
+    const res = await request(app)
+      .put(`/components/${createdComponentId}`)
+      .send({ name: '', type: 'basic' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/name and type/);
+  });
+
+  it('update component without type returns 400', async () => {
+    const res = await request(app)
+      .put(`/components/${createdComponentId}`)
+      .send({ name: 'comp1' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/name and type/);
   });
 
   it('update component', async () => {
