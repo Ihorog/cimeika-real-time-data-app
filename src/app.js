@@ -4,6 +4,7 @@ const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 require('dotenv').config();
 
+const requireHfToken = require('./middleware/requireHfToken');
 const authRouter = require('./routes/auth');
 const componentsRouter = require('./routes/components');
 const dataRouter = require('./routes/data');
@@ -56,6 +57,7 @@ app.post('/chat/completion', (req, res) => {
     choices: [{ text: `Echo: ${prompt}`, index: 0, logprobs: null, finish_reason: 'length' }]
   });
 });
+
 
 // Hugging Face completion endpoint
 app.post('/ai/huggingface/completion', huggingfaceCompletion);
