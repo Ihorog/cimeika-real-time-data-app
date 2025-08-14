@@ -46,7 +46,7 @@ describe('Cimeika API', () => {
       .post('/components')
       .send({ type: 'basic' });
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/name and type/);
+    expect(res.body.error).toMatch(/"name"/);
   });
 
   it('create component with empty type returns 400', async () => {
@@ -54,7 +54,23 @@ describe('Cimeika API', () => {
       .post('/components')
       .send({ name: 'comp' });
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/name and type/);
+    expect(res.body.error).toMatch(/"type"/);
+  });
+
+  it('create component with unknown field returns 400', async () => {
+    const res = await request(app)
+      .post('/components')
+      .send({ name: 'comp', type: 'basic', extra: 'nope' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/"extra"/);
+  });
+
+  it('create component with wrong type returns 400', async () => {
+    const res = await request(app)
+      .post('/components')
+      .send({ name: 'comp', type: 123 });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/type/);
   });
 
   it('create component', async () => {
@@ -78,7 +94,7 @@ describe('Cimeika API', () => {
       .put(`/components/${createdComponentId}`)
       .send({ name: '', type: 'basic' });
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/name and type/);
+    expect(res.body.error).toMatch(/"name"/);
   });
 
   it('update component without type returns 400', async () => {
@@ -86,7 +102,23 @@ describe('Cimeika API', () => {
       .put(`/components/${createdComponentId}`)
       .send({ name: 'comp1' });
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/name and type/);
+    expect(res.body.error).toMatch(/"type"/);
+  });
+
+  it('update component with unknown field returns 400', async () => {
+    const res = await request(app)
+      .put(`/components/${createdComponentId}`)
+      .send({ name: 'comp1', type: 'basic', extra: 'nope' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/"extra"/);
+  });
+
+  it('update component with wrong type returns 400', async () => {
+    const res = await request(app)
+      .put(`/components/${createdComponentId}`)
+      .send({ name: 'comp1', type: 123 });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/type/);
   });
 
   it('update component', async () => {
