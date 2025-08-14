@@ -1,6 +1,14 @@
 const express = require('express');
 const axios = require('axios');
+const axiosRetry = require('axios-retry');
 const router = express.Router();
+
+const http = axios.create({ timeout: 5000, proxy: false });
+axiosRetry(http, { retries: 3, retryDelay: axiosRetry.exponentialDelay });
+
+const CACHE_TTL_MS = 5 * 60 * 1000;
+const weatherCache = new Map();
+const astrologyCache = new Map();
 
 const DEFAULT_CITY = process.env.DEFAULT_CITY || 'London';
 const DEFAULT_SIGN = process.env.DEFAULT_SIGN || 'aries';
@@ -26,17 +34,31 @@ const makeAstrologyResponse = (sign, forecast) => ({
 // --- Weather and astrology endpoints using external APIs -------------------
 
 async function fetchWeather(city) {
+  const cached = weatherCache.get(city);
+  if (cached) {
+    if (cached.expiry > Date.now()) return cached.data;
+    weatherCache.delete(city);
+  }
   const url = `https://goweather.herokuapp.com/weather/${encodeURIComponent(city)}`;
-  const { data } = await axios.get(url, { timeout: 5000, proxy: false });
+  const { data } = await http.get(url);
   const tempMatch = data.temperature?.match(/-?\d+/);
   const temperature = tempMatch ? parseInt(tempMatch[0], 10) : null;
-  return makeWeatherResponse(city, data.description || 'N/A', temperature);
+  const result = makeWeatherResponse(city, data.description || 'N/A', temperature);
+  weatherCache.set(city, { data: result, expiry: Date.now() + CACHE_TTL_MS });
+  return result;
 }
 
 async function fetchAstrology(sign) {
+  const cached = astrologyCache.get(sign);
+  if (cached) {
+    if (cached.expiry > Date.now()) return cached.data;
+    astrologyCache.delete(sign);
+  }
   const url = `https://aztro.sameerkumar.website/?sign=${encodeURIComponent(sign)}&day=today`;
-  const { data } = await axios.post(url, null, { timeout: 5000, proxy: false });
-  return makeAstrologyResponse(sign, data.description || 'N/A');
+  const { data } = await http.post(url, null);
+  const result = makeAstrologyResponse(sign, data.description || 'N/A');
+  astrologyCache.set(sign, { data: result, expiry: Date.now() + CACHE_TTL_MS });
+  return result;
 }
 
 // Return current weather data for the requested city
