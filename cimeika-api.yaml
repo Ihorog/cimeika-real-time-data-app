@@ -629,11 +629,14 @@ paths:
       parameters:
         - name: city
           in: query
-          required: true
+          required: false
+          description: >-
+            Назва міста. Якщо параметр не вказано, сервер за замовчуванням
+            використовує London.
           schema:
             type: string
-            description: Назва міста
             example: London
+            default: London
       responses:
         "200":
           description: Погодні дані успішно отримані
@@ -661,11 +664,14 @@ paths:
       parameters:
         - name: sign
           in: query
-          required: true
+          required: false
+          description: >-
+            Знак зодіаку. Якщо параметр не вказано, сервер за замовчуванням
+            використовує aries.
           schema:
             type: string
-            description: Знак зодіаку
             example: aries
+            default: aries
       responses:
         "200":
           description: Астрологічні дані успішно отримані
