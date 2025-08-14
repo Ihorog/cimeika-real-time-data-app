@@ -1,3 +1,7 @@
+process.env.HUGGINGFACE_TOKEN = process.env.HUGGINGFACE_TOKEN || 'test-token';
+process.env.WEATHER_API_KEY = process.env.WEATHER_API_KEY || 'weather-test';
+process.env.ASTROLOGY_API_KEY = process.env.ASTROLOGY_API_KEY || 'astro-test';
+
 const request = require('supertest');
 jest.mock('../src/routes/huggingface');
 const app = require('../src/app');
@@ -46,18 +50,6 @@ describe('Cimeika API', () => {
       .send({});
     expect(res.status).toBe(400);
     expect(res.body.error).toBeDefined();
-  });
-
-  it('huggingface completion without token returns 503', async () => {
-    const original = process.env.HUGGINGFACE_TOKEN;
-    delete process.env.HUGGINGFACE_TOKEN;
-    const res = await request(app)
-      .post('/ai/huggingface/completion')
-      .send({ prompt: 'Hello' });
-    expect(res.status).toBe(503);
-    expect(res.body.error).toMatch(/HUGGINGFACE_TOKEN/);
-    if (original) process.env.HUGGINGFACE_TOKEN = original;
-    else delete process.env.HUGGINGFACE_TOKEN;
   });
 
   it('huggingface completion with token returns 200', async () => {

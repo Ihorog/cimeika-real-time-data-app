@@ -1,6 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const axiosRetry = require('axios-retry');
+const config = require('../config');
 const router = express.Router();
 
 const http = axios.create({ timeout: 5000, proxy: false });
@@ -10,8 +11,8 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
 const weatherCache = new Map();
 const astrologyCache = new Map();
 
-const DEFAULT_CITY = process.env.DEFAULT_CITY || 'London';
-const DEFAULT_SIGN = process.env.DEFAULT_SIGN || 'aries';
+const DEFAULT_CITY = config.defaultCity;
+const DEFAULT_SIGN = config.defaultSign;
 
 // Helper to trim query params and apply defaults
 function normalizeQueryParam(req, key, defaultValue) {

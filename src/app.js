@@ -4,6 +4,7 @@ const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 require('dotenv').config();
 
+const config = require('./config');
 const requireHfToken = require('./middleware/requireHfToken');
 const authRouter = require('./routes/auth');
 const componentsRouter = require('./routes/components');
@@ -11,8 +12,8 @@ const dataRouter = require('./routes/data');
 const realtimeRouter = require('./routes/realtime');
 const huggingfaceCompletion = require('./routes/huggingface');
 
-const DEFAULT_CITY = process.env.DEFAULT_CITY || 'London';
-const DEFAULT_SIGN = process.env.DEFAULT_SIGN || 'aries';
+const DEFAULT_CITY = config.defaultCity;
+const DEFAULT_SIGN = config.defaultSign;
 
 const app = express();
 const swaggerDocument = YAML.load(path.join(__dirname, '..', 'cimeika-api.yaml'));
