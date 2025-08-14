@@ -1,4 +1,5 @@
 const request = require('supertest');
+jest.mock('../src/routes/huggingface');
 const app = require('../src/app');
 const nock = require('nock');
 const defaultCity = process.env.DEFAULT_CITY || 'London';
