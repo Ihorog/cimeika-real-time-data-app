@@ -1,0 +1,142 @@
+<section class="container mx-auto px-4 py-12">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl font-bold text-center mb-8 text-gray-800">Розрахунок</h1>
+        <p class="text-lg text-center text-gray-600 mb-12">Планування, облік і прогнозування процесів та ресурсів</p>
+        
+        <div class="grid md:grid-cols-2 gap-8 mb-12">
+            <div class="bg-white p-8 rounded-xl shadow-lg border-l-4 border-indigo-500">
+                <h3 class="text-2xl font-semibold mb-4 text-gray-800">Частотний Аналіз</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <span class="font-medium">Hz</span>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-2xl">△</span>
+                            <span class="text-gray-600">↑</span>
+                        </div>
+                    </div>
+                    <div class="text-center p-4 bg-indigo-50 rounded-lg">
+                        <span class="text-3xl font-bold text-indigo-600">↑ ↑</span>
+                        <p class="text-sm text-gray-600 mt-2">Вид «п»</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-8 rounded-xl shadow-lg border-l-4 border-green-500">
+                <h3 class="text-2xl font-semibold mb-4 text-gray-800">Успіх</h3>
+                <p class="text-gray-600 mb-4">Силак і відпочинок: ошнка досягнень та якісний бал</p>
+                <div class="space-y-3">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">⊥</span>
+                        <span class="font-medium">Баланс</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">⊤</span>
+                        <span class="font-medium">Досягнення</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-yellow-100 to-orange-100 p-8 rounded-xl mb-8">
+            <h3 class="text-2xl font-semibold mb-6 text-center text-gray-800">Розрахунок Досвіду</h3>
+            <div class="grid md:grid-cols-4 gap-4">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span class="text-white text-xl">☀</span>
+                    </div>
+                    <span class="font-medium text-gray-800">Досвід</span>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span class="text-white text-xl">⚙</span>
+                    </div>
+                    <span class="font-medium text-gray-800">Каталізатор</span>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span class="text-white text-xl">🔄</span>
+                    </div>
+                    <span class="font-medium text-gray-800">Завершення</span>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span class="text-white text-xl">✓</span>
+                    </div>
+                    <span class="font-medium text-gray-800">Завершення</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-8 rounded-xl shadow-lg">
+            <h3 class="text-2xl font-semibold mb-6 text-center text-gray-800">Інтерактивний Калькулятор</h3>
+            <div class="max-w-md mx-auto">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Поточний рівень енергії (1-10)</label>
+                        <input type="range" id="energy-level" min="1" max="10" value="5" class="w-full">
+                        <span id="energy-value" class="text-sm text-gray-600">5</span>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Фокус на цілях (1-10)</label>
+                        <input type="range" id="focus-level" min="1" max="10" value="5" class="w-full">
+                        <span id="focus-value" class="text-sm text-gray-600">5</span>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Соціальна взаємодія (1-10)</label>
+                        <input type="range" id="social-level" min="1" max="10" value="5" class="w-full">
+                        <span id="social-value" class="text-sm text-gray-600">5</span>
+                    </div>
+                </div>
+                <div class="mt-6 p-4 bg-gray-50 rounded-lg text-center">
+                    <h4 class="font-semibold text-gray-800 mb-2">Загальний Індекс Успіху</h4>
+                    <div id="success-index" class="text-3xl font-bold text-indigo-600">5.0</div>
+                    <p id="success-message" class="text-sm text-gray-600 mt-2">Збалансований стан</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const energySlider = document.getElementById('energy-level');
+    const focusSlider = document.getElementById('focus-level');
+    const socialSlider = document.getElementById('social-level');
+    
+    const energyValue = document.getElementById('energy-value');
+    const focusValue = document.getElementById('focus-value');
+    const socialValue = document.getElementById('social-value');
+    
+    const successIndex = document.getElementById('success-index');
+    const successMessage = document.getElementById('success-message');
+    
+    function updateCalculation() {
+        const energy = parseInt(energySlider.value);
+        const focus = parseInt(focusSlider.value);
+        const social = parseInt(socialSlider.value);
+        
+        energyValue.textContent = energy;
+        focusValue.textContent = focus;
+        socialValue.textContent = social;
+        
+        const index = ((energy + focus + social) / 3).toFixed(1);
+        successIndex.textContent = index;
+        
+        let message = '';
+        if (index >= 8) {
+            message = 'Відмінний стан! Високий потенціал успіху';
+        } else if (index >= 6) {
+            message = 'Хороший стан, продовжуйте розвиток';
+        } else if (index >= 4) {
+            message = 'Збалансований стан';
+        } else {
+            message = 'Потрібна увага до особистого розвитку';
+        }
+        successMessage.textContent = message;
+    }
+    
+    energySlider.addEventListener('input', updateCalculation);
+    focusSlider.addEventListener('input', updateCalculation);
+    socialSlider.addEventListener('input', updateCalculation);
+});
+</script>

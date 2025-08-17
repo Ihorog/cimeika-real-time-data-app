@@ -1,4 +1,79 @@
 <section class="container mx-auto px-4 py-12">
-    <h1 class="text-3xl font-bold mb-4">Home</h1>
-    <p>Welcome to Cimeika. Explore real-time data on weather, time and astrology.</p>
+    <div class="max-w-6xl mx-auto">
+        <div class="text-center mb-16">
+            <div class="w-24 h-24 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span class="text-white text-3xl font-bold">Ci</span>
+            </div>
+            <h1 class="text-5xl font-bold mb-6 text-gray-800">Ласкаво просимо до Cimeika</h1>
+            <p class="text-xl text-gray-600 mb-8">Ваша подорож до пов'язаного та розумного життя починається тут</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+            <a href="pages/personal.html" class="group bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300 border-l-4 border-blue-500">
+                <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition duration-300">
+                    <span class="text-white text-2xl font-bold">О</span>
+                </div>
+                <h3 class="text-xl font-semibold text-center mb-3 text-gray-800">Особисте</h3>
+                <p class="text-gray-600 text-center text-sm">Особистісні пріоритети, внутрішні потреби та самоідентифікація</p>
+            </a>
+
+            <a href="pages/shared.html" class="group bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300 border-l-4 border-green-500">
+                <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition duration-300">
+                    <span class="text-white text-2xl font-bold">С</span>
+                </div>
+                <h3 class="text-xl font-semibold text-center mb-3 text-gray-800">Спільні</h3>
+                <p class="text-gray-600 text-center text-sm">Конкретні точки контакту, канали та форми взаємодії</p>
+            </a>
+
+            <a href="pages/calculation.html" class="group bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300 border-l-4 border-indigo-500">
+                <div class="w-16 h-16 bg-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition duration-300">
+                    <span class="text-white text-2xl font-bold">Р</span>
+                </div>
+                <h3 class="text-xl font-semibold text-center mb-3 text-gray-800">Розрахунок</h3>
+                <p class="text-gray-600 text-center text-sm">Планування, облік і прогнозування процесів та ресурсів</p>
+            </a>
+
+            <a href="pages/dreams.html" class="group bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300 border-l-4 border-purple-500">
+                <div class="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition duration-300">
+                    <span class="text-white text-2xl font-bold">М</span>
+                </div>
+                <h3 class="text-xl font-semibold text-center mb-3 text-gray-800">Мрії</h3>
+                <p class="text-gray-600 text-center text-sm">Синхронізація мрій з реальністю та еволюція</p>
+            </a>
+        </div>
+
+        <div class="bg-gradient-to-r from-gray-100 to-gray-200 p-8 rounded-xl mb-12">
+            <h2 class="text-3xl font-bold text-center mb-8 text-gray-800">Реальний Час</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Погода</h3>
+                    <p id="weather-data" class="text-gray-600">Завантаження...</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Час</h3>
+                    <p id="time-data" class="text-gray-600">Завантаження...</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Астрологічний прогноз</h3>
+                    <p id="astrology-data" class="text-gray-600">Завантаження...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800">Почніть свою подорож</h2>
+            <p class="text-lg text-gray-600 mb-8">Досліджуйте різні аспекти свого життя та розвитку</p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <button onclick="loadPage('pages/personal.html')" class="bg-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition duration-300">
+                    Особистий розвиток
+                </button>
+                <button onclick="loadPage('pages/calculation.html')" class="bg-indigo-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-indigo-700 transition duration-300">
+                    Розрахунки успіху
+                </button>
+                <button onclick="loadPage('pages/dreams.html')" class="bg-purple-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-purple-700 transition duration-300">
+                    Планування мрій
+                </button>
+            </div>
+        </div>
+    </div>
 </section>

@@ -1,12 +1,25 @@
 <header class="bg-gray-800 text-white">
     <nav class="container mx-auto flex items-center justify-between px-4 py-4">
-        <a href="index.html" class="text-2xl font-semibold">Cimeika</a>
+        <a href="index.html" class="text-2xl font-semibold flex items-center space-x-2">
+            <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                <span class="text-white font-bold text-sm">Ci</span>
+            </div>
+            <span>Cimeika</span>
+        </a>
         <button class="md:hidden" aria-label="Toggle menu">&#9776;</button>
         <ul class="hidden md:flex space-x-6">
-            <li><a href="pages/home.html" class="hover:text-gray-300">Home</a></li>
+            <li><a href="pages/home.html" class="hover:text-gray-300 transition duration-300">Головна</a></li>
+            <li><a href="pages/personal.html" class="hover:text-gray-300 transition duration-300">Особисте</a></li>
+            <li><a href="pages/shared.html" class="hover:text-gray-300 transition duration-300">Спільні</a></li>
+            <li><a href="pages/calculation.html" class="hover:text-gray-300 transition duration-300">Розрахунок</a></li>
+            <li><a href="pages/dreams.html" class="hover:text-gray-300 transition duration-300">Мрії</a></li>
         </ul>
     </nav>
     <ul id="mobile-menu" class="md:hidden hidden px-4 pb-4">
-        <li><a href="pages/home.html" class="block py-2 border-t border-gray-700">Home</a></li>
+        <li><a href="pages/home.html" class="block py-2 border-t border-gray-700 hover:text-gray-300">Головна</a></li>
+        <li><a href="pages/personal.html" class="block py-2 border-t border-gray-700 hover:text-gray-300">Особисте</a></li>
+        <li><a href="pages/shared.html" class="block py-2 border-t border-gray-700 hover:text-gray-300">Спільні</a></li>
+        <li><a href="pages/calculation.html" class="block py-2 border-t border-gray-700 hover:text-gray-300">Розрахунок</a></li>
+        <li><a href="pages/dreams.html" class="block py-2 border-t border-gray-700 hover:text-gray-300">Мрії</a></li>
     </ul>
 </header>
