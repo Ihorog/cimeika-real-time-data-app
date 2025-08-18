@@ -53,9 +53,9 @@ Ensure that you have **Node.js 16 or later** installed.
     `HF_WRITE_TOKEN`, and optionally `DEFAULT_CITY` (e.g., `London`) and
     `DEFAULT_SIGN` (e.g., `aries`).
 
-   Set `HUGGINGFACE_TOKEN` if you want the Hugging Face completion
-   endpoint to call the real API; if it's absent, the `api_scenario.js` script
-   logs a notice and exits. Adjust `PORT` if you need a different server port (default
+   `HUGGINGFACE_TOKEN` is optional and only needed for the `/ai/huggingface/completion`
+   route. Without it, that endpoint returns a 503 and scripts like `api_scenario.js`
+   log a notice and exit. Adjust `PORT` if you need a different server port (default
    `7860`). The `.env` file is ignored by git.
     If you prefer JSON-based configuration, copy `api_keys.example.json` to
     `api_keys.json` and replace the placeholder values with your real API keys:
@@ -136,6 +136,7 @@ cimeika/
 Run `deploy_cimeika_api.sh` from the repository root to publish the API to a [Hugging Face Space](https://huggingface.co/spaces). Set the required tokens in your shell and then run the script:
 
 ```bash
+
   export HF_WRITE_TOKEN=<your-hf-token>
   export OPENAI_API_KEY=<your-openai-key>
   # required – for Hugging Face completions (the API scenario script skips this if unset)
