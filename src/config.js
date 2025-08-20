@@ -1,7 +1,7 @@
 const Joi = require('joi');
 
 const schema = Joi.object({
-  HUGGINGFACE_TOKEN: Joi.string().required(),
+  HUGGINGFACE_TOKEN: Joi.string(),
   DEFAULT_CITY: Joi.string().default('London'),
   DEFAULT_SIGN: Joi.string().default('aries')
 }).unknown();

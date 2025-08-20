@@ -5,7 +5,6 @@ if (config.error) {
     'Configuration validation error:',
     config.error.details.map((d) => d.message).join(', ')
   );
-  process.exit(1);
 }
 
 if (!config.hfToken) {
