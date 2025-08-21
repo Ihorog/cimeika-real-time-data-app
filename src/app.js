@@ -2,7 +2,6 @@ const express = require('express');
 const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
-require('dotenv').config();
 
 const config = require('./config');
 const requireHfToken = require('./middleware/requireHfToken');
