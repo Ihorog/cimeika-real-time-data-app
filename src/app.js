@@ -33,8 +33,7 @@ app.get('/config', (req, res) => {
     weatherEndpoint: '/weather/current',
     astrologyEndpoint: '/astrology/forecast',
     defaultCity: DEFAULT_CITY,
-    defaultSign: DEFAULT_SIGN,
-    cacheTtlMs: config.cacheTtlMs
+    defaultSign: DEFAULT_SIGN
   });
 });
 

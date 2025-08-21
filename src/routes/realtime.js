@@ -7,7 +7,7 @@ const router = express.Router();
 const http = axios.create({ timeout: 5000, proxy: false });
 axiosRetry(http, { retries: 3, retryDelay: axiosRetry.exponentialDelay });
 
-const CACHE_TTL_MS = config.cacheTtlMs;
+const CACHE_TTL_MS = 5 * 60 * 1000;
 const weatherCache = new Map();
 const astrologyCache = new Map();
 const CACHE_SWEEP_INTERVAL_MS = 60 * 1000;
