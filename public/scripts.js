@@ -1,5 +1,5 @@
 let config = {};
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+let cacheTtlMs = 5 * 60 * 1000; // default 5 minutes
 
 const storageAvailable = (() => {
     try {
@@ -14,10 +14,6 @@ const storageAvailable = (() => {
 })();
 
 document.addEventListener('DOMContentLoaded', async function() {
-    if (storageAvailable) {
-        cleanupCache();
-        setInterval(cleanupCache, CACHE_DURATION);
-    }
     // Load components first
     loadComponent('components/header.html', '#header-container')
         .then(() => setupMobileMenu())
@@ -28,14 +24,20 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Setup navigation after components are loaded
     setupNavigation();
-    
+
     // Load initial page and wait until it's ready
     await loadPage('pages/home.html');
 
     try {
         config = await fetchConfig();
+        cacheTtlMs = config.cacheTtlMs || cacheTtlMs;
     } catch (e) {
         console.error('Config load failed:', e);
+    }
+
+    if (storageAvailable) {
+        cleanupCache();
+        setInterval(cleanupCache, cacheTtlMs);
     }
 
     // Start real-time data updates
@@ -54,7 +56,7 @@ function getCache(key) {
         const raw = localStorage.getItem(key);
         if (!raw) return null;
         const parsed = JSON.parse(raw);
-        if (Date.now() - parsed.timestamp < CACHE_DURATION) {
+        if (Date.now() - parsed.timestamp < cacheTtlMs) {
             return parsed.data;
         }
         localStorage.removeItem(key);
@@ -81,7 +83,7 @@ function cleanupCache() {
         try {
             const item = JSON.parse(localStorage.getItem(key));
             if (!item || typeof item.timestamp !== 'number') continue;
-            if (now - item.timestamp >= CACHE_DURATION) {
+            if (now - item.timestamp >= cacheTtlMs) {
                 localStorage.removeItem(key);
             }
         } catch (e) {
@@ -168,8 +170,8 @@ function setupRealTimeData() {
     // Update weather and astrology every 5 minutes
     updateWeather();
     updateAstrology();
-    setInterval(updateWeather, 300000);
-    setInterval(updateAstrology, 300000);
+    setInterval(updateWeather, cacheTtlMs);
+    setInterval(updateAstrology, cacheTtlMs);
 }
 
 // Time update function
