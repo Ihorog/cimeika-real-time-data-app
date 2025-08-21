@@ -1,7 +1,13 @@
 describe('cache cleanup', () => {
+  let realtime;
+
+  afterAll(() => {
+    if (realtime) realtime.stopCacheSweep();
+  });
+
   it('purges expired entries after interval', () => {
     jest.useFakeTimers();
-    const realtime = require('../src/routes/realtime');
+    realtime = require('../src/routes/realtime');
     const weather = realtime._weatherCache;
     const astro = realtime._astrologyCache;
 

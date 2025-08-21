@@ -12,6 +12,11 @@ describe('Hugging Face completion without token', () => {
     app = require('../src/app');
   });
 
+  afterAll(() => {
+    const { stopCacheSweep } = require('../src/routes/realtime');
+    stopCacheSweep();
+  });
+
   it('returns 503 when HUGGINGFACE_TOKEN not configured', async () => {
     const res = await request(app)
       .post('/ai/huggingface/completion')
