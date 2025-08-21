@@ -30,6 +30,10 @@ function clearCaches() {
 const purgeTimer = setInterval(purgeExpiredEntries, CACHE_SWEEP_INTERVAL_MS);
 if (purgeTimer.unref) purgeTimer.unref();
 
+function stopCacheSweep() {
+  clearInterval(purgeTimer);
+}
+
 const DEFAULT_CITY = config.defaultCity;
 const DEFAULT_SIGN = config.defaultSign;
 
@@ -135,3 +139,4 @@ module.exports = router;
 module.exports.clearCaches = clearCaches;
 module.exports._weatherCache = weatherCache;
 module.exports._astrologyCache = astrologyCache;
+module.exports.stopCacheSweep = stopCacheSweep;

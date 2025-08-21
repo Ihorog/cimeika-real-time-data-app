@@ -4,6 +4,7 @@ const request = require('supertest');
 jest.mock('../src/routes/huggingface');
 const app = require('../src/app');
 const nock = require('nock');
+const { stopCacheSweep } = require('../src/routes/realtime');
 const defaultCity = process.env.DEFAULT_CITY || 'London';
 const defaultSign = process.env.DEFAULT_SIGN || 'aries';
 
@@ -23,6 +24,7 @@ describe('Cimeika API', () => {
   });
 
   afterAll(() => {
+    stopCacheSweep();
     nock.cleanAll();
   });
 
