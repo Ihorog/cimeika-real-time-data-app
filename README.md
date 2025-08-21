@@ -64,9 +64,7 @@ Ensure that you have **Node.js 16 or later** installed.
    ```
    The `.gitignore` file prevents `api_keys.json` from being committed.
 
-   If any required settings are missing or invalid, the server logs the
-   configuration validation errors and exits immediately with a non-zero
-   status. Fix the reported issues before starting the application again.
+   If any required settings are missing or invalid, the server logs the configuration validation errors and exits immediately with an error code. Fix the reported issues before starting the application again.
 
 5. **Start the Application**:
    You can run the application using:
