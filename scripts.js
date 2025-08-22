@@ -17,19 +17,46 @@ document.addEventListener('DOMContentLoaded', function() {
     setupRealTimeData();
 });
 
+function showError(message) {
+    const container = document.getElementById('error-container');
+    if (container) {
+        container.textContent = message;
+        container.classList.remove('hidden');
+    }
+}
+
+function hideError() {
+    const container = document.getElementById('error-container');
+    if (container) {
+        container.textContent = '';
+        container.classList.add('hidden');
+    }
+}
+
+async function retryFetch(url, options = {}, retries = 2) {
+    try {
+        const response = await fetch(url, options);
+        if (!response.ok) throw new Error(response.statusText);
+        return response;
+    } catch (err) {
+        if (retries > 0) {
+            return await retryFetch(url, options, retries - 1);
+        }
+        throw err;
+    }
+}
+
 // Component loader
 async function loadComponent(componentPath, containerSelector) {
     try {
-        const response = await fetch(componentPath);
-        if (!response.ok) {
-            throw new Error(`Failed to load ${componentPath}: ${response.statusText}`);
-        }
+        const response = await retryFetch(componentPath, {}, 2);
         const html = await response.text();
         document.querySelector(containerSelector).innerHTML = html;
     } catch (error) {
         console.error(error);
-        document.querySelector(containerSelector).innerHTML = 
-            `<div class="error-message">Failed to load component: ${error.message}</div>`;
+        showError(`Failed to load component: ${error.message}. Check your internet connection and try again.`);
+        document.querySelector(containerSelector).innerHTML =
+            `<div class="error-message">Failed to load component. Please try reloading.</div>`;
         throw error;
     }
 }
@@ -39,18 +66,20 @@ async function loadPage(url) {
     const mainContent = document.querySelector('main');
     try {
         mainContent.innerHTML = '<div class="loading text-center py-12">Loading...</div>';
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Error: ${response.statusText}`);
-        }
+        const response = await retryFetch(url, {}, 2);
         const data = await response.text();
+        hideError();
         mainContent.innerHTML = data;
     } catch (error) {
         console.error('Error loading page:', error);
+        showError(`Failed to load page: ${error.message}. Check your internet connection and try again.`);
         mainContent.innerHTML = `
             <div class="error-message">
                 <p>Failed to load page: ${error.message}</p>
-                <button onclick="loadPage('pages/home.html')" class="mt-4 bg-gray-800 text-white px-4 py-2 rounded">
+                <button onclick="loadPage('${url}')" class="mt-4 bg-gray-800 text-white px-4 py-2 rounded">
+                    Retry
+                </button>
+                <button onclick="loadPage('pages/home.html')" class="mt-4 bg-gray-800 text-white px-4 py-2 rounded ml-2">
                     Return Home
                 </button>
             </div>`;
