@@ -96,6 +96,38 @@ describe('Cimeika API', () => {
     });
   });
 
+  it('proxies to Hugging Face Space', async () => {
+    const proxyVars = [
+      'HTTP_PROXY',
+      'http_proxy',
+      'HTTPS_PROXY',
+      'https_proxy',
+      'npm_config_http_proxy',
+      'npm_config_https_proxy'
+    ];
+    const proxyBackup = {};
+    proxyVars.forEach(v => {
+      proxyBackup[v] = process.env[v];
+      delete process.env[v];
+    });
+
+    nock('https://ihorog-cimeika-api.hf.space')
+      .post('/chat/completion')
+      .reply(200, { choices: [{ text: 'space-response' }] });
+
+    const res = await request(app)
+      .post('/ai/hf-space/completion')
+      .send({ prompt: 'Test space' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.choices[0].text).toBe('space-response');
+
+    proxyVars.forEach(v => {
+      if (proxyBackup[v] !== undefined) process.env[v] = proxyBackup[v];
+      else delete process.env[v];
+    });
+  });
+
   it('create component without name returns 400', async () => {
     const res = await request(app)
       .post('/components')

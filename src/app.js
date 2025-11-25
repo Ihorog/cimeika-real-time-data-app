@@ -10,6 +10,7 @@ const componentsRouter = require('./routes/components');
 const dataRouter = require('./routes/data');
 const realtimeRouter = require('./routes/realtime');
 const huggingfaceCompletion = require('./routes/huggingface');
+const hfSpaceProxy = require('./routes/hfSpaceProxy');
 
 const DEFAULT_CITY = config.defaultCity;
 const DEFAULT_SIGN = config.defaultSign;
@@ -61,6 +62,9 @@ app.post('/chat/completion', (req, res) => {
 
 // Hugging Face completion endpoint
 app.post('/ai/huggingface/completion', requireHfToken, huggingfaceCompletion);
+
+// Hugging Face Space proxy endpoint
+app.post('/ai/hf-space/completion', hfSpaceProxy);
 
 // Mount feature routers
 app.use('/auth', authRouter);

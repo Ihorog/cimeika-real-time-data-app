@@ -167,6 +167,41 @@ paths:
                         finish_reason:
                           type: string
                           example: length
+  /ai/hf-space/completion:
+    post:
+      operationId: proxyHuggingFaceSpace
+      summary: Проксі до Hugging Face Space "cimeika-api"
+      description: >-
+        Надсилає запит у розгорнутий Space `https://ihorog-cimeika-api.hf.space/chat/completion`
+        або на адресу, передану в полі `spaceUrl`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+                  description: Запит для віддаленого Space
+                  example: Який сьогодні настрій у Cimeika?
+                spaceUrl:
+                  type: string
+                  description: >-
+                    Необов'язково. Перевизначення URL Space; за замовчуванням
+                    використовується змінна середовища `HF_SPACE_URL`.
+                  example: https://ihorog-cimeika-api.hf.space
+      responses:
+        "200":
+          description: Відповідь від віддаленого Space
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TextCompletionResponse'
+        "400":
+          description: Некоректний запит
+        "502":
+          description: Space недоступний
   /data/collect:
     post:
       operationId: collectData
