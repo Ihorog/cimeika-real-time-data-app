@@ -132,6 +132,9 @@ cimeika/
    like `scripts/api_scenario.js` log a message and exit early. This file should
    not be committed to version control. A `.env.example` template is provided for
    reference.
+ - `HF_SPACE_URL` can be set in the `.env` file if you want the new
+   `/ai/hf-space/completion` proxy and the scenario script to target a different
+   Hugging Face Space (defaults to `https://ihorog-cimeika-api.hf.space`).
 
 ## Deployment
 
@@ -177,10 +180,12 @@ HUGGINGFACE_TOKEN=your_hf_token node scripts/api_scenario.js
 ```
 
 The script performs a mock login, requests a Hugging Face completion,
+proxies a chat prompt to the deployed Space at `https://ihorog-cimeika-api.hf.space`,
 creates a demo component and collects a small data payload. When
 `HUGGINGFACE_TOKEN` is absent, the script prints a notice and stops before the
-component creation and data collection steps. You can override the server URL
-by setting `BASE_URL` in your environment or `.env` file.
+Space proxy, component creation and data collection steps. You can override the
+server URL by setting `BASE_URL` and the Space host with `HF_SPACE_URL` in your
+environment or `.env` file.
 
 ## Testing
 

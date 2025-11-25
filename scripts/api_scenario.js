@@ -2,6 +2,7 @@ require('dotenv').config();
 const axios = require('axios');
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:7860';
+const HF_SPACE_URL = process.env.HF_SPACE_URL || 'https://ihorog-cimeika-api.hf.space';
 
 async function main() {
   // Authenticate (mock login)
@@ -27,6 +28,18 @@ async function main() {
     console.log('HF completion:', hfRes.data.choices[0].text);
   } catch (err) {
     console.error('Hugging Face completion failed:', err.response?.data || err.message);
+    return;
+  }
+
+  // Proxy to the deployed Hugging Face Space
+  try {
+    const spaceRes = await axios.post(`${BASE_URL}/ai/hf-space/completion`, {
+      prompt: 'Ping from API scenario',
+      spaceUrl: HF_SPACE_URL
+    });
+    console.log('HF Space completion:', spaceRes.data.choices?.[0]?.text || spaceRes.data);
+  } catch (err) {
+    console.error('Hugging Face Space call failed:', err.response?.data || err.message);
     return;
   }
 
