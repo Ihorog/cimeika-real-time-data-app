@@ -759,3 +759,30 @@ components:
           type: string
           description: Значення атрибуту
           example: значення-1
+    TextCompletionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Унікальний ідентифікатор відповіді
+        created:
+          type: string
+          format: date-time
+          description: Час створення відповіді
+        model:
+          type: string
+          description: Модель Hugging Face Space, яка використана
+        choices:
+          type: array
+          items:
+            type: object
+            properties:
+              text:
+                type: string
+                description: Згенерований текст
+              index:
+                type: integer
+                description: Порядковий номер варіанту
+              finish_reason:
+                type: string
+                description: Причина завершення генерації
