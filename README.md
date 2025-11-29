@@ -13,7 +13,7 @@ pinned: false
 
 Cimeika is a modern web application that integrates various real-time data services, including weather updates, time information, and astrological forecasts. The platform is designed to enhance the user experience through dynamic content and a visually appealing interface using Tailwind CSS.
 
-An architecture outline for how this service fits into the broader Cimeika platform (GitHub repos, HF Space, and cimeika.com.ua) is captured in [`docs/platform-architecture.md`](docs/platform-architecture.md). For concrete guidance on wiring this service into the SPA front-end (`CimeikaReact`) and HF Space, see [`docs/realtime-integration.md`](docs/realtime-integration.md).
+An architecture outline for how this service fits into the broader Cimeika platform (GitHub repos, HF Space, and cimeika.com.ua) is captured in [`docs/platform-architecture.md`](docs/platform-architecture.md).
 
 ## Project Overview
 
