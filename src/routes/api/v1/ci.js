@@ -1,3 +1,4 @@
+const axios = require('axios');
 const express = require('express');
 const { makeResponse } = require('./utils/responseHelper');
 const { appendProfile } = require('./utils/senseStorage');
@@ -15,13 +16,7 @@ router.get('/', (req, res) => {
 
 router.get('/sense', async (req, res) => {
   try {
-    const senseResponse = await fetch(SENSE_ENDPOINT);
-
-    if (!senseResponse.ok) {
-      throw new Error(`Sense service responded with status ${senseResponse.status}`);
-    }
-
-    const payload = await senseResponse.json();
+    const { data: payload } = await axios.get(SENSE_ENDPOINT, { proxy: false });
     const strength = Number(payload?.signal?.strength ?? 0);
     const resonance = 1 / (1 + Math.abs(strength - 0.8));
     const enrichedPayload = {
