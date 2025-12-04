@@ -727,6 +727,87 @@ paths:
                     type: string
                     description: Опис астрологічного прогнозу
                     example: Today is a good day for new beginnings.
+  /api/v1/ci/sense:
+    get:
+      operationId: getCiSense
+      summary: Отримати сенсорний профіль від ядра Ci
+      description: >-
+        Запитує Python-сервіс ci_mitca_sense та зберігає профіль резонансу для
+        подальшої аналітики.
+      responses:
+        "200":
+          description: Сенсорний профіль успішно отримано
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  module:
+                    type: string
+                    example: ci_sense
+                  data:
+                    $ref: "#/components/schemas/CiSensePayload"
+                  timestamp:
+                    type: string
+                    format: date-time
+        "502":
+          description: Неможливо отримати дані сенсоматики
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  module:
+                    type: string
+                    example: ci_sense
+                  data:
+                    type: object
+                    properties:
+                      error:
+                        type: string
+                        example: Unable to reach semantic sense service
+                  timestamp:
+                    type: string
+                    format: date-time
+  /api/v1/insight:
+    get:
+      operationId: getInsight
+      summary: Отримати агреговану аналітику резонансу
+      description: >-
+        Вивантажує попередньо збережені сенсорні профілі та повертає
+        середні показники резонансу, останній сигнал та рекомендації.
+      responses:
+        "200":
+          description: Аналітика успішно сформована
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  module:
+                    type: string
+                    example: insight
+                  data:
+                    type: object
+                    properties:
+                      summary:
+                        $ref: "#/components/schemas/InsightSummary"
+                      preview:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/CiSensePayload"
+                  timestamp:
+                    type: string
+                    format: date-time
 components:
   schemas:
     Component:
@@ -786,3 +867,67 @@ components:
               finish_reason:
                 type: string
                 description: Причина завершення генерації
+    SemanticNode:
+      type: object
+      properties:
+        axis:
+          type: string
+          description: Сенсова вісь
+          example: ПоДія
+        polarity:
+          type: string
+          description: Полярність сенсу
+          example: "+"
+        weight:
+          type: number
+          description: Вага сенсу у профілі
+          example: 0.82
+    CiSensePayload:
+      type: object
+      properties:
+        signal:
+          type: object
+          properties:
+            strength:
+              type: number
+              example: 0.78
+            trend:
+              type: string
+              example: steady
+        nodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/SemanticNode"
+        annotations:
+          type: array
+          items:
+            type: object
+        resonance:
+          type: number
+          description: Розрахована відповідність між Ci та користувачем
+          example: 0.91
+        receivedAt:
+          type: string
+          format: date-time
+          description: Час фіксації профілю в Node.js шарі
+    InsightSummary:
+      type: object
+      properties:
+        profilesCached:
+          type: integer
+          example: 5
+        averageResonance:
+          type: number
+          example: 0.88
+        latestSignal:
+          type: object
+        resonanceHealth:
+          type: string
+          example: stable
+        recommendations:
+          type: array
+          items:
+            type: string
+        lastUpdated:
+          type: string
+          format: date-time

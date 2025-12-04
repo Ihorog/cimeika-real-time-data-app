@@ -18,6 +18,7 @@ const DEFAULT_SIGN = config.defaultSign;
 
 const app = express();
 const swaggerDocument = YAML.load(path.join(__dirname, '..', 'cimeika-api.yaml'));
+const swaggerJsonDocument = require('../swagger.json');
 // Parse JSON request bodies
 app.use(express.json());
 
@@ -46,6 +47,7 @@ app.get('/openapi', (req, res) => {
 
 // Interactive API docs
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerJsonDocument));
 
 // Chat completion endpoint (mock)
 app.post('/chat/completion', (req, res) => {
