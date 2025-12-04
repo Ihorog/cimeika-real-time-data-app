@@ -1,22 +1,20 @@
 const express = require('express');
-const createResponse = require('./responseHelper');
+const { makeResponse } = require('./utils/responseHelper');
+const health = require('./health');
+const ci = require('./ci');
+const calendar = require('./calendar');
+const gallery = require('./gallery');
+const legend = require('./legend');
 
 const router = express.Router();
+const modules = { health, ci, calendar, gallery, legend };
 
-const modules = ['calendar', 'ci', 'gallery', 'health', 'legend'].sort();
+router.get('/', (req, res) =>
+  res.json(makeResponse('v1', { availableModules: Object.keys(modules) }))
+);
 
-router.get('/', (req, res) => {
-  res.json(
-    createResponse('api_v1', {
-      modules,
-      note: 'API v1 stub modules available. Mount specific routes under /api/v1/<module>.'
-    })
-  );
-});
-
-modules.forEach(moduleName => {
-  const moduleRouter = require(`./${moduleName}`);
-  router.use(`/${moduleName}`, moduleRouter);
+Object.entries(modules).forEach(([name, moduleRouter]) => {
+  router.use(`/${name}`, moduleRouter);
 });
 
 module.exports = router;
