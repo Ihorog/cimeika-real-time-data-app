@@ -11,6 +11,22 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
 const weatherCache = new Map();
 const astrologyCache = new Map();
 const CACHE_SWEEP_INTERVAL_MS = 60 * 1000;
+const MAX_CITY_LENGTH = 80;
+const CITY_PATTERN = /^[\p{L}\s.'-]+$/u;
+const VALID_SIGNS = new Set([
+  'aries',
+  'taurus',
+  'gemini',
+  'cancer',
+  'leo',
+  'virgo',
+  'libra',
+  'scorpio',
+  'sagittarius',
+  'capricorn',
+  'aquarius',
+  'pisces'
+]);
 
 function purgeExpiredEntries() {
   const now = Date.now();
@@ -41,6 +57,25 @@ const DEFAULT_SIGN = config.defaultSign;
 function normalizeQueryParam(req, key, defaultValue) {
   const value = req.query[key];
   return typeof value === 'string' && value.trim() ? value.trim() : defaultValue;
+}
+
+function isValidCity(value) {
+  return (
+    typeof value === 'string' &&
+    value.length > 0 &&
+    value.length <= MAX_CITY_LENGTH &&
+    CITY_PATTERN.test(value)
+  );
+}
+
+function normalizeCity(req) {
+  const city = normalizeQueryParam(req, 'city', DEFAULT_CITY);
+  return isValidCity(city) ? city : null;
+}
+
+function normalizeSign(req) {
+  const sign = normalizeQueryParam(req, 'sign', DEFAULT_SIGN).toLowerCase();
+  return VALID_SIGNS.has(sign) ? sign : null;
 }
 
 // Factory helpers for common JSON responses
@@ -87,7 +122,8 @@ async function fetchAstrology(sign) {
 
 // Return current weather data for the requested city
 router.get('/weather/current', async (req, res) => {
-  const city = normalizeQueryParam(req, 'city', DEFAULT_CITY);
+  const city = normalizeCity(req);
+  if (!city) return res.status(400).json({ error: 'invalid city parameter' });
   try {
     const result = await fetchWeather(city);
     res.json(result);
@@ -99,7 +135,8 @@ router.get('/weather/current', async (req, res) => {
 
 // Return an astrology forecast for the requested sign
 router.get('/astrology/forecast', async (req, res) => {
-  const sign = normalizeQueryParam(req, 'sign', DEFAULT_SIGN);
+  const sign = normalizeSign(req);
+  if (!sign) return res.status(400).json({ error: 'invalid sign parameter' });
   try {
     const result = await fetchAstrology(sign);
     res.json(result);
@@ -114,7 +151,8 @@ router.get('/time/current', (req, res) => {
 });
 
 router.get('/data/weather', async (req, res) => {
-  const city = normalizeQueryParam(req, 'city', DEFAULT_CITY);
+  const city = normalizeCity(req);
+  if (!city) return res.status(400).json({ error: 'invalid city parameter' });
   try {
     const result = await fetchWeather(city);
     res.json(result);
@@ -125,7 +163,8 @@ router.get('/data/weather', async (req, res) => {
 });
 
 router.get('/data/astrology', async (req, res) => {
-  const sign = normalizeQueryParam(req, 'sign', DEFAULT_SIGN);
+  const sign = normalizeSign(req);
+  if (!sign) return res.status(400).json({ error: 'invalid sign parameter' });
   try {
     const result = await fetchAstrology(sign);
     res.json(result);
