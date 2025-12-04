@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get('/', (req, res) => {
   res.json(
-    createResponse('ci_api', {
+    createResponse('health', {
       timestamp: new Date().toISOString()
     })
   );
