@@ -50,9 +50,14 @@ async function appendProfile(profile) {
   return profiles;
 }
 
+function getProfiles() {
+  return readProfiles();
+}
+
 module.exports = {
   DATA_FILE,
   ensureDataFile,
   readProfiles,
-  appendProfile
+  appendProfile,
+  getProfiles
 };
