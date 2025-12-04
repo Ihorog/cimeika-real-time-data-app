@@ -1,5 +1,5 @@
 const express = require('express');
-const { makeResponse } = require('./utils/responseHelper');
+const { makeResponse } = require('../utils/responseHelper');
 
 const router = express.Router();
 

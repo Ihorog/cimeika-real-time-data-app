@@ -1,8 +1,9 @@
 const request = require('supertest');
 const app = require('../src/app');
+const modulesConfig = require('../src/routes/api/v1/modules.json');
 
 describe('API v1 Modules', () => {
-  const modules = ['health', 'ci', 'calendar', 'gallery', 'legend'];
+  const modules = modulesConfig.active;
 
   it('GET /api/v1 → returns list of modules', async () => {
     const response = await request(app).get('/api/v1');
