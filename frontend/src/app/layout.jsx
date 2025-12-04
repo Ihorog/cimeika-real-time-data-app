@@ -1,5 +1,6 @@
 import "./globals.css";
 import Navbar from "../components/Navbar";
+import ConnectionStatus from "../components/ConnectionStatus";
 
 export const metadata = {
   title: "Cimeika Interface",
@@ -12,6 +13,7 @@ export default function RootLayout({ children }) {
       <body className="bg-slate-950 text-slate-50 antialiased">
         <Navbar />
         <main className="min-h-screen p-6 sm:p-10">{children}</main>
+        <ConnectionStatus />
       </body>
     </html>
   );
