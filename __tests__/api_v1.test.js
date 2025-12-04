@@ -18,7 +18,7 @@ describe('API v1 routes', () => {
 
     expect(response.status).toBe(200);
     expect(response.body.status).toBe('ok');
-    expect(response.body.module).toBe('ci_api');
+    expect(response.body.module).toBe('health');
     expect(response.body.payload).toHaveProperty('timestamp');
   });
 
