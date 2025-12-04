@@ -1195,6 +1195,17 @@
           }
         }
       }
+    },
+    "/system/monitor": {
+      "get": {
+        "summary": "Live System Monitor",
+        "description": "Показує стан модулів, резонанс і uptime системи.",
+        "responses": {
+          "200": {
+            "description": "Моніторинг активних модулів"
+          }
+        }
+      }
     }
   },
   "components": {
