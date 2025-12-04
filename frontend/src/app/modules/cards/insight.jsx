@@ -1,6 +1,6 @@
-import ModuleCard from "../../components/ModuleCard";
+import ModuleCard from "../../../components/ModuleCard";
 
-export default function InsightModule() {
+export default function InsightModuleCard() {
   return (
     <ModuleCard title="Insight" status="Preparing" accent="amber">
       <p>Profile analytics and sense-matrix discovery in progress.</p>

@@ -1,15 +1,17 @@
 import "./globals.css";
+import Navbar from "../components/Navbar";
 
 export const metadata = {
-  title: "Cimeika System UI",
-  description: "Phase 1 system interface for monitoring and resonance analytics.",
+  title: "Cimeika Interface",
+  description: "Cimeika AI System Interface",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="uk">
       <body className="bg-slate-950 text-slate-50 antialiased">
-        {children}
+        <Navbar />
+        <main className="min-h-screen p-6 sm:p-10">{children}</main>
       </body>
     </html>
   );
