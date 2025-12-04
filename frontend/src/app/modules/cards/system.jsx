@@ -1,6 +1,6 @@
-import ModuleCard from "../../components/ModuleCard";
+import ModuleCard from "../../../components/ModuleCard";
 
-export default function SystemModule() {
+export default function SystemModuleCard() {
   return (
     <ModuleCard title="System" status="Stable" accent="emerald">
       <p>Monitoring infrastructure health, uptime, and resonance averages.</p>

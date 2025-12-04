@@ -1,6 +1,6 @@
-import ModuleCard from "../../components/ModuleCard";
+import ModuleCard from "../../../components/ModuleCard";
 
-export default function OrchestratorModule() {
+export default function OrchestratorModuleCard() {
   return (
     <ModuleCard title="Orchestrator" status="Active" accent="sky">
       <p>Task balancing for Ci executors with priority scheduling.</p>

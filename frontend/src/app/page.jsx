@@ -1,13 +1,13 @@
 import Link from "next/link";
 import SystemStatus from "../components/SystemStatus";
-import CiModule from "./modules/ci";
-import InsightModule from "./modules/insight";
-import SystemModule from "./modules/system";
-import OrchestratorModule from "./modules/orchestrator";
+import CiModuleCard from "./modules/cards/ci";
+import InsightModuleCard from "./modules/cards/insight";
+import SystemModuleCard from "./modules/cards/system";
+import OrchestratorModuleCard from "./modules/cards/orchestrator";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen py-14 px-6 sm:px-10 lg:px-16">
+    <div className="py-8">
       <div className="max-w-6xl mx-auto space-y-10">
         <header className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
@@ -16,8 +16,8 @@ export default function HomePage() {
               System UI — Resonance Monitor
             </h1>
             <p className="text-slate-300 max-w-2xl">
-              Live insight into Ci, Insight, System, and Orchestrator modules. Track uptime, resonance
-              vectors, and prepare for Phase 2 visualizations.
+              Live insight into Ci, Insight, System, and Orchestrator modules. Track uptime, resonance vectors, and prepare for
+              Phase 2 visualizations.
             </p>
             <div className="flex gap-3">
               <Link
@@ -51,21 +51,33 @@ export default function HomePage() {
           <div className="glow-card rounded-2xl p-6 bg-slate-900/70 text-slate-200 space-y-3">
             <h3 className="text-lg font-semibold text-white">API Landscape</h3>
             <ul className="space-y-2 text-sm">
-              <li className="flex justify-between"><span>/api/v1/system/monitor</span><span className="text-emerald-300">Active</span></li>
-              <li className="flex justify-between"><span>/api/v1/ci/sense</span><span className="text-amber-300">Next phase</span></li>
-              <li className="flex justify-between"><span>/api/v1/insight</span><span className="text-amber-300">In progress</span></li>
-              <li className="flex justify-between"><span>/api/v1/orchestrator/balance</span><span className="text-emerald-300">Active</span></li>
+              <li className="flex justify-between">
+                <span>/api/v1/system/monitor</span>
+                <span className="text-emerald-300">Active</span>
+              </li>
+              <li className="flex justify-between">
+                <span>/api/v1/ci/sense</span>
+                <span className="text-amber-300">Next phase</span>
+              </li>
+              <li className="flex justify-between">
+                <span>/api/v1/insight</span>
+                <span className="text-amber-300">In progress</span>
+              </li>
+              <li className="flex justify-between">
+                <span>/api/v1/orchestrator/balance</span>
+                <span className="text-emerald-300">Active</span>
+              </li>
             </ul>
           </div>
         </section>
 
         <section className="grid gap-6 md:grid-cols-2">
-          <CiModule />
-          <InsightModule />
-          <SystemModule />
-          <OrchestratorModule />
+          <CiModuleCard />
+          <InsightModuleCard />
+          <SystemModuleCard />
+          <OrchestratorModuleCard />
         </section>
       </div>
-    </main>
+    </div>
   );
 }
