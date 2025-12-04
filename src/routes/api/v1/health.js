@@ -1,12 +1,12 @@
 const express = require('express');
-const createResponse = require('./responseHelper');
+const { makeResponse } = require('./utils/responseHelper');
 
 const router = express.Router();
 
 router.get('/', (req, res) => {
   res.json(
-    createResponse('health', {
-      timestamp: new Date().toISOString()
+    makeResponse('health', {
+      uptime: process.uptime()
     })
   );
 });
