@@ -11,6 +11,7 @@ const dataRouter = require('./routes/data');
 const realtimeRouter = require('./routes/realtime');
 const huggingfaceCompletion = require('./routes/huggingface');
 const hfSpaceProxy = require('./routes/hfSpaceProxy');
+const apiV1Router = require('./routes/api/v1');
 
 const DEFAULT_CITY = config.defaultCity;
 const DEFAULT_SIGN = config.defaultSign;
@@ -70,6 +71,7 @@ app.post('/ai/hf-space/completion', hfSpaceProxy);
 app.use('/auth', authRouter);
 app.use('/components', componentsRouter);
 app.use('/data', dataRouter);
+app.use('/api/v1', apiV1Router);
 app.use('/', realtimeRouter);
 
 app.use((req, res) => res.status(404).json({ error: 'not found' }));
