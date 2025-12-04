@@ -5,13 +5,29 @@ export default function ConnectionStatus() {
   const [online, setOnline] = useState(true);
 
   useEffect(() => {
-    const check = setInterval(() => {
-      fetch("http://localhost:3000/api/v1/health")
-        .then((response) => setOnline(response.ok))
-        .catch(() => setOnline(false));
-    }, 5000);
+    let cancelled = false;
 
-    return () => clearInterval(check);
+    const checkStatus = () => {
+      fetch("http://localhost:3000/api/v1/health")
+        .then((response) => {
+          if (!cancelled) {
+            setOnline(response.ok);
+          }
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setOnline(false);
+          }
+        });
+    };
+
+    checkStatus();
+    const check = setInterval(checkStatus, 5000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(check);
+    };
   }, []);
 
   return (
