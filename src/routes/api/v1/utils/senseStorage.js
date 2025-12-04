@@ -46,7 +46,7 @@ async function readProfiles() {
 async function appendProfile(profile) {
   const profiles = await readProfiles();
   profiles.push(profile);
-  await fs.writeFile(DATA_FILE, JSON.stringify(profiles, null, 2));
+  await saveProfiles(profiles);
   return profiles;
 }
 
@@ -54,10 +54,33 @@ function getProfiles() {
   return readProfiles();
 }
 
+async function saveProfiles(profiles) {
+  await ensureDataFile();
+  await fs.writeFile(DATA_FILE, JSON.stringify(profiles, null, 2));
+  return profiles;
+}
+
+function getAverageResonance(profiles) {
+  if (!profiles.length) return 0;
+  const total = profiles.reduce((sum, profile) => sum + Number(profile.resonance || 0), 0);
+  return total / profiles.length;
+}
+
+async function clearOldProfiles(limit = 100) {
+  const profiles = await getProfiles();
+  if (profiles.length > limit) {
+    const trimmed = profiles.slice(-limit);
+    await saveProfiles(trimmed);
+  }
+}
+
 module.exports = {
   DATA_FILE,
   ensureDataFile,
   readProfiles,
   appendProfile,
-  getProfiles
+  getProfiles,
+  saveProfiles,
+  getAverageResonance,
+  clearOldProfiles
 };

@@ -3,7 +3,7 @@ const os = require('os');
 const fs = require('fs/promises');
 const path = require('path');
 const { makeResponse } = require('./utils/responseHelper');
-const { readProfiles } = require('./utils/senseStorage');
+const { readProfiles, getAverageResonance } = require('./utils/senseStorage');
 
 const router = express.Router();
 
@@ -67,10 +67,7 @@ router.get('/monitor', async (req, res) => {
 
   try {
     const profiles = await readProfiles();
-    const resonanceValue = profiles.length
-      ? profiles.reduce((sum, profile) => sum + (Number(profile.resonance) || 0), 0) / profiles.length
-      : 0;
-    const avgResonance = Number(resonanceValue.toFixed(3));
+    const avgResonance = Number(getAverageResonance(profiles).toFixed(3));
     const modules = ['health', 'ci', 'calendar', 'gallery', 'legend', 'insight'];
     const responseTimeMs = Number(process.hrtime.bigint() - start) / 1e6;
     const timestamp = new Date().toISOString();
