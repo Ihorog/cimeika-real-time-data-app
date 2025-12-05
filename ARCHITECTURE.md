@@ -7,13 +7,13 @@ This document outlines how the Ci-centered SPA and FastAPI backend work together
 - **Frontend (Next.js + Tailwind + Framer Motion)**: modular pages for every Ci module with shared design tokens and micro-interactions that visualize resonance.
 - **Backend (FastAPI)**: router-per-module that exposes the interaction points defined in the specification (Ci chat/data/components, PoДія events, Настрій mood, Маля creative, Казкар story, Календар time nodes, Галерея uploads).
 - **Orchestrator utilities**: lightweight `TaskOrchestrator`, `PriorityTaskScheduler`, and `SimpleTaskExecutor` for routing module tasks, plus `SenseNode` resonance helpers.
-- **Connectors**: stubs for OpenAI, Hugging Face Dataset `ci_power`, Telegram, Google Calendar, and GitHub sync to keep the integration surface visible without requiring secrets at build time.
+- **Connectors**: HTTP bridges in `backend/utils/connectors.py` that call the configured `CIMEIKA_API` base (via `httpx`) for mood, creative, story, and event data. These are real requests with timeout/error handling; they do not mock OpenAI/HF/Telegram/Google directly, so upstream endpoints must exist or callers fall back to local defaults in the routers.
 
 ## Data flow
 
 1. Frontend calls the FastAPI endpoints (default `http://localhost:8000`) via the API Console component or module-specific widgets.
 2. FastAPI routes delegate to orchestrator helpers or sense engine scoring; responses include resonance metadata where relevant.
-3. External services (OpenAI, HF, Telegram, Google) are abstracted behind connector functions so tokens remain in `.env` and are not required for local preview.
+3. Connector functions proxy to the upstream Cimeika API; when that API is unavailable, routers such as `mood`, `malya`, and `podia` return graceful fallback data instead of requiring OpenAI/HF/TG keys locally.
 4. GitHub Actions and Hugging Face Space deployment pick up changes from `main`; the provided `.env.template` lists required variables for syncing.
 
 ## Module-to-endpoint map
