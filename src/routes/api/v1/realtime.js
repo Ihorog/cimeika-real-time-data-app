@@ -5,6 +5,14 @@ const systemModule = require('./system');
 
 const router = express.Router();
 
+router.get('/', (req, res) => {
+  res.json(
+    makeResponse('realtime', {
+      endpoints: ['/api/v1/realtime/summary']
+    })
+  );
+});
+
 router.get('/summary', async (req, res) => {
   const city = realtimeRouter.normalizeCity(req);
   if (!city) {
