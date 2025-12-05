@@ -1,0 +1,21 @@
+:root {
+  --ci-sky: #63b3f5;
+  --ci-wave: #32b4f2;
+  --ci-deep: #07324f;
+  --ci-glow: #ffd978;
+  --ci-grass: #8bc34a;
+  --ci-calm: #4db6ac;
+  --ci-rose: #f8bbd0;
+  --ci-shadow: #021726;
+  --ci-black: #020612;
+}
+
+.ci-gradient {
+  background: linear-gradient(135deg, var(--ci-wave), var(--ci-sky));
+}
+
+.ci-panel {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(3, 7, 18, 0.75);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+}

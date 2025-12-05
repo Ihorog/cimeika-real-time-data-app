@@ -3,10 +3,13 @@ import Link from "next/link";
 
 const menu = [
   { name: "Головна", href: "/" },
-  { name: "Чат", href: "/chat" },
-  { name: "Ci", href: "/modules/ci" },
-  { name: "Insight", href: "/modules/insight" },
-  { name: "Система", href: "/modules/system" },
+  { name: "Ci", href: "/ci" },
+  { name: "ПоДія", href: "/podia" },
+  { name: "Настрій", href: "/mood" },
+  { name: "Маля", href: "/malya" },
+  { name: "Казкар", href: "/kazkar" },
+  { name: "Календар", href: "/calendar" },
+  { name: "Галерея", href: "/gallery" },
 ];
 
 export default function Navbar() {
