@@ -63,9 +63,9 @@ Ensure that you have **Node.js 16 or later** installed.
    `7860`). The `.env` file is ignored by git.
    Set `SENSE_ENDPOINT` to the URL of the Ci semantic sense service if it's running on a
    different host or path (defaults to `http://localhost:8000/mitca/sense`). You can also
-   tune `SENSE_TIMEOUT_MS`, `SENSE_RETRY_COUNT`, and `SENSE_RETRY_DELAY_MS` to control how
-   long the `/ci/sense` route waits and how many times it retries when the service is
-   slow or temporarily unavailable.
+   tune `SENSE_TIMEOUT_MS` (default: 5000), `SENSE_RETRY_COUNT` (default: 3), and
+   `SENSE_RETRY_DELAY_MS` (default: 300) to control how long the `/ci/sense` route waits
+   and how many times it retries when the service is slow or temporarily unavailable.
    If you prefer JSON-based configuration, copy `api_keys.example.json` to
    `api_keys.json` and replace the placeholder values with your real API keys:
    ```bash
