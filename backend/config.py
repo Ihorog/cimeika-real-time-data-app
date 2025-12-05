@@ -1,11 +1,5 @@
-import logging
 import os
 from typing import List
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
-)
 
 
 def _split_csv(value: str) -> List[str]:
@@ -18,6 +12,7 @@ class Settings:
         self.api_base_url = os.getenv("API_BASE_URL", "http://localhost:8000")
         self.openai_api_key = os.getenv("OPENAI_API_KEY", os.getenv("CI_OPENAI_KEY", ""))
         self.hf_api_key = os.getenv("HF_API_KEY", os.getenv("HF_TOKEN", ""))
+        self.log_level = os.getenv("LOG_LEVEL", "INFO")
         allowed_origins = os.getenv(
             "ALLOWED_ORIGINS",
             "http://localhost:3000,https://cimeika-real-time-data-app.vercel.app",
