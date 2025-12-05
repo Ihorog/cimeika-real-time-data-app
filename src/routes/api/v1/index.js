@@ -7,6 +7,8 @@ const router = express.Router();
 const modulesConfigPath = path.join(__dirname, 'modules.json');
 const staticModuleDir = path.join(__dirname, 'static_modules');
 
+const isValidModuleName = (name) => /^[a-zA-Z0-9_-]+$/.test(name);
+
 function loadModules() {
   if (!fs.existsSync(modulesConfigPath)) {
     return {};
@@ -16,6 +18,11 @@ function loadModules() {
   const loaded = {};
 
   active.forEach((moduleName) => {
+    if (!isValidModuleName(moduleName)) {
+      console.warn(`Skipping invalid module name: "${moduleName}"`);
+      return;
+    }
+
     const candidates = [
       path.join(__dirname, `${moduleName}.js`),
       path.join(staticModuleDir, `${moduleName}.js`)

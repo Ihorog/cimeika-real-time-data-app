@@ -1,8 +1,21 @@
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.config import settings
 from backend.routers import calendar, ci, gallery, kazkar, malya, mood, podia
+
+
+def configure_logging() -> None:
+    """Configure application logging once at startup."""
+    logging.basicConfig(
+        level=getattr(logging, settings.log_level.upper(), logging.INFO),
+        format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+    )
+
+
+configure_logging()
 
 app = FastAPI(
     title=settings.api_title,
@@ -10,6 +23,8 @@ app = FastAPI(
     description="Ci orchestration layer",
 )
 
+# CORS configuration keeps existing routes functional while constraining origins.
+# Origins can be overridden via the ALLOWED_ORIGINS env variable.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,

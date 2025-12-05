@@ -1,12 +1,28 @@
-const baseUrl = (process.env.NEXT_PUBLIC_CIMEIKA_API_URL || "").replace(/\/$/, "");
+function resolveBaseUrl(): string {
+  const url = process.env.NEXT_PUBLIC_CIMEIKA_API_URL?.trim();
+  if (!url) {
+    throw new Error(
+      "NEXT_PUBLIC_CIMEIKA_API_URL is not configured; frontend cannot reach the backend API",
+    );
+  }
+  return url.replace(/\/$/, "");
+}
+
+const baseUrl = resolveBaseUrl();
+
+const normalizePath = (path: string) => (path.startsWith("/") ? path : `/${path}`);
 
 type ApiResponse<T> = {
   data?: T;
   error?: string;
 };
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
-  const url = `${baseUrl}${path}`;
+async function request<T>(
+  path: string,
+  options: RequestInit = {},
+  validate?: (data: unknown) => T,
+): Promise<ApiResponse<T>> {
+  const url = `${baseUrl}${normalizePath(path)}`;
 
   try {
     const response = await fetch(url, {
@@ -21,8 +37,9 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<ApiR
       return { error: `Request failed with status ${response.status}` };
     }
 
-    const data = (await response.json()) as T;
-    return { data };
+    const payload = await response.json();
+    const parsed = validate ? validate(payload) : (payload as T);
+    return { data: parsed };
   } catch (error) {
     if (process.env.NODE_ENV !== "production") {
       // eslint-disable-next-line no-console
@@ -34,13 +51,14 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<ApiR
   }
 }
 
-export async function get<T>(path: string): Promise<ApiResponse<T>> {
-  return request<T>(path, { method: "GET" });
+export async function get<T>(path: string, validate?: (data: unknown) => T): Promise<ApiResponse<T>> {
+  return request<T>(path, { method: "GET" }, validate);
 }
 
 export async function post<TBody, TResponse>(
   path: string,
   body: TBody,
+  validate?: (data: unknown) => TResponse,
 ): Promise<ApiResponse<TResponse>> {
-  return request<TResponse>(path, { method: "POST", body: JSON.stringify(body) });
+  return request<TResponse>(path, { method: "POST", body: JSON.stringify(body) }, validate);
 }

@@ -13,6 +13,7 @@ const GALLERY_PATH = path.join(DATA_DIR, 'gallery.json');
 const MOOD_CACHE_PATH = path.join(DATA_DIR, 'gallery_moods.json');
 const PYTHON_SCRIPT = path.join(ROOT_DIR, 'api', 'ci_mitca_gallery.py');
 const PYTHON_BIN = process.env.PYTHON_BIN || 'python3';
+const ALLOWED_IMAGE_ROOT = DATA_DIR;
 
 const DEFAULT_ITEMS = [
   {
@@ -43,6 +44,15 @@ function loadJson(filePath, fallback) {
 function saveJson(filePath, data) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
+
+function ensureWithinRoot(targetPath) {
+  const resolved = path.resolve(targetPath);
+  const root = path.resolve(ALLOWED_IMAGE_ROOT);
+  if (!resolved.startsWith(root)) {
+    throw new Error('imagePath is outside the allowed data directory');
+  }
+  return resolved;
 }
 
 function loadGallery() {
@@ -127,7 +137,8 @@ router.post('/mood', (req, res) => {
   }
 
   try {
-    const stdout = execFileSync(PYTHON_BIN, [PYTHON_SCRIPT, '--image', imagePath], {
+    const safeImagePath = ensureWithinRoot(imagePath);
+    const stdout = execFileSync(PYTHON_BIN, [PYTHON_SCRIPT, '--image', safeImagePath], {
       encoding: 'utf-8'
     });
     const payload = JSON.parse(stdout);
@@ -142,10 +153,16 @@ router.post('/mood', (req, res) => {
       })
     );
   } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unexpected failure';
+    const status = message.includes('outside the allowed data directory') ? 400 : 502;
     res
-      .status(502)
+      .status(status)
       .json(
-        makeResponse('gallery_mood', { error: 'Unable to reach gallery mood analyzer', details: error.message }, 'error')
+        makeResponse(
+          'gallery_mood',
+          { error: 'Unable to reach gallery mood analyzer', details: message },
+          'error'
+        )
       );
   }
 });
