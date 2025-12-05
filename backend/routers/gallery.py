@@ -2,7 +2,10 @@ from typing import Dict, List
 from fastapi import APIRouter, UploadFile
 from pydantic import BaseModel
 
+from backend.utils.orchestrator import Task, TaskOrchestrator
+
 router = APIRouter(prefix="/gallery")
+orchestrator = TaskOrchestrator()
 
 
 class GalleryItem(BaseModel):
@@ -10,6 +13,19 @@ class GalleryItem(BaseModel):
     title: str
     url: str
     mood: str
+
+
+def handle_gallery_task(task: Task):
+    item = GalleryItem(**task.payload)
+    return {
+        "module": task.module,
+        "stored": item.id,
+        "title": item.title,
+        "mood": item.mood,
+    }
+
+
+orchestrator.register_handler("gallery", handle_gallery_task)
 
 
 @router.get("/images", response_model=List[GalleryItem])
