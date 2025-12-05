@@ -1,9 +1,10 @@
 function resolveBaseUrl(): string {
   const url = process.env.NEXT_PUBLIC_CIMEIKA_API_URL?.trim();
   if (!url) {
-    throw new Error(
-      "NEXT_PUBLIC_CIMEIKA_API_URL is not configured; frontend cannot reach the backend API",
+    console.warn(
+      "NEXT_PUBLIC_CIMEIKA_API_URL is not configured; defaulting to http://localhost:8000 for local development",
     );
+    return "http://localhost:8000";
   }
   return url.replace(/\/$/, "");
 }
@@ -42,7 +43,6 @@ async function request<T>(
     return { data: parsed };
   } catch (error) {
     if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
       console.error("Cimeika API client error", error);
     } else {
       // TODO: send critical frontend errors to monitoring endpoint

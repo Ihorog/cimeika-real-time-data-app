@@ -2,12 +2,14 @@
 
 import { motion } from "framer-motion";
 
-export default function TodayWidget({ events = [], onQuickAdd }) {
+export default function TodayWidget({ events = [], quickAddMessage = "Голосова команда активована" }) {
   const todayLabel = new Date().toLocaleDateString("uk-UA", {
     weekday: "long",
     day: "numeric",
     month: "long",
   });
+
+  const handleQuickAdd = () => alert(quickAddMessage);
 
   return (
     <motion.div
@@ -22,7 +24,7 @@ export default function TodayWidget({ events = [], onQuickAdd }) {
           <h3 className="text-xl font-semibold">{todayLabel}</h3>
         </div>
         <button
-          onClick={onQuickAdd}
+          onClick={handleQuickAdd}
           className="px-3 py-2 rounded-lg bg-sky-500 text-white text-sm font-semibold hover:bg-sky-400 transition"
         >
           Голос: додати подію
