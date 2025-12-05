@@ -1,5 +1,5 @@
-from datetime import datetime
-from typing import List
+from datetime import UTC, datetime
+from typing import Any, Dict, List
 from fastapi import APIRouter
 from pydantic import BaseModel
 
@@ -8,6 +8,23 @@ from backend.utils.orchestrator import Task, TaskOrchestrator
 
 router = APIRouter()
 orchestrator = TaskOrchestrator()
+
+
+def handle_podia_task(task: Task) -> Dict[str, Any]:
+    payload: Dict[str, Any] = dict(task.payload)
+    start_value = payload.get("start")
+    if isinstance(start_value, datetime):
+        payload["start"] = start_value.isoformat()
+
+    return {
+        "module": task.module,
+        "event": payload,
+        "message": f"Подія '{payload.get('title', payload.get('id', 'невідома подія'))}' опрацьована",
+        "received_at": datetime.now(UTC).isoformat(),
+    }
+
+
+orchestrator.register_handler("podia", handle_podia_task)
 
 
 class Event(BaseModel):
