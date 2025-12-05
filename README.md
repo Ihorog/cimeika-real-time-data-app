@@ -95,6 +95,7 @@ Ensure that you have **Node.js 16 or later** installed.
 - **OpenAPI Documentation**: Available at `/openapi` and browsable through Swagger UI at `/docs`.
 - **Configuration Endpoint**: `GET /config` returns the relative paths for the weather and astrology services used by the frontend.
 - **API Version**: OpenAPI specification version is `1.1.0` (see `cimeika-api.yaml`).
+- **Dual-axis mechanics**: Ci exposes the PLUS/MINUS axis manifest at `/ci/axes` and resonance scoring at `/ci/axes/resonance` to keep brand voices in sync with orchestrated tasks.
 
 ## Dependencies
 
