@@ -1,6 +1,10 @@
 function resolveBaseUrl(): string {
   const url = process.env.NEXT_PUBLIC_CIMEIKA_API_URL?.trim();
   if (!url) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("NEXT_PUBLIC_CIMEIKA_API_URL is required in production environments");
+    }
+
     console.warn(
       "NEXT_PUBLIC_CIMEIKA_API_URL is not configured; defaulting to http://localhost:8000 for local development",
     );

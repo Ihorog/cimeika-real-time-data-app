@@ -14,6 +14,8 @@ const MOOD_CACHE_PATH = path.join(DATA_DIR, 'gallery_moods.json');
 const PYTHON_SCRIPT = path.join(ROOT_DIR, 'api', 'ci_mitca_gallery.py');
 const PYTHON_BIN = process.env.PYTHON_BIN || 'python3';
 const ALLOWED_IMAGE_ROOT = DATA_DIR;
+fs.mkdirSync(ALLOWED_IMAGE_ROOT, { recursive: true });
+const RESOLVED_IMAGE_ROOT = fs.realpathSync.native(ALLOWED_IMAGE_ROOT);
 
 const DEFAULT_ITEMS = [
   {
@@ -47,12 +49,22 @@ function saveJson(filePath, data) {
 }
 
 function ensureWithinRoot(targetPath) {
-  const resolved = path.resolve(targetPath);
-  const root = path.resolve(ALLOWED_IMAGE_ROOT);
-  if (!resolved.startsWith(root)) {
-    throw new Error('imagePath is outside the allowed data directory');
+  try {
+    const decoded = decodeURIComponent(targetPath);
+    const resolved = fs.realpathSync.native(path.resolve(decoded));
+
+    if (
+      resolved !== RESOLVED_IMAGE_ROOT &&
+      !resolved.startsWith(`${RESOLVED_IMAGE_ROOT}${path.sep}`)
+    ) {
+      throw new Error('imagePath is outside the allowed data directory');
+    }
+
+    return resolved;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Invalid imagePath';
+    throw new Error(message.includes('outside the allowed') ? message : 'Invalid imagePath');
   }
-  return resolved;
 }
 
 function loadGallery() {
@@ -154,7 +166,8 @@ router.post('/mood', (req, res) => {
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unexpected failure';
-    const status = message.includes('outside the allowed data directory') ? 400 : 502;
+    const status =
+      message.includes('outside the allowed data directory') || message.includes('Invalid imagePath') ? 400 : 502;
     res
       .status(status)
       .json(

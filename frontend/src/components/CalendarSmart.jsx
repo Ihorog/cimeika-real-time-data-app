@@ -87,7 +87,7 @@ export default function CalendarSmart() {
           <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Calendar+ Orchestrator</p>
           <h2 className="text-2xl font-bold text-white">Інтелектуальний календар</h2>
             <p className="text-sm text-slate-300 max-w-2xl">
-              Аналізує звички, підтягує дані з Google/Outlook, здоров&#39;я та соціальних сервісів. Працює з родинними та навчальними сценаріями.
+              {"Аналізує звички, підтягує дані з Google/Outlook, здоров'я та соціальних сервісів. Працює з родинними та навчальними сценаріями."}
             </p>
         </div>
         <div className="flex flex-wrap gap-2">

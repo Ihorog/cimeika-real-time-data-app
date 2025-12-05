@@ -1,36 +1,38 @@
-import axios from "axios";
+import { get, post } from "../lib/api";
 
-const DEFAULT_API_BASE = "http://localhost:3000/api/v1";
-const apiBase = (process.env.NEXT_PUBLIC_API_BASE_URL || DEFAULT_API_BASE).replace(/\/$/, "");
+const GALLERY_BASE_PATH = "/api/v1/gallery";
 
-const galleryClient = axios.create({
-  baseURL: `${apiBase}/gallery`,
-  timeout: 7000,
-});
+async function unwrap(response, message = "Gallery service unavailable") {
+  if (response?.error) {
+    throw new Error(response.error || message);
+  }
+
+  return response?.data;
+}
 
 export async function listGallery() {
-  const { data } = await galleryClient.get("/list");
-  return data;
+  const payload = await get(`${GALLERY_BASE_PATH}/list`);
+  return unwrap(payload);
 }
 
 export async function uploadMedia(payload) {
-  const { data } = await galleryClient.post("/upload", payload);
-  return data;
+  const payloadResponse = await post(`${GALLERY_BASE_PATH}/upload`, payload);
+  return unwrap(payloadResponse);
 }
 
 export async function analyzeMood(imagePath) {
-  const { data } = await galleryClient.post("/mood", { imagePath });
-  return data;
+  const payload = await post(`${GALLERY_BASE_PATH}/mood`, { imagePath });
+  return unwrap(payload, "Gallery mood analyzer unavailable");
 }
 
 export async function linkMedia(id, linkedEvent) {
-  const { data } = await galleryClient.post("/link", { id, linked_event: linkedEvent });
-  return data;
+  const payload = await post(`${GALLERY_BASE_PATH}/link`, { id, linked_event: linkedEvent });
+  return unwrap(payload);
 }
 
 export async function fetchStory() {
-  const { data } = await galleryClient.get("/story");
-  return data;
+  const payload = await get(`${GALLERY_BASE_PATH}/story`);
+  return unwrap(payload);
 }
 
 export function resonanceColor(resonance = 0.5) {
@@ -40,5 +42,3 @@ export function resonanceColor(resonance = 0.5) {
   const mix = start.map((value, idx) => Math.round(value + (end[idx] - value) * clamped));
   return `rgb(${mix.join(",")})`;
 }
-
-export default galleryClient;
