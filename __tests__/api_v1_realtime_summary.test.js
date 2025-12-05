@@ -72,6 +72,22 @@ describe('Realtime summary aggregator', () => {
     expect(res.body.data).toHaveProperty('timestamp');
   });
 
+  it('passes through explicit city/sign params and calls upstream services', async () => {
+    const res = await request(app)
+      .get('/api/v1/realtime/summary')
+      .query({ city: 'Kyiv', sign: 'leo' });
+
+    expect(res.statusCode).toBe(200);
+    expect(axios.get).toHaveBeenCalledWith('https://goweather.herokuapp.com/weather/Kyiv');
+    expect(axios.post).toHaveBeenCalledWith(
+      'https://aztro.sameerkumar.website/?sign=leo&day=today',
+      null
+    );
+    expect(systemModule.generateMonitorData).toHaveBeenCalledTimes(1);
+    expect(res.body.data.weather.city).toBe('Kyiv');
+    expect(res.body.data.astrology.sign).toBe('leo');
+  });
+
   it('validates incoming query parameters', async () => {
     const res = await request(app).get('/api/v1/realtime/summary').query({ city: '1234', sign: 'dragon' });
 
