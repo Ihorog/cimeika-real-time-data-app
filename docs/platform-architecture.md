@@ -20,6 +20,9 @@
 - **Docs / Knowledge**
   - `ciwiki` — єдине текстове сховище (`/legend-ci`, `/specs`, `/design`,
     `/ops-notes`).
+  - У цьому сервісі під’єднане як API-модуль `/api/v1/ciwiki`, що тягне
+    індекс і документи з `github.com/Ihorog/ciwiki` та віддає їх у SPA або
+    Hugging Face Space через `/api/v1/ciwiki/content`.
 - **Infra / Ops**
   - `Cimeika_Project_Structure` — джерело правди для опису серверів, хостингу,
     бекапів, моніторингу (без секретів).
