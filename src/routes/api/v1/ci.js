@@ -1,10 +1,28 @@
 const axios = require('axios');
+const axiosRetry = require('axios-retry');
 const express = require('express');
 const { makeResponse } = require('./utils/responseHelper');
 const { appendProfile } = require('./utils/senseStorage');
 
 const router = express.Router();
 const SENSE_ENDPOINT = process.env.SENSE_ENDPOINT || 'http://localhost:8000/mitca/sense';
+const SENSE_TIMEOUT_MS = Number(process.env.SENSE_TIMEOUT_MS || 5000);
+const SENSE_RETRIES = Number(process.env.SENSE_RETRIES || 2);
+
+const senseClient = axios.create({
+  timeout: SENSE_TIMEOUT_MS
+});
+
+axiosRetry(senseClient, {
+  retries: SENSE_RETRIES,
+  retryDelay: axiosRetry.exponentialDelay,
+  retryCondition: error =>
+    axiosRetry.isNetworkError(error) ||
+    axiosRetry.isRetryableError(error) ||
+    (error.response && error.response.status >= 500)
+});
+
+let lastSuccessfulSense = null;
 
 router.get('/', (req, res) => {
   res.json(
@@ -16,7 +34,7 @@ router.get('/', (req, res) => {
 
 router.get('/sense', async (req, res) => {
   try {
-    const { data: payload } = await axios.get(SENSE_ENDPOINT, { proxy: false });
+    const { data: payload } = await senseClient.get(SENSE_ENDPOINT, { proxy: false });
     const strength = Number(payload?.signal?.strength ?? 0);
     const resonance = 1 / (1 + Math.abs(strength - 0.8));
     const enrichedPayload = {
@@ -27,17 +45,31 @@ router.get('/sense', async (req, res) => {
 
     await appendProfile(enrichedPayload);
 
-    res.json(makeResponse('ci_sense', enrichedPayload));
+    const enrichedResponse = makeResponse('ci_sense', enrichedPayload);
+    lastSuccessfulSense = enrichedResponse;
+
+    res.json(enrichedResponse);
   } catch (error) {
-    res
-      .status(502)
-      .json(
-        makeResponse(
-          'ci_sense',
-          { error: 'Unable to reach semantic sense service', details: error.message },
-          'error'
-        )
-      );
+    const fallbackSense =
+      lastSuccessfulSense ||
+      makeResponse('ci_sense', {
+        signal: { strength: 0 },
+        resonance: 0,
+        receivedAt: new Date().toISOString(),
+        note: 'Fallback response: semantic sense service is unavailable.'
+      });
+
+    res.status(502).json(
+      makeResponse(
+        'ci_sense',
+        {
+          error: 'Unable to reach semantic sense service',
+          details: error.message,
+          fallback: fallbackSense
+        },
+        'error'
+      )
+    );
   }
 });
 
