@@ -4,6 +4,7 @@ import CiModuleCard from "./modules/cards/ci";
 import InsightModuleCard from "./modules/cards/insight";
 import SystemModuleCard from "./modules/cards/system";
 import OrchestratorModuleCard from "./modules/cards/orchestrator";
+import CalendarModuleCard from "./modules/cards/calendar";
 
 export default function HomePage() {
   return (
@@ -76,6 +77,7 @@ export default function HomePage() {
           <InsightModuleCard />
           <SystemModuleCard />
           <OrchestratorModuleCard />
+          <CalendarModuleCard />
         </section>
       </div>
     </div>
