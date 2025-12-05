@@ -5,6 +5,7 @@ import CiModule from "../modules/ci";
 import InsightModule from "../modules/insight";
 import OrchestratorModule from "../modules/orchestrator";
 import SystemModule from "../modules/system";
+import GalleryPanel from "../../components/GalleryPanel";
 
 export default function DashboardPage() {
   return (
@@ -29,6 +30,8 @@ export default function DashboardPage() {
           <CiModule />
           <InsightModule />
         </div>
+
+        <GalleryPanel />
       </div>
     </main>
   );
