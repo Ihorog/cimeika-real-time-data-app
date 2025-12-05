@@ -1,5 +1,6 @@
 import Link from "next/link";
 import ResonanceGraph from "../../components/ResonanceGraph";
+import RealtimeSummary from "../../components/RealtimeSummary";
 import CiModule from "../modules/ci";
 import InsightModule from "../modules/insight";
 import OrchestratorModule from "../modules/orchestrator";
@@ -17,6 +18,8 @@ export default function DashboardPage() {
           </div>
           <Link href="/" className="text-sky-300 hover:text-sky-200">← Back to Home</Link>
         </div>
+
+        <RealtimeSummary />
 
         <ResonanceGraph />
 
