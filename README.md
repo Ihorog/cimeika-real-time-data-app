@@ -61,7 +61,7 @@ Ensure that you have **Node.js 16 or later** installed.
    route. Without it, that endpoint returns a 503 and scripts like `api_scenario.js`
    log a notice and exit. Adjust `PORT` if you need a different server port (default
    `7860`). The `.env` file is ignored by git.
-   Set `SENSE_ENDPOINT` to the URL of the Ci semantic sense service if it's running on a
+   Set `SENSE_ENDPOINT` to the URL of the CI semantic sense service if it's running on a
    different host or path (defaults to `http://localhost:8000/mitca/sense`). You can also
    tune `SENSE_TIMEOUT_MS`, `SENSE_RETRY_COUNT`, and `SENSE_RETRY_DELAY_MS` to control how
    long the `/ci/sense` route waits and how many times it retries when the service is
