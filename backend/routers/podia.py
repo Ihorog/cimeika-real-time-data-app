@@ -9,6 +9,21 @@ router = APIRouter()
 orchestrator = TaskOrchestrator()
 
 
+def handle_podia_task(task: Task):
+    event = Event(**task.payload)
+    timeline = list_events()
+    return {
+        "module": task.module,
+        "scheduled": event.id,
+        "title": event.title,
+        "context": event.context,
+        "existing_events": len(timeline),
+    }
+
+
+orchestrator.register_handler("podia", handle_podia_task)
+
+
 class Event(BaseModel):
     id: str
     title: str
