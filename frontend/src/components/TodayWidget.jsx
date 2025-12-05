@@ -1,15 +1,37 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
-export default function TodayWidget({ events = [], quickAddMessage = "Голосова команда активована" }) {
+export default function TodayWidget({ events = [], quickAddMessage = "Голосова команда активована", onQuickAdd }) {
+  const [notification, setNotification] = useState(null);
+
+  useEffect(() => {
+    if (!notification) return undefined;
+
+    const timeout = setTimeout(() => setNotification(null), 2400);
+    return () => clearTimeout(timeout);
+  }, [notification]);
+
   const todayLabel = new Date().toLocaleDateString("uk-UA", {
     weekday: "long",
     day: "numeric",
     month: "long",
   });
 
-  const handleQuickAdd = () => alert(quickAddMessage);
+  const handleQuickAdd = async () => {
+    const handler = onQuickAdd || (() => quickAddMessage);
+
+    try {
+      const result = await Promise.resolve(handler());
+      if (result === false) return;
+
+      const message = typeof result === "string" && result.trim().length ? result : quickAddMessage;
+      setNotification({ id: Date.now(), message });
+    } catch (error) {
+      setNotification({ id: Date.now(), message: "Не вдалося запустити швидке додавання" });
+    }
+  };
 
   return (
     <motion.div
@@ -30,6 +52,11 @@ export default function TodayWidget({ events = [], quickAddMessage = "Голос
           Голос: додати подію
         </button>
       </div>
+      {notification && (
+        <div className="mb-3 rounded-xl border border-slate-800 bg-slate-900/80 px-4 py-3 text-sm text-slate-100">
+          {notification.message}
+        </div>
+      )}
       <div className="space-y-3">
         {events.length === 0 ? (
           <p className="text-slate-400 text-sm">Немає запланованих подій. Спробуйте автоматичні пропозиції.</p>
