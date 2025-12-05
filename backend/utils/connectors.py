@@ -13,11 +13,11 @@ class ConnectorConfig:
 
     @staticmethod
     def openai_key() -> str:
-        return os.getenv("CI_OPENAI_KEY", "")
+        return os.getenv("OPENAI_API_KEY", os.getenv("CI_OPENAI_KEY", ""))
 
     @staticmethod
     def hf_token() -> str:
-        return os.getenv("HF_TOKEN", "")
+        return os.getenv("HF_API_KEY", os.getenv("HF_TOKEN", ""))
 
     @staticmethod
     def telegram_token() -> str:
