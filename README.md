@@ -15,6 +15,8 @@ Cimeika is a modern web application that integrates various real-time data servi
 
 An architecture outline for how this service fits into the broader Cimeika platform (GitHub repos, HF Space, and cimeika.com.ua) is captured in [`docs/platform-architecture.md`](docs/platform-architecture.md).
 
+This repository now also contains the **Cimeika interface system** scaffold described in the phase brief: a Next.js + Tailwind frontend for all core modules and a FastAPI backend that mirrors the orchestration endpoints used by Ci. The goal is to keep the real-time Node server available while introducing the target architecture side-by-side.
+
 ## Project Overview
 
 Cimeika provides users with a connected and intelligent experience by aggregating real-time data from multiple APIs. It features a sleek and responsive layout, ensuring that users can access the information they need seamlessly across devices.
@@ -120,6 +122,45 @@ cimeika/
 │   ├── scripts.js               # JavaScript for dynamic functionality
 │   └── index.html               # Main HTML entry point
 └── cimeika-api.yaml         # OpenAPI definition for the API
+```
+
+### Interface system (Next.js + FastAPI)
+
+The new interface stack introduced in this update lives alongside the legacy Node server:
+
+```
+frontend/                      # Next.js SPA for Ci and modules
+  src/app/ci                  # Ci console
+  src/app/podia               # ПоДія timeline
+  src/app/mood                # Настрій wave interface
+  src/app/malya               # Маля creative canvas
+  src/app/kazkar              # Казкар stories
+  src/app/calendar            # Календар time map
+  src/app/gallery             # Галерея memories
+  src/styles/tokens.css       # Design tokens derived from Ci palette
+backend/                      # FastAPI orchestration layer
+  main.py                     # App entry and router registry
+  routers/                    # REST routes per module
+  utils/                      # Sense engine + orchestrator
+```
+
+Start the FastAPI service locally:
+
+```bash
+uvicorn backend.main:app --reload --port 8000
+```
+
+Start the Next.js frontend from `frontend/`:
+
+```bash
+npm install
+npm run dev
+```
+
+Copy `.env.template` to `.env` to set the Ci/OpenAI/Hugging Face/Telegram/GitHub tokens used by the orchestrator stubs and deployment scripts:
+
+```bash
+cp .env.template .env
 ```
 
 ### File Descriptions:
