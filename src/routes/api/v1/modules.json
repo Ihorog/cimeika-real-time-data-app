@@ -1,3 +1,13 @@
 {
-  "active": ["health", "ci", "calendar", "gallery", "legend", "insight", "system", "orchestrator"]
+  "active": [
+    "health",
+    "ci",
+    "calendar",
+    "gallery",
+    "legend",
+    "insight",
+    "system",
+    "orchestrator",
+    "realtime"
+  ]
 }

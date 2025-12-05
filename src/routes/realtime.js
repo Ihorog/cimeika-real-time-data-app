@@ -179,3 +179,7 @@ module.exports.clearCaches = clearCaches;
 module.exports._weatherCache = weatherCache;
 module.exports._astrologyCache = astrologyCache;
 module.exports.stopCacheSweep = stopCacheSweep;
+module.exports.fetchWeather = fetchWeather;
+module.exports.fetchAstrology = fetchAstrology;
+module.exports.normalizeCity = normalizeCity;
+module.exports.normalizeSign = normalizeSign;
