@@ -17,6 +17,8 @@ const MONITOR_LOG_FILE = path.join(
   'system_monitor_log.json'
 );
 
+const MODULES = ['health', 'ci', 'calendar', 'gallery', 'legend', 'insight'];
+
 async function ensureMonitorLogFile() {
   await fs.mkdir(path.dirname(MONITOR_LOG_FILE), { recursive: true });
 
@@ -62,36 +64,39 @@ router.get('/', (req, res) => {
   );
 });
 
-router.get('/monitor', async (req, res) => {
+async function generateMonitorData() {
   const start = process.hrtime.bigint();
+  const profiles = await readProfiles();
+  const avgResonance = Number(getAverageResonance(profiles).toFixed(3));
+  const responseTimeMs = Number(process.hrtime.bigint() - start) / 1e6;
+  const timestamp = new Date().toISOString();
 
+  const payload = {
+    hostname: os.hostname(),
+    uptime: process.uptime(),
+    api: {
+      status: 'online',
+      responseTimeMs
+    },
+    avgResonance,
+    modules: MODULES,
+    profiles: profiles.slice(-3),
+    timestamp
+  };
+
+  await appendMonitorLog({
+    timestamp,
+    avgResonance,
+    modules: MODULES,
+    status: determineStatus(avgResonance)
+  });
+
+  return payload;
+}
+
+router.get('/monitor', async (req, res) => {
   try {
-    const profiles = await readProfiles();
-    const avgResonance = Number(getAverageResonance(profiles).toFixed(3));
-    const modules = ['health', 'ci', 'calendar', 'gallery', 'legend', 'insight'];
-    const responseTimeMs = Number(process.hrtime.bigint() - start) / 1e6;
-    const timestamp = new Date().toISOString();
-
-    const payload = {
-      hostname: os.hostname(),
-      uptime: process.uptime(),
-      api: {
-        status: 'online',
-        responseTimeMs
-      },
-      avgResonance,
-      modules,
-      profiles: profiles.slice(-3),
-      timestamp
-    };
-
-    await appendMonitorLog({
-      timestamp,
-      avgResonance,
-      modules,
-      status: determineStatus(avgResonance)
-    });
-
+    const payload = await generateMonitorData();
     res.json(makeResponse('system_monitor', payload));
   } catch (error) {
     res.status(500).json(
@@ -101,3 +106,4 @@ router.get('/monitor', async (req, res) => {
 });
 
 module.exports = router;
+module.exports.generateMonitorData = generateMonitorData;
