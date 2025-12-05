@@ -13,6 +13,7 @@ const GALLERY_PATH = path.join(DATA_DIR, 'gallery.json');
 const MOOD_CACHE_PATH = path.join(DATA_DIR, 'gallery_moods.json');
 const PYTHON_SCRIPT = path.join(ROOT_DIR, 'api', 'ci_mitca_gallery.py');
 const PYTHON_BIN = process.env.PYTHON_BIN || 'python3';
+const SAFE_IMAGE_BASE = ROOT_DIR;
 
 const DEFAULT_ITEMS = [
   {
@@ -43,6 +44,14 @@ function loadJson(filePath, fallback) {
 function saveJson(filePath, data) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
+
+function resolveSafePath(baseDir, candidatePath) {
+  const resolved = path.resolve(baseDir, candidatePath);
+  if (resolved !== baseDir && !resolved.startsWith(baseDir + path.sep)) {
+    throw new Error('Invalid path traversal attempt');
+  }
+  return resolved;
 }
 
 function loadGallery() {
@@ -127,7 +136,8 @@ router.post('/mood', (req, res) => {
   }
 
   try {
-    const stdout = execFileSync(PYTHON_BIN, [PYTHON_SCRIPT, '--image', imagePath], {
+    const resolvedImagePath = resolveSafePath(SAFE_IMAGE_BASE, imagePath);
+    const stdout = execFileSync(PYTHON_BIN, [PYTHON_SCRIPT, '--image', resolvedImagePath], {
       encoding: 'utf-8'
     });
     const payload = JSON.parse(stdout);
@@ -135,13 +145,16 @@ router.post('/mood', (req, res) => {
 
     res.json(
       makeResponse('gallery_mood', {
-        image: imagePath,
+        image: resolvedImagePath,
         ...payload,
         cacheSize: Object.keys(cacheSnapshot).length,
         source: 'ci_mitca_gallery'
       })
     );
   } catch (error) {
+    if (error.message === 'Invalid path traversal attempt') {
+      return res.status(400).json(makeResponse('gallery_mood', { error: 'Invalid image path' }, 'error'));
+    }
     res
       .status(502)
       .json(
