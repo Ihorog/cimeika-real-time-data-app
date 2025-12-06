@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { motion } from "framer-motion";
-import { DATE_LONG_OPTIONS, DEFAULT_LOCALE } from "../../../config/locale";
+import { DATE_LONG_OPTIONS, DEFAULT_LOCALE } from "../../config/locale";
 
 const DISMISS_MS = 2400;
 
