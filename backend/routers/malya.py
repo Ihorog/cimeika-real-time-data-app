@@ -1,5 +1,5 @@
 from typing import Dict
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
 from backend.utils.connectors import request_creative
@@ -23,11 +23,13 @@ def generate_art(prompt: CreativePrompt):
             "hf_dataset": data.get("hf_dataset", "ok"),
         }
 
-    return {
-        "idea": prompt.idea,
-        "style": prompt.style,
-        "hf_dataset": creative_response.get("message", "unavailable"),
-    }
+    raise HTTPException(
+        status_code=status.HTTP_502_BAD_GATEWAY,
+        detail={
+            "message": creative_response.get("message", "Сервіс творчості недоступний"),
+            "source": creative_response.get("error", "connector"),
+        },
+    )
 
 
 @router.get("/creative", response_model=Dict[str, str])
@@ -36,4 +38,10 @@ def creative_status():
     if status_response.get("status") == "ok" and isinstance(status_response.get("data"), dict):
         return {"status": status_response["data"].get("status", "ready")}
 
-    return {"status": "ready", "supported_styles": "sketch, watercolor, synthwave"}
+    raise HTTPException(
+        status_code=status.HTTP_502_BAD_GATEWAY,
+        detail={
+            "message": status_response.get("message", "Недоступний стан сервісу творчості"),
+            "source": status_response.get("error", "connector"),
+        },
+    )

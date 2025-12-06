@@ -1,5 +1,5 @@
 from typing import Dict
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
 from backend.utils.connectors import request_story
@@ -23,11 +23,13 @@ def craft_story(request: StoryRequest):
             "snippet": data.get("snippet", ""),
         }
 
-    return {
-        "title": request.title,
-        "created_at": "",
-        "snippet": story_response.get("message", "Казкар зараз офлайн"),
-    }
+    raise HTTPException(
+        status_code=status.HTTP_502_BAD_GATEWAY,
+        detail={
+            "message": story_response.get("message", "Казкар наразі недоступний"),
+            "source": story_response.get("error", "connector"),
+        },
+    )
 
 
 @router.get("/history", response_model=Dict[str, str])
@@ -36,4 +38,10 @@ def list_history():
     if history_response.get("status") == "ok" and isinstance(history_response.get("data"), dict):
         return history_response["data"]
 
-    return {"recent": "Ци пам'ятає останню історію для дитячого сну"}
+    raise HTTPException(
+        status_code=status.HTTP_502_BAD_GATEWAY,
+        detail={
+            "message": history_response.get("message", "Не вдалося отримати історії"),
+            "source": history_response.get("error", "connector"),
+        },
+    )
