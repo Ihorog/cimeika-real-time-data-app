@@ -11,6 +11,16 @@ nav:
   - Frontend:
       - Chat & Menu: frontend_phase_2_chat_menu.md
       - Realtime Integration: realtime-integration.md
+  - Interface System:
+      - Overview: interface-system.md
+      - Modules:
+          - Ci (Core): modules/ci.md
+          - ПоДія (Planner): modules/podia.md
+          - Настрій (Mood): modules/mood.md
+          - Маля (Creative): modules/malya.md
+          - Казкар (Archive): modules/kazkar.md
+          - Календар (Time Atlas): modules/calendar.md
+          - Галерея (Gallery): modules/gallery.md
   - Platform:
       - Architecture: platform-architecture.md
       - Sensomatyka: ci_sensomatyka.md
