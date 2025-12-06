@@ -1,15 +1,3 @@
-jest.mock('axios', () => {
-  const axiosMock = { get: jest.fn(), post: jest.fn() };
-  axiosMock.create = jest.fn(() => axiosMock);
-  return axiosMock;
-});
-
-jest.mock('axios-retry', () => {
-  const retryMock = jest.fn();
-  retryMock.exponentialDelay = jest.fn(() => 0);
-  return retryMock;
-});
-
 jest.mock('../src/routes/api/v1/system', () => {
   const express = require('express');
   const router = express.Router();
@@ -28,7 +16,6 @@ jest.mock('../src/routes/api/v1/system', () => {
 });
 
 const request = require('supertest');
-const axios = require('axios');
 const config = require('../src/config');
 const app = require('../src/app');
 const realtimeRouter = require('../src/routes/realtime');
@@ -44,10 +31,24 @@ const mockSystemData = {
   timestamp: '2024-01-01T00:00:00.000Z'
 };
 
+const successResponse = (payload) =>
+  Promise.resolve({ ok: true, status: 200, json: async () => payload, text: async () => JSON.stringify(payload) });
+
+beforeAll(() => {
+  global.fetch = jest.fn();
+});
+
 beforeEach(() => {
   jest.clearAllMocks();
-  axios.get.mockResolvedValue({ data: { description: 'Sunny', temperature: '+20 C' } });
-  axios.post.mockResolvedValue({ data: { description: 'Bright future' } });
+  global.fetch.mockImplementation((url, options = {}) => {
+    if (url.includes('goweather')) {
+      return successResponse({ description: 'Sunny', temperature: '+20 C' });
+    }
+    if (url.includes('aztro')) {
+      return successResponse({ description: 'Bright future' });
+    }
+    return successResponse({});
+  });
   realtimeRouter.clearCaches();
   systemModule.generateMonitorData.mockResolvedValue(mockSystemData);
 });
@@ -78,10 +79,10 @@ describe('Realtime summary aggregator', () => {
       .query({ city: 'Kyiv', sign: 'leo' });
 
     expect(res.statusCode).toBe(200);
-    expect(axios.get).toHaveBeenCalledWith('https://goweather.herokuapp.com/weather/Kyiv');
-    expect(axios.post).toHaveBeenCalledWith(
+    expect(global.fetch).toHaveBeenCalledWith('https://goweather.herokuapp.com/weather/Kyiv', expect.any(Object));
+    expect(global.fetch).toHaveBeenCalledWith(
       'https://aztro.sameerkumar.website/?sign=leo&day=today',
-      null
+      expect.objectContaining({ method: 'POST' })
     );
     expect(systemModule.generateMonitorData).toHaveBeenCalledTimes(1);
     expect(res.body.data.weather.city).toBe('Kyiv');

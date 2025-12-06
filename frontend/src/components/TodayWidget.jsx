@@ -1,36 +1,53 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { motion } from "framer-motion";
+import { DATE_LONG_OPTIONS, DEFAULT_LOCALE } from "../../../config/locale";
+
+const DISMISS_MS = 2400;
 
 export default function TodayWidget({ events = [], quickAddMessage = "Голосова команда активована", onQuickAdd }) {
   const [notification, setNotification] = useState(null);
+  const timeoutRef = useRef(null);
+  const [isPending, startTransition] = useTransition();
 
-  useEffect(() => {
-    if (!notification) return undefined;
+  const todayLabel = useMemo(
+    () => new Date().toLocaleDateString(DEFAULT_LOCALE, DATE_LONG_OPTIONS),
+    [],
+  );
 
-    const timeout = setTimeout(() => setNotification(null), 2400);
-    return () => clearTimeout(timeout);
-  }, [notification]);
+  useEffect(
+    () => () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    },
+    [],
+  );
 
-  const todayLabel = new Date().toLocaleDateString("uk-UA", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
+  const showNotification = (message) => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+    const payload = { id: crypto.randomUUID?.() ?? Date.now(), message };
+    setNotification(payload);
+
+    timeoutRef.current = window.setTimeout(() => {
+      setNotification((current) => (current?.id === payload.id ? null : current));
+    }, DISMISS_MS);
+  };
 
   const handleQuickAdd = async () => {
     const handler = onQuickAdd || (() => quickAddMessage);
 
-    try {
-      const result = await Promise.resolve(handler());
-      if (result === false) return;
+    startTransition(async () => {
+      try {
+        const result = await Promise.resolve(handler());
+        if (result === false) return;
 
-      const message = typeof result === "string" && result.trim().length ? result : quickAddMessage;
-      setNotification({ id: Date.now(), message });
-    } catch (error) {
-      setNotification({ id: Date.now(), message: "Не вдалося запустити швидке додавання" });
-    }
+        const message = typeof result === "string" && result.trim().length ? result : quickAddMessage;
+        showNotification(message);
+      } catch (error) {
+        showNotification("Не вдалося запустити швидке додавання");
+      }
+    });
   };
 
   return (
@@ -47,7 +64,9 @@ export default function TodayWidget({ events = [], quickAddMessage = "Голос
         </div>
         <button
           onClick={handleQuickAdd}
+          disabled={isPending}
           className="px-3 py-2 rounded-lg bg-sky-500 text-white text-sm font-semibold hover:bg-sky-400 transition"
+          aria-busy={isPending}
         >
           Голос: додати подію
         </button>

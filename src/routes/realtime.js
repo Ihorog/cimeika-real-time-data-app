@@ -1,11 +1,14 @@
 const express = require('express');
-const axios = require('axios');
-const axiosRetry = require('axios-retry');
+const { createApiClient } = require('../../core/api');
 const config = require('../config');
 const router = express.Router();
 
-const http = axios.create({ timeout: 5000, proxy: false });
-axiosRetry(http, { retries: 3, retryDelay: axiosRetry.exponentialDelay });
+const http = createApiClient({
+  timeoutMs: 5000,
+  retries: 1,
+  retryDelayMs: 200,
+  criticalRetries: 3,
+});
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const MAX_CACHE_SIZE = 100;
@@ -139,27 +142,30 @@ async function fetchWeather(city) {
   const cached = getCacheEntry(weatherCache, city, 'weather cache');
   if (cached) return cached;
   const url = `https://goweather.herokuapp.com/weather/${encodeURIComponent(city)}`;
-  const { data } = await http.get(url);
-  const tempMatch = data.temperature?.match(/-?\d+/);
+  const result = await http.get(url, { critical: true });
+  if (result.status === 'error') throw new Error(result.error);
+
+  const tempMatch = result.data?.temperature?.match(/-?\d+/);
   const temperature = tempMatch ? parseInt(tempMatch[0], 10) : null;
-  const result = makeWeatherResponse(city, data.description || 'N/A', temperature);
-  setCacheEntry(weatherCache, city, { data: result, expiry: Date.now() + CACHE_TTL_MS }, 'weather cache');
-  return result;
+  const payload = makeWeatherResponse(city, result.data?.description || 'N/A', temperature);
+  setCacheEntry(weatherCache, city, { data: payload, expiry: Date.now() + CACHE_TTL_MS }, 'weather cache');
+  return payload;
 }
 
 async function fetchAstrology(sign) {
   const cached = getCacheEntry(astrologyCache, sign, 'astrology cache');
   if (cached) return cached;
   const url = `https://aztro.sameerkumar.website/?sign=${encodeURIComponent(sign)}&day=today`;
-  const { data } = await http.post(url, null);
-  const result = makeAstrologyResponse(sign, data.description || 'N/A');
+  const result = await http.post(url, null, { critical: true });
+  if (result.status === 'error') throw new Error(result.error);
+  const payload = makeAstrologyResponse(sign, result.data?.description || 'N/A');
   setCacheEntry(
     astrologyCache,
     sign,
-    { data: result, expiry: Date.now() + CACHE_TTL_MS },
+    { data: payload, expiry: Date.now() + CACHE_TTL_MS },
     'astrology cache'
   );
-  return result;
+  return payload;
 }
 
 // Return current weather data for the requested city

@@ -1,16 +1,5 @@
-jest.mock('axios', () => {
-  const axiosMock = { get: jest.fn(), post: jest.fn() };
-  axiosMock.create = jest.fn(() => axiosMock);
-  return axiosMock;
-});
-
-jest.mock('axios-retry', () => {
-  const retryMock = jest.fn();
-  retryMock.exponentialDelay = jest.fn(() => 0);
-  return retryMock;
-});
-
-const axios = require('axios');
+const successResponse = (payload) =>
+  Promise.resolve({ ok: true, status: 200, json: async () => payload, text: async () => JSON.stringify(payload) });
 
 describe('cache cleanup', () => {
   let realtime;
@@ -19,11 +8,17 @@ describe('cache cleanup', () => {
     if (realtime) realtime.stopCacheSweep();
   });
 
+  beforeAll(() => {
+    global.fetch = jest.fn();
+  });
+
   beforeEach(() => {
-    axios.get.mockReset();
-    axios.post.mockReset();
-    axios.get.mockResolvedValue({ data: { description: 'Sunny', temperature: '+20 C' } });
-    axios.post.mockResolvedValue({ data: { description: 'Great day ahead' } });
+    global.fetch.mockReset();
+    global.fetch.mockImplementation((url) => {
+      if (url.includes('goweather')) return successResponse({ description: 'Sunny', temperature: '+20 C' });
+      if (url.includes('aztro')) return successResponse({ description: 'Great day ahead' });
+      return successResponse({});
+    });
   });
 
   it('purges expired entries after interval', () => {

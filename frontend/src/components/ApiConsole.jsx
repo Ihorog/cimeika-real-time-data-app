@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import axios from "axios";
+import { useMemo, useState } from "react";
+import { createApiClient } from "../../../core/api";
 
 const endpoints = [
   { label: "Ci Chat", path: "/ci/chat", method: "POST" },
@@ -13,12 +13,22 @@ export default function ApiConsole({ baseUrl = "http://localhost:8000" }) {
   const [payload, setPayload] = useState("{\n  \"message\": \"Привіт, Ci!\"\n}");
   const [response, setResponse] = useState(null);
 
+  const client = useMemo(
+    () =>
+      createApiClient({
+        baseUrl,
+        timeoutMs: 7000,
+        retries: 1,
+        criticalRetries: 2,
+      }),
+    [baseUrl],
+  );
+
   const send = async () => {
     try {
       const body = JSON.parse(payload || "{}");
-      const url = `${baseUrl}${active.path}`;
-      const res = await axios({ url, method: active.method.toLowerCase(), data: body });
-      setResponse(res.data);
+      const res = await client.request(active.path, { method: active.method, body });
+      setResponse(res.status === "ok" ? res.data : { error: res.error });
     } catch (error) {
       setResponse({ error: error.message });
     }
