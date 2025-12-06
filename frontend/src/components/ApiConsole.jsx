@@ -1,6 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
-import { createApiClient } from "../../core/api";
+import { createApiClient } from "@/core/api";
 
 const DEFAULT_BASE_URL = "http://localhost:8000";
 
