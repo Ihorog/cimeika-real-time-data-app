@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
 from backend.utils.connectors import fetch_mood, submit_mood
@@ -29,10 +29,12 @@ def capture_mood(snapshot: MoodSnapshot):
             source="api",
         )
 
-    return MoodResponse(
-        status="error",
-        summary=api_response.get("message", "Не вдалося записати настрій"),
-        source=api_response.get("error"),
+    raise HTTPException(
+        status_code=status.HTTP_502_BAD_GATEWAY,
+        detail={
+            "message": api_response.get("message", "Не вдалося записати настрій"),
+            "source": api_response.get("error", "connector"),
+        },
     )
 
 
@@ -42,4 +44,10 @@ def latest_mood():
     if api_response.get("status") == "ok" and isinstance(api_response.get("data"), dict):
         return MoodSnapshot(**api_response["data"])
 
-    return MoodSnapshot(mood="невідомо", intensity=0, note="offline")
+    raise HTTPException(
+        status_code=status.HTTP_502_BAD_GATEWAY,
+        detail={
+            "message": api_response.get("message", "Не вдалося отримати поточний настрій"),
+            "source": api_response.get("error", "connector"),
+        },
+    )

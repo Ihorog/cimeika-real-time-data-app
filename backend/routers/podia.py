@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 from typing import Any, Dict, List
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
 from backend.utils.connectors import fetch_events
@@ -40,10 +40,13 @@ def list_events():
     if events_response.get("status") == "ok" and isinstance(events_response.get("data"), list):
         return [Event(**item) for item in events_response["data"]]
 
-    return [
-        Event(id="ev-001", title="Ранкова медитація", start=datetime.utcnow(), context="Настрій"),
-        Event(id="ev-002", title="Розробка Маля", start=datetime.utcnow(), context="Маля"),
-    ]
+    raise HTTPException(
+        status_code=status.HTTP_502_BAD_GATEWAY,
+        detail={
+            "message": events_response.get("message", "Не вдалося отримати події з ядра Cimeika"),
+            "source": events_response.get("error", "connector"),
+        },
+    )
 
 
 @router.post("/events/dispatch")
