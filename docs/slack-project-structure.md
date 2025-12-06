@@ -9,7 +9,7 @@ cimeika-real-time-data-app/
 ├─ core/api/                       # Універсальний fetch-клієнт із ретраями та таймаутами
 ├─ src/
 │  ├─ app.js                       # Збирання middleware, SSE-хендлерів і маршрутів
-│  ├─ config.js                    # Joi-схема для ENV (Hugging Face, SSE, кеші тощо)
+│  ├─ config.js                    # Joi-схема для ENV (Hugging Face, SSE, кешів тощо)
 │  ├─ middleware/requireHfToken.js # Гейт для маршрутів, що потребують HUGGINGFACE_TOKEN
 │  ├─ routes/                      # REST та proxy-маршрути (api/v1, Hugging Face, realtime, auth mocks)
 │  │  ├─ api/v1/                   # Календар, галерея, Ci-sense, orchestrator, legend, health
