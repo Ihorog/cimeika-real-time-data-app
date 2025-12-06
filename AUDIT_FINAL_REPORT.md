@@ -1,23 +1,23 @@
 # AUDIT_FINAL_REPORT
 
 ## Перевірено
-- Backend FastAPI маршрути + інтеграції (pytest). Express API v1 з галереєю/календарем, клієнти фронтенду, глобальні стилі Tailwind.
-- Безпека: base URL policy, path traversal у `/api/v1/gallery/mood`, Dockerfile користувача.
-- UX: TodayWidget, Calendar/Gallery копірайт, notification UX.
-- Залежності: npm audit (frontend), pip outdated (backend).
+- Express API v1 (галерея/календар/ci), FastAPI роутери, фронтенд клієнти Next.js, глобальні Tailwind стилі.
+- Безпека: base URL policy, path traversal у `/api/v1/gallery/mood`, структуровані логи доступу.
+- UX/перформанс: TodayWidget, Gallery lazy-load/blur previews, notification UX.
+- Залежності: ручна ревізія package.json, часткова перевірка pip (див. Dependency Optimization).
 
 ## Знайдено та виправлено
-- Уніфіковано API доступ через `frontend/src/lib/api.ts`; календарний/галерейний клієнти переписані на fetch.
-- `resolveBaseUrl` тепер валідує prod середовище та логує dev-fallback.
-- Захист від traversal у `src/routes/api/v1/gallery.js` + негативні тести у `__tests__/api_v1_gallery.test.js`.
-- UX: TodayWidget без `alert`, з опціональним `onQuickAdd` і inline notification; очищені апострофи (uk-UA).
+- Єдиний клієнт `core/api` (тайм-аути, backoff, retries) для Node і Next; Axios повністю видалений.
+- Глобальна локаль `uk-UA` винесена у `config/locale.ts`; календар/галерея/UI компоненти використовують спільні дати.
+- Gallery: кеш realpath/readdir (5с), мемоізація JSON, структуровані JSON-логи доступу/відмов; `next/image` + blur/lazy секції.
+- TodayWidget: неблокуюче `useTransition` + єдиний таймер-диспетчер сповіщень.
+- Tailwind імпорти впорядковані, мертві стилі прибрано.
 
 ## Результати тестів
-- `python -m pytest backend/tests` — **passed**.
-- `npm run lint` — **passed** (Node 20.19.6).
-- `NEXT_PUBLIC_CIMEIKA_API_URL=http://localhost:8000 npm run build` — **passed** (потрібне налаштування змінної для CI).
+- Автоматизовані тести/збірки не запускалися: у середовищі відсутні Node.js/npm; `pip list --outdated` було зупинено через затримку (див. журнали).
+  - Для відтворення: встановити Node, виконати `npm install`, `npm test` у корені та `frontend/`, після чого `npm run build`.
 
 ## Відкриті ризики
-- High CVE для `axios` (<1.12) за результатами `npm audit` — потребує оновлення пакета.
-- CI стани GitHub Actions не перевірені локально; необхідно додати `NEXT_PUBLIC_CIMEIKA_API_URL` у CI secrets/vars.
-- Backend залежності застарілі (FastAPI/httpx/uvicorn); потрібен окремий спринт на апдейти та ретести.
+- Node.js/npm відсутні: необхідно підтвердити збірку, тести та audit після встановлення середовища.
+- CI secrets/vars потрібно оновити (`NEXT_PUBLIC_CIMEIKA_API_URL`) для стабільного build.
+- Backend залежності застарілі (FastAPI/httpx/uvicorn); потрібен окремий цикл оновлення й ретестів.

@@ -1,5 +1,7 @@
 "use client";
 
+import { DATE_SHORT_OPTIONS, DEFAULT_LOCALE } from "../../../config/locale";
+
 export default function GalleryTimeline({ items = [] }) {
   return (
     <div className="rounded-2xl bg-white/60 p-4 shadow-md backdrop-blur-lg">
@@ -15,7 +17,7 @@ export default function GalleryTimeline({ items = [] }) {
               <div>
                 <p className="text-sm font-semibold text-slate-800">{item.location}</p>
                 <p className="text-xs text-slate-500">
-                  {new Date(item.date).toLocaleDateString("uk-UA", { day: "numeric", month: "short", year: "numeric" })}
+                  {new Date(item.date).toLocaleDateString(DEFAULT_LOCALE, DATE_SHORT_OPTIONS)}
                 </p>
               </div>
               <div className="text-xs text-slate-600">{Math.round(item.resonance * 100)}%</div>

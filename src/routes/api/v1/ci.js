@@ -1,25 +1,17 @@
-const axios = require('axios');
-const axiosRetry = require('axios-retry');
 const express = require('express');
 const { makeResponse } = require('./utils/responseHelper');
 const { appendProfile } = require('./utils/senseStorage');
+const { createApiClient } = require('../../../core/api');
 
 const router = express.Router();
 const SENSE_ENDPOINT = process.env.SENSE_ENDPOINT || 'http://localhost:8000/mitca/sense';
 const SENSE_TIMEOUT_MS = Number(process.env.SENSE_TIMEOUT_MS || 5000);
 const SENSE_RETRIES = Number(process.env.SENSE_RETRIES || 2);
 
-const senseClient = axios.create({
-  timeout: SENSE_TIMEOUT_MS
-});
-
-axiosRetry(senseClient, {
+const senseClient = createApiClient({
+  timeoutMs: SENSE_TIMEOUT_MS,
   retries: SENSE_RETRIES,
-  retryDelay: axiosRetry.exponentialDelay,
-  retryCondition: error =>
-    axiosRetry.isNetworkError(error) ||
-    axiosRetry.isRetryableError(error) ||
-    (error.response && error.response.status >= 500)
+  criticalRetries: SENSE_RETRIES + 1,
 });
 
 let lastSuccessfulSense = null;
@@ -34,7 +26,11 @@ router.get('/', (req, res) => {
 
 router.get('/sense', async (req, res) => {
   try {
-    const { data: payload } = await senseClient.get(SENSE_ENDPOINT, { proxy: false });
+    const { status, data: payload, error } = await senseClient.get(SENSE_ENDPOINT, { critical: true });
+    if (status === 'error') {
+      throw new Error(error || 'sense endpoint unreachable');
+    }
+
     const strength = Number(payload?.signal?.strength ?? 0);
     const resonance = 1 / (1 + Math.abs(strength - 0.8));
     const enrichedPayload = {

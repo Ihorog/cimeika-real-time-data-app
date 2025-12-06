@@ -16,24 +16,8 @@ export default function SystemStatus() {
 
   useEffect(() => {
     async function loadHealth() {
-      const response = await get<HealthResponse>("/health", (data: unknown) => {
-        if (!data || typeof data !== "object") {
-          throw new Error("Invalid health payload shape");
-        }
-
-        const payload = data as Record<string, unknown>;
-        if (typeof payload.status !== "string") {
-          throw new Error("Health status missing");
-        }
-
-        return {
-          status: payload.status,
-          service: typeof payload.service === "string" ? payload.service : undefined,
-          base_url: typeof payload.base_url === "string" ? payload.base_url : undefined,
-        } satisfies HealthResponse;
-      });
-
-      if (response.data && response.data.status === "ok") {
+      const response = await get<HealthResponse>("/health");
+      if (response.status === "ok" && response.data?.status === "ok") {
         setStatus("ok");
         setDetails(response.data.base_url || "ready");
       } else {

@@ -16,6 +16,20 @@ const PYTHON_BIN = process.env.PYTHON_BIN || 'python3';
 const ALLOWED_IMAGE_ROOT = DATA_DIR;
 fs.mkdirSync(ALLOWED_IMAGE_ROOT, { recursive: true });
 const RESOLVED_IMAGE_ROOT = fs.realpathSync.native(ALLOWED_IMAGE_ROOT);
+const DIRECTORY_CACHE_MS = 5000;
+const directoryCache = new Map();
+let galleryCache = null;
+
+function logStructured(event, payload = {}) {
+  console.log(
+    JSON.stringify({
+      module: 'gallery',
+      event,
+      timestamp: new Date().toISOString(),
+      ...payload
+    })
+  );
+}
 
 const DEFAULT_ITEMS = [
   {
@@ -48,32 +62,62 @@ function saveJson(filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
+function cachedRealpath(targetPath) {
+  const cached = directoryCache.get(targetPath);
+  const now = Date.now();
+  if (cached && now - cached.timestamp < DIRECTORY_CACHE_MS) return cached.value;
+  const resolved = fs.realpathSync.native(targetPath);
+  directoryCache.set(targetPath, { value: resolved, timestamp: now });
+  return resolved;
+}
+
+function cachedReaddir(targetPath) {
+  const cached = directoryCache.get(`dir:${targetPath}`);
+  const now = Date.now();
+  if (cached && now - cached.timestamp < DIRECTORY_CACHE_MS) return cached.value;
+  const entries = fs.readdirSync(targetPath, { withFileTypes: true });
+  directoryCache.set(`dir:${targetPath}`, { value: entries, timestamp: now });
+  return entries;
+}
+
 function ensureWithinRoot(targetPath) {
   try {
     const decoded = decodeURIComponent(targetPath);
-    const resolved = fs.realpathSync.native(path.resolve(decoded));
+    const resolved = cachedRealpath(path.resolve(decoded));
 
     if (
       resolved !== RESOLVED_IMAGE_ROOT &&
       !resolved.startsWith(`${RESOLVED_IMAGE_ROOT}${path.sep}`)
     ) {
+      logStructured('path_denied', { targetPath, resolved });
       throw new Error('imagePath is outside the allowed data directory');
     }
+
+    const resolvedDir = path.dirname(resolved);
+    cachedReaddir(resolvedDir);
+    logStructured('path_ok', { targetPath, resolved });
 
     return resolved;
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Invalid imagePath';
+    logStructured('path_error', { targetPath, error: message });
     throw new Error(message.includes('outside the allowed') ? message : 'Invalid imagePath');
   }
 }
 
 function loadGallery() {
+  if (galleryCache && Date.now() - galleryCache.timestamp < DIRECTORY_CACHE_MS) {
+    return galleryCache.data;
+  }
   const data = loadJson(GALLERY_PATH, DEFAULT_ITEMS);
-  return Array.isArray(data) ? data : DEFAULT_ITEMS;
+  const normalized = Array.isArray(data) ? data : DEFAULT_ITEMS;
+  galleryCache = { data: normalized, timestamp: Date.now() };
+  return normalized;
 }
 
 function persistGallery(items) {
   saveJson(GALLERY_PATH, items);
+  galleryCache = { data: items, timestamp: Date.now() };
 }
 
 function buildSummary(items) {
@@ -149,12 +193,18 @@ router.post('/mood', (req, res) => {
   }
 
   try {
+    logStructured('path_attempt', { targetPath: imagePath });
     const safeImagePath = ensureWithinRoot(imagePath);
     const stdout = execFileSync(PYTHON_BIN, [PYTHON_SCRIPT, '--image', safeImagePath], {
       encoding: 'utf-8'
     });
     const payload = JSON.parse(stdout);
     const cacheSnapshot = loadJson(MOOD_CACHE_PATH, {});
+
+    logStructured('mood_success', {
+      imagePath: safeImagePath,
+      cacheSize: Object.keys(cacheSnapshot).length
+    });
 
     res.json(
       makeResponse('gallery_mood', {
@@ -168,6 +218,7 @@ router.post('/mood', (req, res) => {
     const message = error instanceof Error ? error.message : 'Unexpected failure';
     const status =
       message.includes('outside the allowed data directory') || message.includes('Invalid imagePath') ? 400 : 502;
+    logStructured('mood_error', { targetPath: imagePath, error: message, status });
     res
       .status(status)
       .json(

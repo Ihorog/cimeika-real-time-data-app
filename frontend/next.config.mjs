@@ -9,6 +9,9 @@ const nextConfig = {
     // Keep the workspace root anchored to the frontend folder to avoid mis-resolving module imports
     root: __dirname,
   },
+  experimental: {
+    externalDir: true,
+  },
 };
 
 export default nextConfig;

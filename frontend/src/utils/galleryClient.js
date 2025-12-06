@@ -3,11 +3,11 @@ import { get, post } from "../lib/api";
 const GALLERY_BASE_PATH = "/api/v1/gallery";
 
 async function unwrap(response, message = "Gallery service unavailable") {
-  if (response?.error) {
-    throw new Error(response.error || message);
+  if (!response || response.status === "error") {
+    throw new Error(response?.error || message);
   }
 
-  return response?.data;
+  return response.data;
 }
 
 export async function listGallery() {

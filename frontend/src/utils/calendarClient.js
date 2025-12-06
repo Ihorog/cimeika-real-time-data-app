@@ -3,11 +3,11 @@ import { get, post } from "../lib/api";
 const CALENDAR_BASE_PATH = "/api/v1/calendar";
 
 async function unwrap(response, message = "Calendar service unavailable") {
-  if (response?.error) {
-    throw new Error(response.error || message);
+  if (!response || response.status === "error") {
+    throw new Error(response?.error || message);
   }
 
-  return response?.data;
+  return response.data;
 }
 
 export async function fetchCalendarInsights() {

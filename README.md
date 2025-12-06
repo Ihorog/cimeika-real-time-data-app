@@ -45,7 +45,7 @@ Ensure that you have **Node.js 16 or later** installed.
 
    Dependencies (found in package.json):
    - `express`: For server-side logic
-   - `axios`: For making requests to external APIs
+   - Centralized fetch-based client (`core/api`)
    - `dotenv`: For environment variable loading
 
 4. **Configuration**:
@@ -106,7 +106,7 @@ Ensure that you have **Node.js 16 or later** installed.
 The project depends on the following packages (as specified in `package.json`):
 
 - `express`: "^4.18.2" (for server handling)
-- `axios`: "^1.10.0" (for making HTTP requests)
+- Unified fetch helper under `core/api`
 - `dotenv`: "^16.3.1" (for loading environment variables)
 
 Additionally, the CSS framework utilized is [Tailwind CSS](https://tailwindcss.com/).
