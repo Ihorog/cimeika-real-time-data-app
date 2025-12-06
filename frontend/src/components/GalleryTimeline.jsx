@@ -1,6 +1,6 @@
 "use client";
 
-import { DATE_SHORT_OPTIONS, DEFAULT_LOCALE } from "../../../config/locale";
+import { DATE_SHORT_OPTIONS, DEFAULT_LOCALE } from "../../config/locale";
 
 export default function GalleryTimeline({ items = [] }) {
   return (
