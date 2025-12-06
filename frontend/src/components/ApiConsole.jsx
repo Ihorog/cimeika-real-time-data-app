@@ -1,6 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
-import { createApiClient } from "../../../core/api";
+import { createApiClient } from "../../core/api";
 
 const endpoints = [
   { label: "Ci Chat", path: "/ci/chat", method: "POST" },
