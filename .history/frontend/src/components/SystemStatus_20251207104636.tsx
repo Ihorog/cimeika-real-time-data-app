@@ -1,28 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { get } from "../lib/api";
+import { createApiClient } from "../lib/api";
 
 type HealthResponse = {
   status: string;
   base_url?: string;
 };
 
+const api = createApiClient();
+
 export default function SystemStatus() {
-  const [status, setStatus] = useState<"loading" | "ok" | "error">("loading");
+  const [status, setStatus] = useState<"ok" | "error" | "loading">("loading");
   const [details, setDetails] = useState<string>("checking...");
 
   useEffect(() => {
     async function loadHealth() {
-      const response = await get<HealthResponse>("/health");
+      const response = await api.get<HealthResponse>("/health");
 
       // перевіряємо булеве поле ok, а не неіснуюче status
       if (response.ok && response.data?.status === "ok") {
         setStatus("ok");
-        setDetails(response.data.base_url ?? "ready");
+        setDetails(response.data.base_url || "ready");
       } else {
         setStatus("error");
-        setDetails(response.error ?? "unhealthy");
+        setDetails(response.error || "unhealthy");
       }
     }
 
@@ -40,3 +42,4 @@ export default function SystemStatus() {
     </div>
   );
 }
+

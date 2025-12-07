@@ -8,14 +8,10 @@ export type ApiResult<T> = {
 
 export type ApiClientConfig = {
   baseUrl?: string;
-  timeoutMs?: number;       // базовий таймаут / затримка
+  timeoutMs?: number;       // загальний таймаут/базова затримка
   retries?: number;         // кількість повторних спроб
-  retryDelayMs?: number;    // пауза між ретраями (ms)
-  criticalRetries?: number; // зарезервовано під окрему політику ретраїв
-};
-
-export type RequestOptions = {
-  critical?: boolean;
+  retryDelayMs?: number;    // пауза між ретраями
+  criticalRetries?: number; // зарезервовано під "критичні" ретраї (поки не використовується окремо)
 };
 
 function resolveBaseUrl(): string {
@@ -32,14 +28,13 @@ export function createApiClient(config?: ApiClientConfig) {
   const timeoutMs = config?.timeoutMs ?? 6000;
   const retries = config?.retries ?? 1;
   const retryDelayMs = config?.retryDelayMs ?? timeoutMs;
-  // criticalRetries поки явно не використовується, але тип уже знає про нього:
+  // criticalRetries поки не використовуємо окремо, але тип його вже знає
   // const criticalRetries = config?.criticalRetries ?? retries;
 
   async function request<T>(
     method: "GET" | "POST",
     path: string,
-    body?: unknown,
-    _options?: RequestOptions
+    body?: unknown
   ): Promise<ApiResult<T>> {
     const url = `${baseUrl}${path}`;
     let attempt = 0;
@@ -77,16 +72,12 @@ export function createApiClient(config?: ApiClientConfig) {
     }
   }
 
-  function get<T>(path: string, options?: RequestOptions): Promise<ApiResult<T>> {
-    return request<T>("GET", path, undefined, options);
+  function get<T>(path: string): Promise<ApiResult<T>> {
+    return request<T>("GET", path);
   }
 
-  function post<T>(
-    path: string,
-    body: unknown,
-    options?: RequestOptions
-  ): Promise<ApiResult<T>> {
-    return request<T>("POST", path, body, options);
+  function post<T>(path: string, body: unknown): Promise<ApiResult<T>> {
+    return request<T>("POST", path, body);
   }
 
   return { get, post };

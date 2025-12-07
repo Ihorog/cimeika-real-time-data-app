@@ -8,14 +8,8 @@ export type ApiResult<T> = {
 
 export type ApiClientConfig = {
   baseUrl?: string;
-  timeoutMs?: number;       // базовий таймаут / затримка
-  retries?: number;         // кількість повторних спроб
-  retryDelayMs?: number;    // пауза між ретраями (ms)
-  criticalRetries?: number; // зарезервовано під окрему політику ретраїв
-};
-
-export type RequestOptions = {
-  critical?: boolean;
+  timeoutMs?: number;
+  retries?: number;
 };
 
 function resolveBaseUrl(): string {
@@ -31,19 +25,20 @@ export function createApiClient(config?: ApiClientConfig) {
   const baseUrl = config?.baseUrl ?? resolveBaseUrl();
   const timeoutMs = config?.timeoutMs ?? 6000;
   const retries = config?.retries ?? 1;
-  const retryDelayMs = config?.retryDelayMs ?? timeoutMs;
-  // criticalRetries поки явно не використовується, але тип уже знає про нього:
-  // const criticalRetries = config?.criticalRetries ?? retries;
 
   async function request<T>(
     method: "GET" | "POST",
     path: string,
-    body?: unknown,
-    _options?: RequestOptions
+    body?: unknown
   ): Promise<ApiResult<T>> {
     const url = `${baseUrl}${path}`;
     let attempt = 0;
 
+    // простий retry-цикл
+    // перша спроба + retries додаткових
+    // тобто загалом retries+1 спроб
+    // timeoutMs використовується як пауза між повторними спробами
+    // (якщо timeoutMs <= 0, паузи не буде)
     while (true) {
       try {
         const res = await fetch(url, {
@@ -70,23 +65,19 @@ export function createApiClient(config?: ApiClientConfig) {
         }
         attempt += 1;
 
-        if (retryDelayMs > 0) {
-          await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+        if (timeoutMs > 0) {
+          await new Promise((resolve) => setTimeout(resolve, timeoutMs));
         }
       }
     }
   }
 
-  function get<T>(path: string, options?: RequestOptions): Promise<ApiResult<T>> {
-    return request<T>("GET", path, undefined, options);
+  function get<T>(path: string): Promise<ApiResult<T>> {
+    return request<T>("GET", path);
   }
 
-  function post<T>(
-    path: string,
-    body: unknown,
-    options?: RequestOptions
-  ): Promise<ApiResult<T>> {
-    return request<T>("POST", path, body, options);
+  function post<T>(path: string, body: unknown): Promise<ApiResult<T>> {
+    return request<T>("POST", path, body);
   }
 
   return { get, post };
