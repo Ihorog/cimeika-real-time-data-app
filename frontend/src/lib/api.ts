@@ -1,4 +1,4 @@
-import { createApiClient, type ApiResult } from "../../../core/api";
+import { createApiClient, type ApiResult } from "@/core/api";
 
 function resolveBaseUrl(): string {
   const url = process.env.NEXT_PUBLIC_CIMEIKA_API_URL?.trim();

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import MoodOverlay from "./MoodOverlay";
-import { DATE_SHORT_OPTIONS, DEFAULT_LOCALE } from "../../../config/locale";
+import { DATE_SHORT_OPTIONS, DEFAULT_LOCALE } from "../../config/locale";
 
 function formatDate(date) {
   return new Date(date).toLocaleDateString(DEFAULT_LOCALE, DATE_SHORT_OPTIONS);
