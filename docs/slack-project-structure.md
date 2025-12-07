@@ -20,7 +20,7 @@ cimeika-real-time-data-app/
 │  ├─ components/                  # Header/footer шаблони для сторінок
 │  ├─ pages/                       # Домашня сторінка та вкладки
 │  ├─ scripts.js                   # Логіка клієнта для форм і SSE
-│  ├─ styles.css                   # Базові стилі без Tailwind
+│  ├─ styles.css                   # Додаткові кастомні стилі
 │  └─ service-worker.js            # Кешування статичних ресурсів
 ├─ api/                            # Python-скрипти: сенсоматика, галерея, sense_server
 │  └─ v1/                          # Допоміжні сценарії для версії v1
