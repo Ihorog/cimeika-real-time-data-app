@@ -1,4 +1,4 @@
-export * from "../../.// src/core/api.ts
+// src/core/api.ts
 
 export type ApiResult<T> = {
   ok: boolean;
@@ -7,9 +7,12 @@ export type ApiResult<T> = {
 };
 
 function resolveBaseUrl(): string {
-  const url = process.env.NEXT_PUBLIC_CIMEIKA_API_URL?.trim();
-  if (!url) throw new Error("NEXT_PUBLIC_CIMEIKA_API_URL is not defined");
-  return url.replace(/\/$/, "");
+  const raw = process.env.NEXT_PUBLIC_CIMEIKA_API_URL;
+  if (!raw) {
+    throw new Error("NEXT_PUBLIC_CIMEIKA_API_URL is not defined");
+  }
+  const url = raw.trim();
+  return url.endsWith("/") ? url.slice(0, -1) : url;
 }
 
 export function createApiClient() {
@@ -19,7 +22,9 @@ export function createApiClient() {
     try {
       const res = await fetch(`${baseUrl}${path}`, {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         cache: "no-store",
       });
 
@@ -29,16 +34,21 @@ export function createApiClient() {
 
       const data = (await res.json()) as T;
       return { ok: true, data };
-    } catch (err: any) {
-      return { ok: false, error: err?.message || "Network error" };
+    } catch (err: unknown) {
+      return {
+        ok: false,
+        error: err instanceof Error ? err.message : "Network error",
+      };
     }
   }
 
-  async function post<T>(path: string, body: any): Promise<ApiResult<T>> {
+  async function post<T>(path: string, body: unknown): Promise<ApiResult<T>> {
     try {
       const res = await fetch(`${baseUrl}${path}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(body),
         cache: "no-store",
       });
@@ -49,11 +59,13 @@ export function createApiClient() {
 
       const data = (await res.json()) as T;
       return { ok: true, data };
-    } catch (err: any) {
-      return { ok: false, error: err?.message || "Network error" };
+    } catch (err: unknown) {
+      return {
+        ok: false,
+        error: err instanceof Error ? err.message : "Network error",
+      };
     }
   }
 
   return { get, post };
 }
-./core/api";
