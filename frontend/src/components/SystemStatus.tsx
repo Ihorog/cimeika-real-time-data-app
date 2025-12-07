@@ -17,7 +17,10 @@ export default function SystemStatus() {
   useEffect(() => {
     async function loadHealth() {
       const response = await get<HealthResponse>("/health");
-      if (response.status === "ok" && response.data?.status === "ok") {
+      -      if (response.status === "ok" && response.data?.status === "ok") {
++      // перевіряємо булеве поле ok, а не неіснуюче status
++      if (response.ok && response.data?.status === "ok") {
+
         setStatus("ok");
         setDetails(response.data.base_url || "ready");
       } else {
