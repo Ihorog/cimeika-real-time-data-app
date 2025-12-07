@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from fastapi import APIRouter
 from pydantic import BaseModel
 
@@ -21,8 +21,8 @@ class AxisManifest(BaseModel):
     axes: Dict[str, Dict[str, Any]]
     balance_rule: str
     formula: str
-    status: str | None = None
-    error: str | None = None
+status: Optional[str] = None
+        error: Optional[str] = None
 
 
 class AxisResonanceRequest(BaseModel):
@@ -32,8 +32,8 @@ class AxisResonanceRequest(BaseModel):
 class AxisResonanceScore(BaseModel):
     match_keywords: List[str]
     coverage: float
-    color: str | None = None
-    symbol: str | None = None
+color: Optional[str] = None
+symbol: Optional[str] = Nonee None
 
 
 class AxisResonanceResponse(BaseModel):
