@@ -1,11 +1,7 @@
-from typing import Dict
+from typing import Dict, Optional
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
-from typing import Optional
 
-# Example usage in a function signature:
-def my_function(param: Optional[str] = None):
-    
 from backend.utils.connectors import request_story
 
 router = APIRouter()
@@ -13,11 +9,15 @@ router = APIRouter()
 
 class StoryRequest(BaseModel):
     title: str
-    seed: str | None = None
+    seed: Optional[str] = None
 
 
 @router.post("/story", response_model=Dict[str, str])
 def craft_story(request: StoryRequest):
+    """Create a story via the external connector and return selected fields.
+
+    Expects request to contain at least a title; optional seed may be provided.
+    """
     story_response = request_story(request.model_dump())
     if story_response.get("status") == "ok" and isinstance(story_response.get("data"), dict):
         data = story_response["data"]
@@ -38,6 +38,7 @@ def craft_story(request: StoryRequest):
 
 @router.get("/history", response_model=Dict[str, str])
 def list_history():
+    """Fetch story generation history from the external connector."""
     history_response = request_story({"title": "history"})
     if history_response.get("status") == "ok" and isinstance(history_response.get("data"), dict):
         return history_response["data"]
