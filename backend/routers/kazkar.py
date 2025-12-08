@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
 from backend.utils.connectors import request_story
+from backend.schemas.kazkar import StoryOut, HistoryOut
 
 router = APIRouter()
 
@@ -12,7 +13,7 @@ class StoryRequest(BaseModel):
     seed: Optional[str] = None
 
 
-@router.post("/story", response_model=Dict[str, str])
+@router.post("/story", response_model=StoryOut)
 def craft_story(request: StoryRequest):
     """Create a story via the external connector and return selected fields.
 
@@ -36,7 +37,7 @@ def craft_story(request: StoryRequest):
     )
 
 
-@router.get("/history", response_model=Dict[str, str])
+@router.get("/history", response_model=HistoryOut)
 def list_history():
     """Fetch story generation history from the external connector."""
     history_response = request_story({"title": "history"})
