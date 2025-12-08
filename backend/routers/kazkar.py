@@ -1,7 +1,11 @@
 from typing import Dict
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
-from Optional[str] = None 
+from typing import Optional
+
+# Example usage in a function signature:
+def my_function(param: Optional[str] = None):
+    
 from backend.utils.connectors import request_story
 
 router = APIRouter()
