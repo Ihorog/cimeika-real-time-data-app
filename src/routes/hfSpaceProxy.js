@@ -1,4 +1,4 @@
-const { createApiClient } = require('../core/api');
+const { createApiClient } = require('../../core/api');
 const config = require('../config');
 
 const DEFAULT_SPACE_URL = 'https://ihorog-cimeika-api.hf.space';

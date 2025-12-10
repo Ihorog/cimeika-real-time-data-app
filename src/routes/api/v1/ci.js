@@ -1,7 +1,7 @@
 const express = require('express');
 const { makeResponse } = require('./utils/responseHelper');
 const { appendProfile } = require('./utils/senseStorage');
-const { createApiClient } = require('../../../core/api');
+const { createApiClient } = require('../../../../core/api');
 
 const router = express.Router();
 const SENSE_ENDPOINT = process.env.SENSE_ENDPOINT || 'http://localhost:8000/mitca/sense';

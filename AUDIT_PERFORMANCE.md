@@ -1,20 +1,18 @@
 # AUDIT_PERFORMANCE
 
 ## Оптимізація API та ядра
-- Запроваджено єдиний fetch-клієнт `core/api` з тайм-аутами, експоненційним backoff та повторними спробами для критичних викликів.
-- Всі Node/Next модулі (realtime, HF proxу, ciwiki, frontend api) переведено на центральний клієнт; Axios видалено.
-- Додано fallback на `node:undici` для середовищ без глобального `fetch`.
+- `core/api` лишено єдиним джерелом HTTP: додано централізований `onError` хук, уніфіковані тайм-аути, backoff і retries для критичних викликів та формат помилки `{ status, statusCode, error }`.
+- Глобальні клієнти (Next + Node) використовують той самий helper; fallback на `undici` зберігається для серверних середовищ.
 
 ## Frontend (Next.js / Turbopack)
-- Галерея переходить на `next/image` з `blurDataURL` та lazy-load секціями через IntersectionObserver.
-- TodayWidget використовує неблокуючу модель через `useTransition` і єдиний таймер-диспетчер для сповіщень.
-- Tailwind порядок імпорту очищено; мертві стилі (`.ci-gradient`) видалені.
-- Turbopack: увімкнено `experimental.externalDir` для стабільного кешу при використанні спільного `core/api`.
+- Галерея продовжує працювати через `next/image` з `blurDataURL`; секції grid/timeline лишені lazy-load через IntersectionObserver для зменшення blocking work.
+- TodayWidget переведений на безблокову модель: єдиний авто-dismiss таймер, state-оновлення через `useTransition`, відсутні дублювання `setTimeout`.
+- `globals.css` впорядковано: Tailwind директиви на початку, токени кольорів інтегровані без зайвих імпортів.
+- Turbopack build пройдено успішно (`npm run build` у `frontend/`), кешування externalDir збережене; попередження лише про відсутність прод API URL (підхоплюється fallback).
 
 ## Backend
-- `/api/v1/gallery` кешує читання директорій/realpath на 5 секунд і мемоізує JSON-дані галереї.
-- Додано структуровані JSON-логи для спроб доступу до файлів, відмов та успішних читань.
+- `/api/v1/gallery` тепер має TTL-кеш для realpath/readdir (5с), memoization шляхів, кешоване читання JSON і low-cost JSON-логи (path_attempt/path_denied/cache_hit/upload/list).
 
-## Спостереження/рекомендації
-- Node.js/ npm відсутні у середовищі: збірка Turbopack не заміряна. Після інсталяції Node запустити `npm run build` у корені та `frontend/` для реальних метрик.
-- Потрібно додати невеликі webp/avif прев’ю замість SVG, якщо з’являться реальні фото (заощадить мережевий трафік).
+## Рекомендації
+- Для реальних медіа додати webp/avif прев’ю та згенерувати `blurDataURL` у build-стадії.
+- Після налаштування `NEXT_PUBLIC_CIMEIKA_API_URL` зафіксувати warm-HMR метрики Turbopack на стабільному залізі.

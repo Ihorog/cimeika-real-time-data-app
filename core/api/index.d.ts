@@ -10,6 +10,7 @@ export interface ApiClientOptions {
   defaultHeaders?: Record<string, string>;
   fetchImpl?: typeof fetch;
   logger?: Console;
+  onError?: (message: string, payload?: Record<string, unknown>) => void;
 }
 
 export interface RequestOptions {
