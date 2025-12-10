@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import { DATE_LONG_OPTIONS, DEFAULT_LOCALE } from "../../config/locale";
 
@@ -8,7 +8,7 @@ const DISMISS_MS = 2400;
 
 export default function TodayWidget({ events = [], quickAddMessage = "Голосова команда активована", onQuickAdd }) {
   const [notification, setNotification] = useState(null);
-  const timeoutRef = useRef(null);
+  const hideTimerRef = useRef(null);
   const [isPending, startTransition] = useTransition();
 
   const todayLabel = useMemo(
@@ -16,39 +16,37 @@ export default function TodayWidget({ events = [], quickAddMessage = "Голос
     [],
   );
 
-  useEffect(
-    () => () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    },
-    [],
-  );
+  useEffect(() => {
+    if (!notification) return undefined;
 
-  const showNotification = (message) => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    hideTimerRef.current = window.setTimeout(() => setNotification(null), DISMISS_MS);
+    return () => {
+      if (hideTimerRef.current) {
+        clearTimeout(hideTimerRef.current);
+      }
+    };
+  }, [notification]);
 
-    const payload = { id: crypto.randomUUID?.() ?? Date.now(), message };
-    setNotification(payload);
+  const showNotification = useCallback((message) => {
+    if (!message) return;
+    startTransition(() => {
+      setNotification({ id: crypto.randomUUID?.() ?? Date.now(), message });
+    });
+  }, [startTransition]);
 
-    timeoutRef.current = window.setTimeout(() => {
-      setNotification((current) => (current?.id === payload.id ? null : current));
-    }, DISMISS_MS);
-  };
-
-  const handleQuickAdd = async () => {
+  const handleQuickAdd = useCallback(async () => {
     const handler = onQuickAdd || (() => quickAddMessage);
 
-    startTransition(async () => {
-      try {
-        const result = await Promise.resolve(handler());
-        if (result === false) return;
+    try {
+      const result = await Promise.resolve(handler());
+      if (result === false) return;
 
-        const message = typeof result === "string" && result.trim().length ? result : quickAddMessage;
-        showNotification(message);
-      } catch (error) {
-        showNotification("Не вдалося запустити швидке додавання");
-      }
-    });
-  };
+      const message = typeof result === "string" && result.trim().length ? result : quickAddMessage;
+      showNotification(message);
+    } catch (error) {
+      showNotification("Не вдалося запустити швидке додавання");
+    }
+  }, [onQuickAdd, quickAddMessage, showNotification]);
 
   return (
     <motion.div

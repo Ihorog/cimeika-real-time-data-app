@@ -1,4 +1,4 @@
-const { createApiClient } = require('../core/api');
+const { createApiClient } = require('../../core/api');
 
 const hfClient = createApiClient({ timeoutMs: 8000, retries: 1, criticalRetries: 2 });
 

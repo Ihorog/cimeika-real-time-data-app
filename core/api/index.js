@@ -34,8 +34,15 @@ function createApiClient({
   defaultHeaders = {},
   fetchImpl = nativeFetch,
   logger = console,
+  onError,
 } = {}) {
   const resolvedFetch = resolveFetch(fetchImpl);
+
+  const handleError = typeof onError === "function" ? onError : logger.error?.bind(logger);
+
+  function formatError(statusCode, error) {
+    return { status: "error", statusCode, error };
+  }
 
   async function fetchWithTimeout(url, options = {}, timeout = timeoutMs) {
     const controller = new AbortController();
@@ -93,13 +100,10 @@ function createApiClient({
             await sleep(backoff);
             continue;
           }
-          return {
-            status: "error",
-            statusCode: response.status,
-            error:
-              (payload && (payload.error || payload.message)) ||
-              `Request failed with status ${response.status}`,
-          };
+          const errorMessage =
+            (payload && (payload.error || payload.message)) || `Request failed with status ${response.status}`;
+          handleError?.("api-client error", { url, status: response.status, error: errorMessage });
+          return formatError(response.status, errorMessage);
         }
 
         return {
@@ -118,12 +122,8 @@ function createApiClient({
       }
     }
 
-    logger.error?.("api-client failure", { url, error: lastError?.message, status: lastStatus });
-    return {
-      status: "error",
-      statusCode: lastStatus || 0,
-      error: lastError?.message || "Request failed",
-    };
+    handleError?.("api-client failure", { url, error: lastError?.message, status: lastStatus });
+    return formatError(lastStatus || 0, lastError?.message || "Request failed");
   }
 
   return {

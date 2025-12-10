@@ -2,22 +2,22 @@
 
 ## Перевірено
 - Express API v1 (галерея/календар/ci), FastAPI роутери, фронтенд клієнти Next.js, глобальні Tailwind стилі.
-- Безпека: base URL policy, path traversal у `/api/v1/gallery/mood`, структуровані логи доступу.
-- UX/перформанс: TodayWidget, Gallery lazy-load/blur previews, notification UX.
-- Залежності: ручна ревізія package.json, часткова перевірка pip (див. Dependency Optimization).
+- Безпека: base URL policy, path traversal у `/api/v1/gallery/mood`, структуровані JSON-логи доступу/відмов.
+- UX/перформанс: TodayWidget, Gallery lazy-load/blur previews, notification UX, Turbopack build.
+- Залежності: ревізія package.json (корінь + frontend), оновлення FastAPI, фактичні npm prune/audit.
 
 ## Знайдено та виправлено
-- Єдиний клієнт `core/api` (тайм-аути, backoff, retries) для Node і Next; Axios повністю видалений.
-- Глобальна локаль `uk-UA` винесена у `config/locale.ts`; календар/галерея/UI компоненти використовують спільні дати.
-- Gallery: кеш realpath/readdir (5с), мемоізація JSON, структуровані JSON-логи доступу/відмов; `next/image` + blur/lazy секції.
-- TodayWidget: неблокуюче `useTransition` + єдиний таймер-диспетчер сповіщень.
-- Tailwind імпорти впорядковані, мертві стилі прибрано.
+- Єдиний клієнт `core/api` з `onError`, тайм-аутами, backoff/retry; Axios відсутній у коді та залежностях.
+- Глобальна локаль `uk-UA` у `config/locale.ts`; календар/галерея/UI використовують спільні дати.
+- Gallery: кеш realpath/readdir (5с), memoization шляхів, кешоване читання JSON, структуровані логи `path_*`, `gallery_*`.
+- TodayWidget: неблокуюче оновлення state, єдиний авто-dismiss таймер без дублювання `setTimeout`.
+- Tailwind імпорти впорядковані, токени кольорів інлайн, мертві імпорти видалені.
 
 ## Результати тестів
-- Автоматизовані тести/збірки не запускалися: у середовищі відсутні Node.js/npm; `pip list --outdated` було зупинено через затримку (див. журнали).
-  - Для відтворення: встановити Node, виконати `npm install`, `npm test` у корені та `frontend/`, після чого `npm run build`.
+- `npm run build` (frontend/Turbopack) — успішно, compile ~16s + TS ~9s на поточному стенді; попередження лише про відсутній API URL (fallback на localhost).
+- `npm prune` (root + frontend) і `npm audit fix --only=prod` (frontend) виконано; CVE на прод-шляху не виявлено.
+- `pip list --outdated` виконано; FastAPI оновлено до 0.124.0 у requirements (потребує установки в CI).
 
 ## Відкриті ризики
-- Node.js/npm відсутні: необхідно підтвердити збірку, тести та audit після встановлення середовища.
-- CI secrets/vars потрібно оновити (`NEXT_PUBLIC_CIMEIKA_API_URL`) для стабільного build.
-- Backend залежності застарілі (FastAPI/httpx/uvicorn); потрібен окремий цикл оновлення й ретестів.
+- Необхідно зафіксувати продовжений набір тестів/latency після налаштування `NEXT_PUBLIC_CIMEIKA_API_URL`.
+- Backend залежності (uvicorn/httpx/starlette) ще не оновлені; потребують сумісної перевірки.

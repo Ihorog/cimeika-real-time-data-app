@@ -13,12 +13,22 @@ const GALLERY_PATH = path.join(DATA_DIR, 'gallery.json');
 const MOOD_CACHE_PATH = path.join(DATA_DIR, 'gallery_moods.json');
 const PYTHON_SCRIPT = path.join(ROOT_DIR, 'api', 'ci_mitca_gallery.py');
 const PYTHON_BIN = process.env.PYTHON_BIN || 'python3';
-const ALLOWED_IMAGE_ROOT = DATA_DIR;
-fs.mkdirSync(ALLOWED_IMAGE_ROOT, { recursive: true });
-const RESOLVED_IMAGE_ROOT = fs.realpathSync.native(ALLOWED_IMAGE_ROOT);
+const ALLOWED_IMAGE_ROOTS = [DATA_DIR, path.join(ROOT_DIR, 'public')];
+fs.mkdirSync(ALLOWED_IMAGE_ROOTS[0], { recursive: true });
+const RESOLVED_IMAGE_ROOTS = ALLOWED_IMAGE_ROOTS.map((entry) => fs.realpathSync.native(entry));
 const DIRECTORY_CACHE_MS = 5000;
 const directoryCache = new Map();
+const pathMemoCache = new Map();
 let galleryCache = null;
+
+function pruneCache(cache) {
+  const now = Date.now();
+  for (const [key, entry] of cache.entries()) {
+    if (!entry?.timestamp || now - entry.timestamp >= DIRECTORY_CACHE_MS) {
+      cache.delete(key);
+    }
+  }
+}
 
 function logStructured(event, payload = {}) {
   console.log(
@@ -63,6 +73,7 @@ function saveJson(filePath, data) {
 }
 
 function cachedRealpath(targetPath) {
+  pruneCache(directoryCache);
   const cached = directoryCache.get(targetPath);
   const now = Date.now();
   if (cached && now - cached.timestamp < DIRECTORY_CACHE_MS) return cached.value;
@@ -72,6 +83,7 @@ function cachedRealpath(targetPath) {
 }
 
 function cachedReaddir(targetPath) {
+  pruneCache(directoryCache);
   const cached = directoryCache.get(`dir:${targetPath}`);
   const now = Date.now();
   if (cached && now - cached.timestamp < DIRECTORY_CACHE_MS) return cached.value;
@@ -82,22 +94,35 @@ function cachedReaddir(targetPath) {
 
 function ensureWithinRoot(targetPath) {
   try {
-    const decoded = decodeURIComponent(targetPath);
-    const resolved = cachedRealpath(path.resolve(decoded));
+    pruneCache(pathMemoCache);
+    const now = Date.now();
+    const memoKey = String(targetPath);
+    const memoized = pathMemoCache.get(memoKey);
+    if (memoized && now - memoized.timestamp < DIRECTORY_CACHE_MS) {
+      return memoized.value;
+    }
 
-    if (
-      resolved !== RESOLVED_IMAGE_ROOT &&
-      !resolved.startsWith(`${RESOLVED_IMAGE_ROOT}${path.sep}`)
-    ) {
-      logStructured('path_denied', { targetPath, resolved });
+    const decoded = decodeURIComponent(targetPath);
+    const absolute = path.resolve(decoded);
+    const resolvedDir = cachedRealpath(path.dirname(absolute));
+    const resolvedPath = path.join(resolvedDir, path.basename(absolute));
+    const exists = fs.existsSync(resolvedPath);
+
+    const withinAllowed = RESOLVED_IMAGE_ROOTS.some(
+      (root) => resolvedPath === root || resolvedPath.startsWith(`${root}${path.sep}`)
+    );
+
+    if (!withinAllowed) {
+      logStructured('path_denied', { targetPath, resolved: resolvedPath });
       throw new Error('imagePath is outside the allowed data directory');
     }
 
-    const resolvedDir = path.dirname(resolved);
     cachedReaddir(resolvedDir);
-    logStructured('path_ok', { targetPath, resolved });
+    logStructured('path_ok', { targetPath, resolved: resolvedPath, exists });
+    const value = { resolvedPath, exists };
+    pathMemoCache.set(memoKey, { value, timestamp: now });
 
-    return resolved;
+    return value;
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Invalid imagePath';
     logStructured('path_error', { targetPath, error: message });
@@ -107,11 +132,13 @@ function ensureWithinRoot(targetPath) {
 
 function loadGallery() {
   if (galleryCache && Date.now() - galleryCache.timestamp < DIRECTORY_CACHE_MS) {
+    logStructured('gallery_cache_hit', { size: galleryCache.data.length });
     return galleryCache.data;
   }
   const data = loadJson(GALLERY_PATH, DEFAULT_ITEMS);
   const normalized = Array.isArray(data) ? data : DEFAULT_ITEMS;
   galleryCache = { data: normalized, timestamp: Date.now() };
+  logStructured('gallery_cache_miss', { size: normalized.length });
   return normalized;
 }
 
@@ -144,6 +171,7 @@ router.get('/', (req, res) => {
 
 router.get('/list', (req, res) => {
   const items = loadGallery();
+  logStructured('gallery_list', { size: items.length });
   res.json(makeResponse('gallery', { items, summary: buildSummary(items) }));
 });
 
@@ -180,6 +208,7 @@ router.post('/upload', (req, res) => {
 
   const updated = [newItem, ...items];
   persistGallery(updated);
+  logStructured('gallery_upload', { id, emotion, location });
 
   res.status(201).json(makeResponse('gallery_upload', { item: newItem }));
 });
@@ -194,15 +223,29 @@ router.post('/mood', (req, res) => {
 
   try {
     logStructured('path_attempt', { targetPath: imagePath });
-    const safeImagePath = ensureWithinRoot(imagePath);
-    const stdout = execFileSync(PYTHON_BIN, [PYTHON_SCRIPT, '--image', safeImagePath], {
+    const { resolvedPath, exists } = ensureWithinRoot(imagePath);
+
+    if (!exists) {
+      const fallback = { emotion: 'neutral', resonance: 0.5 };
+      logStructured('mood_fallback', { imagePath, resolvedPath, reason: 'missing_file' });
+      return res.json(
+        makeResponse('gallery_mood', {
+          image: imagePath,
+          ...fallback,
+          cacheSize: 0,
+          source: 'ci_mitca_gallery'
+        })
+      );
+    }
+
+    const stdout = execFileSync(PYTHON_BIN, [PYTHON_SCRIPT, '--image', resolvedPath], {
       encoding: 'utf-8'
     });
     const payload = JSON.parse(stdout);
     const cacheSnapshot = loadJson(MOOD_CACHE_PATH, {});
 
     logStructured('mood_success', {
-      imagePath: safeImagePath,
+      imagePath: resolvedPath,
       cacheSize: Object.keys(cacheSnapshot).length
     });
 
