@@ -1,5 +1,6 @@
 const request = require('supertest');
 const app = require('../src/app');
+const { MODULES } = require('../src/routes/api/v1/modules');
 
 describe('API v1 routes', () => {
   it('lists available v1 modules from the root', async () => {
@@ -8,9 +9,7 @@ describe('API v1 routes', () => {
     expect(response.status).toBe(200);
     expect(response.body.status).toBe('ok');
     expect(response.body.module).toBe('api_v1');
-    expect(response.body.payload.modules).toEqual(
-      expect.arrayContaining(['ci', 'legend', 'gallery', 'calendar', 'health'])
-    );
+    expect(response.body.payload.modules).toEqual(MODULES);
   });
 
   it('returns health payload with standard schema', async () => {
@@ -22,36 +21,17 @@ describe('API v1 routes', () => {
     expect(response.body.payload).toHaveProperty('timestamp');
   });
 
-  it('returns ci stub response', async () => {
-    const response = await request(app).get('/api/v1/ci');
+  it.each([
+    ['ci', 'message'],
+    ['legend', 'message'],
+    ['gallery', 'items'],
+    ['calendar', 'events']
+  ])('returns %s stub response', async (module, payloadKey) => {
+    const response = await request(app).get(`/api/v1/${module}`);
 
     expect(response.status).toBe(200);
     expect(response.body.status).toBe('ok');
-    expect(response.body.module).toBe('ci');
-    expect(response.body.payload).toHaveProperty('message');
-  });
-
-  it('returns legend stub response', async () => {
-    const response = await request(app).get('/api/v1/legend');
-
-    expect(response.status).toBe(200);
-    expect(response.body.module).toBe('legend');
-    expect(response.body.payload).toHaveProperty('message');
-  });
-
-  it('returns gallery stub response', async () => {
-    const response = await request(app).get('/api/v1/gallery');
-
-    expect(response.status).toBe(200);
-    expect(response.body.module).toBe('gallery');
-    expect(response.body.payload).toHaveProperty('items');
-  });
-
-  it('returns calendar stub response', async () => {
-    const response = await request(app).get('/api/v1/calendar');
-
-    expect(response.status).toBe(200);
-    expect(response.body.module).toBe('calendar');
-    expect(response.body.payload).toHaveProperty('events');
+    expect(response.body.module).toBe(module);
+    expect(response.body.payload).toHaveProperty(payloadKey);
   });
 });
