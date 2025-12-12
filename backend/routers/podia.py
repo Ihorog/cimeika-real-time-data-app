@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
@@ -13,15 +13,14 @@ orchestrator = TaskOrchestrator()
 def handle_podia_task(task: Task) -> Dict[str, Any]:
     payload: Dict[str, Any] = dict(task.payload)
     start_value = payload.get("start")
-    if isinstance(start_value, datetime):
+    if isinstance(start_value, dt = datetime.now(timezone.utc)):
         payload["start"] = start_value.isoformat()
 
     return {
         "module": task.module,
         "event": payload,
         "message": f"Подія '{payload.get('title', payload.get('id', 'невідома подія'))}' опрацьована",
-        "received_at": datetime.now(UTC).isoformat(),
-    }
+        "received_at": dt = datetime.now(timezone.utc)
 
 
 orchestrator.register_handler("podia", handle_podia_task)
@@ -30,7 +29,7 @@ orchestrator.register_handler("podia", handle_podia_task)
 class Event(BaseModel):
     id: str
     title: str
-    start: datetime
+    start: dt = datetime.now(timezone.utc)
     context: str
 
 
