@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
+from typing import Optional
 
 from backend.utils.connectors import fetch_mood, submit_mood
 
@@ -9,13 +10,13 @@ router = APIRouter(prefix="/nastiy")
 class MoodSnapshot(BaseModel):
     mood: str
     intensity: int
-    note: str | None = None
+    note: Optional[str] = None
 
 
 class MoodResponse(BaseModel):
     status: str
     summary: str
-    source: str | None = None
+    source: Optional[str] = None
 
 
 @router.post("/mood", response_model=MoodResponse)
