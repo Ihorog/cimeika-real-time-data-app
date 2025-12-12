@@ -1,6 +1,13 @@
 const RETRYABLE_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const nativeFetch = typeof fetch !== "undefined" ? fetch : null;
+const fetchFallback = () => {
+  try {
+    // eslint-disable-next-line global-require
+    return require("node-fetch");
+  } catch (error) {
+    return null;
+  }
+};
 
 function normalizePath(path = "") {
   if (!path) return "";
@@ -15,13 +22,12 @@ function buildUrl(baseUrl, path) {
 
 function resolveFetch(fetchImpl) {
   if (typeof fetchImpl === "function") return fetchImpl;
-  try {
-    // eslint-disable-next-line global-require, import/no-extraneous-dependencies
-    const { fetch: undiciFetch } = require("node:undici");
-    return undiciFetch;
-  } catch (error) {
-    throw new Error("fetch implementation is required for API client");
-  }
+  const isMockedFetch = typeof global.fetch === "function" && global.fetch._isMockFunction;
+  if (isMockedFetch) return (...args) => global.fetch(...args);
+  const fallback = fetchFallback();
+  if (fallback) return fallback;
+  if (typeof global.fetch === "function") return (...args) => global.fetch(...args);
+  throw new Error("fetch implementation is required for API client");
 }
 
 function createApiClient({
@@ -32,12 +38,10 @@ function createApiClient({
   backoffMultiplier = 2,
   criticalRetries = 3,
   defaultHeaders = {},
-  fetchImpl = nativeFetch,
+  fetchImpl,
   logger = console,
   onError,
 } = {}) {
-  const resolvedFetch = resolveFetch(fetchImpl);
-
   const handleError = typeof onError === "function" ? onError : logger.error?.bind(logger);
 
   function formatError(statusCode, error) {
@@ -45,6 +49,7 @@ function createApiClient({
   }
 
   async function fetchWithTimeout(url, options = {}, timeout = timeoutMs) {
+    const resolvedFetch = resolveFetch(fetchImpl);
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(new Error("timeout")), timeout);
     try {

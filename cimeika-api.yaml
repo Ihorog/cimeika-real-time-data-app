@@ -27,6 +27,12 @@ paths:
                     type: string
                   base_url:
                     type: string
+                  uptime:
+                    type: number
+                    description: Seconds since process start
+                  timestamp:
+                    type: string
+                    format: date-time
   /ci/chat:
     post:
       summary: Echo chat with Ci resonance preview

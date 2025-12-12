@@ -12,6 +12,31 @@
     }
   ],
   "paths": {
+    "/health": {
+      "get": {
+        "operationId": "healthCheck",
+        "summary": "Перевірка доступності сервісу",
+        "responses": {
+          "200": {
+            "description": "Сервіс доступний",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "ok" },
+                    "service": { "type": "string", "example": "cimeika-api" },
+                    "base_url": { "type": "string", "example": "https://cimeika-real-time-data-app.vercel.app" },
+                    "uptime": { "type": "number", "example": 12.345 },
+                    "timestamp": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/login": {
       "post": {
         "operationId": "authLogin",

@@ -30,6 +30,19 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
+// Lightweight service health probe
+app.get('/health', (req, res) => {
+  const baseUrl = `${req.protocol}://${req.get('host')}`;
+
+  res.json({
+    status: 'ok',
+    service: 'cimeika-api',
+    base_url: baseUrl,
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Endpoint to expose config values for client
 app.get('/config', (req, res) => {
   res.json({
