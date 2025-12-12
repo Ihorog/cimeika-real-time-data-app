@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, RootModel
 from typing import Optional, Dict
 
 
@@ -8,5 +8,5 @@ class StoryOut(BaseModel):
     snippet: Optional[str] = ""
 
 
-class HistoryOut(BaseModel):
-    __root__: Dict[str, str]
+class HistoryOut(RootModel[Dict[str, str]]):
+    """A dictionary of story history, mapping story ID to its snippet."""
