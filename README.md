@@ -15,6 +15,8 @@ Cimeika is a modern web application that integrates various real-time data servi
 
 An architecture outline for how this service fits into the broader Cimeika platform (GitHub repos, HF Space, and cimeika.com.ua) is captured in [`docs/platform-architecture.md`](docs/platform-architecture.md).
 
+This repository now also contains the **Cimeika interface system** scaffold described in the phase brief: a Next.js + Tailwind frontend for all core modules and a FastAPI backend that mirrors the orchestration endpoints used by Ci. The goal is to keep the real-time Node server available while introducing the target architecture side-by-side.
+
 ## Project Overview
 
 Cimeika provides users with a connected and intelligent experience by aggregating real-time data from multiple APIs. It features a sleek and responsive layout, ensuring that users can access the information they need seamlessly across devices.
@@ -43,7 +45,7 @@ Ensure that you have **Node.js 16 or later** installed.
 
    Dependencies (found in package.json):
    - `express`: For server-side logic
-   - `axios`: For making requests to external APIs
+   - Centralized fetch-based client (`core/api`)
    - `dotenv`: For environment variable loading
 
 4. **Configuration**:
@@ -51,19 +53,23 @@ Ensure that you have **Node.js 16 or later** installed.
     ```bash
     cp .env.example .env
     ```
-    Then edit `.env` to set required tokens such as `OPENAI_API_KEY`,
-    `HF_WRITE_TOKEN`, and optionally `DEFAULT_CITY` (e.g., `London`) and
-    `DEFAULT_SIGN` (e.g., `aries`).
+   Then edit `.env` to set required tokens such as `OPENAI_API_KEY`,
+   `HF_WRITE_TOKEN`, and optionally `DEFAULT_CITY` (e.g., `London`) and
+   `DEFAULT_SIGN` (e.g., `aries`).
 
-   `HUGGINGFACE_TOKEN` is optional and only needed for the `/ai/huggingface/completion`
-   route. Without it, that endpoint returns a 503 and scripts like `api_scenario.js`
-   log a notice and exit. Adjust `PORT` if you need a different server port (default
-   `7860`). The `.env` file is ignored by git.
-   If you prefer JSON-based configuration, copy `api_keys.example.json` to
-   `api_keys.json` and replace the placeholder values with your real API keys:
-   ```bash
-   cp api_keys.example.json api_keys.json
-   ```
+  `HUGGINGFACE_TOKEN` is optional and only needed for the `/ai/huggingface/completion`
+  route. Without it, that endpoint returns a 503 and scripts like `api_scenario.js`
+  log a notice and exit. Adjust `PORT` if you need a different server port (default
+  `7860`). The `.env` file is ignored by git.
+  Set `SENSE_ENDPOINT` to point Ci at a different semantic sensing service
+  (default `http://localhost:8000/mitca/sense`). Optional knobs
+  `SENSE_TIMEOUT_MS` (default `5000`) and `SENSE_RETRIES` (default `2`) govern
+  request timeout and retry behavior when calling that service.
+  If you prefer JSON-based configuration, copy `api_keys.example.json` to
+  `api_keys.json` and replace the placeholder values with your real API keys:
+  ```bash
+  cp api_keys.example.json api_keys.json
+  ```
    The `.gitignore` file prevents `api_keys.json` from being committed.
 
    If any required settings are missing or invalid, the server logs the configuration validation errors and exits immediately with an error code. Fix the reported issues before starting the application again.
@@ -92,14 +98,17 @@ Ensure that you have **Node.js 16 or later** installed.
 - **API Integrations**: Connects with multiple APIs to gather and display real-time data.
 - **OpenAPI Documentation**: Available at `/openapi` and browsable through Swagger UI at `/docs`.
 - **Configuration Endpoint**: `GET /config` returns the relative paths for the weather and astrology services used by the frontend.
-- **API Version**: OpenAPI specification version is `1.1.0` (see `cimeika-api.yaml`).
+- **API Version**: OpenAPI specification version is `0.2.0` (see `cimeika-api.yaml`) and mirrors the FastAPI
+  routers. Stub payloads were removed; missing connectors now return explicit 5xx/501 errors so SDKs can react
+  deterministically.
+- **Dual-axis mechanics**: Ci exposes the PLUS/MINUS axis manifest at `/ci/axes` and resonance scoring at `/ci/axes/resonance` to keep brand voices in sync with orchestrated tasks.
 
 ## Dependencies
 
 The project depends on the following packages (as specified in `package.json`):
 
 - `express`: "^4.18.2" (for server handling)
-- `axios`: "^1.10.0" (for making HTTP requests)
+- Unified fetch helper under `core/api`
 - `dotenv`: "^16.3.1" (for loading environment variables)
 
 Additionally, the CSS framework utilized is [Tailwind CSS](https://tailwindcss.com/).
@@ -120,6 +129,45 @@ cimeika/
 │   ├── scripts.js               # JavaScript for dynamic functionality
 │   └── index.html               # Main HTML entry point
 └── cimeika-api.yaml         # OpenAPI definition for the API
+```
+
+### Interface system (Next.js + FastAPI)
+
+The new interface stack introduced in this update lives alongside the legacy Node server:
+
+```
+frontend/                      # Next.js SPA for Ci and modules
+  src/app/ci                  # Ci console
+  src/app/podia               # ПоДія timeline
+  src/app/mood                # Настрій wave interface
+  src/app/malya               # Маля creative canvas
+  src/app/kazkar              # Казкар stories
+  src/app/calendar            # Календар time map
+  src/app/gallery             # Галерея memories
+  src/styles/tokens.css       # Design tokens derived from Ci palette
+backend/                      # FastAPI orchestration layer
+  main.py                     # App entry and router registry
+  routers/                    # REST routes per module
+  utils/                      # Sense engine + orchestrator
+```
+
+Start the FastAPI service locally:
+
+```bash
+uvicorn backend.main:app --reload --port 8000
+```
+
+Start the Next.js frontend from `frontend/`:
+
+```bash
+npm install
+npm run dev
+```
+
+Copy `.env.template` to `.env` to set the Ci/OpenAI/Hugging Face/Telegram/GitHub tokens used by the orchestrator stubs and deployment scripts:
+
+```bash
+cp .env.template .env
 ```
 
 ### File Descriptions:

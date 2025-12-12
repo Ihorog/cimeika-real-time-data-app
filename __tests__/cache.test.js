@@ -1,8 +1,24 @@
+const successResponse = (payload) =>
+  Promise.resolve({ ok: true, status: 200, json: async () => payload, text: async () => JSON.stringify(payload) });
+
 describe('cache cleanup', () => {
   let realtime;
 
   afterAll(() => {
     if (realtime) realtime.stopCacheSweep();
+  });
+
+  beforeAll(() => {
+    global.fetch = jest.fn();
+  });
+
+  beforeEach(() => {
+    global.fetch.mockReset();
+    global.fetch.mockImplementation((url) => {
+      if (url.includes('goweather')) return successResponse({ description: 'Sunny', temperature: '+20 C' });
+      if (url.includes('aztro')) return successResponse({ description: 'Great day ahead' });
+      return successResponse({});
+    });
   });
 
   it('purges expired entries after interval', () => {
@@ -26,6 +42,26 @@ describe('cache cleanup', () => {
 
     realtime.clearCaches();
     jest.useRealTimers();
+  });
+
+  it('evicts the least recently used entry when the cache exceeds its limit', async () => {
+    realtime = require('../src/routes/realtime');
+    const { fetchWeather, _weatherCache: cache, MAX_CACHE_SIZE } = realtime;
+
+    realtime.clearCaches();
+
+    for (let i = 0; i < MAX_CACHE_SIZE; i += 1) {
+      await fetchWeather(`City${i}`);
+    }
+
+    expect(cache.size).toBe(MAX_CACHE_SIZE);
+    expect(cache.has('City0')).toBe(true);
+
+    await fetchWeather('City-new');
+
+    expect(cache.size).toBe(MAX_CACHE_SIZE);
+    expect(cache.has('City0')).toBe(false);
+    expect(cache.has('City-new')).toBe(true);
   });
 });
 

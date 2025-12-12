@@ -1,0 +1,50 @@
+[
+  {
+    "id": "calendar-walk-001",
+    "title": "Ранкова прогулянка з кавою",
+    "date": "2024-11-21T07:20:00Z",
+    "time": "07:20",
+    "category": "wellbeing",
+    "location": "Kyiv, UA",
+    "shared": false,
+    "recurring": false,
+    "reminder": true,
+    "linked_gallery_id": "g-aurora"
+  },
+  {
+    "id": "calendar-family-015",
+    "title": "Родинний день на Дніпрі",
+    "date": "2024-10-05T16:45:00Z",
+    "time": "16:45",
+    "category": "family",
+    "location": "Dnipro River",
+    "shared": true,
+    "recurring": false,
+    "reminder": false,
+    "linked_gallery_id": "g-river"
+  },
+  {
+    "id": "calendar-lab-042",
+    "title": "ML Lab — адаптивні сенси",
+    "date": "2024-05-16T09:00:00Z",
+    "time": "09:00",
+    "category": "learning",
+    "location": "Online",
+    "shared": false,
+    "recurring": true,
+    "reminder": true,
+    "linked_gallery_id": null
+  },
+  {
+    "id": "calendar-run-073",
+    "title": "Morning Run",
+    "date": "2024-05-15T06:30:00Z",
+    "time": "06:30",
+    "category": "health",
+    "location": "Kyiv Park",
+    "shared": false,
+    "recurring": true,
+    "reminder": true,
+    "linked_gallery_id": null
+  }
+]

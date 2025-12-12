@@ -1,37 +1,29 @@
 const request = require('supertest');
 const app = require('../src/app');
-const { MODULES } = require('../src/routes/api/v1/modules');
+const modulesConfig = require('../src/routes/api/v1/modules.json');
 
-describe('API v1 routes', () => {
-  it('lists available v1 modules from the root', async () => {
+describe('API v1 Modules', () => {
+  const modules = modulesConfig.active;
+
+  it('GET /api/v1 → returns list of modules', async () => {
     const response = await request(app).get('/api/v1');
 
     expect(response.status).toBe(200);
     expect(response.body.status).toBe('ok');
-    expect(response.body.module).toBe('api_v1');
-    expect(response.body.payload.modules).toEqual(MODULES);
+    expect(response.body.module).toBe('v1');
+    expect(response.body.data.availableModules).toEqual(expect.arrayContaining(modules));
+    expect(response.body).toHaveProperty('timestamp');
   });
 
-  it('returns health payload with standard schema', async () => {
-    const response = await request(app).get('/api/v1/health');
+  modules.forEach(moduleName => {
+    it(`GET /api/v1/${moduleName} → returns standard response`, async () => {
+      const response = await request(app).get(`/api/v1/${moduleName}`);
 
-    expect(response.status).toBe(200);
-    expect(response.body.status).toBe('ok');
-    expect(response.body.module).toBe('health');
-    expect(response.body.payload).toHaveProperty('timestamp');
-  });
-
-  it.each([
-    ['ci', 'message'],
-    ['legend', 'message'],
-    ['gallery', 'items'],
-    ['calendar', 'events']
-  ])('returns %s stub response', async (module, payloadKey) => {
-    const response = await request(app).get(`/api/v1/${module}`);
-
-    expect(response.status).toBe(200);
-    expect(response.body.status).toBe('ok');
-    expect(response.body.module).toBe(module);
-    expect(response.body.payload).toHaveProperty(payloadKey);
+      expect(response.status).toBe(200);
+      expect(response.body.status).toBe('ok');
+      expect(response.body.module).toBe(moduleName);
+      expect(response.body).toHaveProperty('timestamp');
+      expect(response.body).toHaveProperty('data');
+    });
   });
 });

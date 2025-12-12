@@ -18,6 +18,10 @@ jobs:
       with:
         node-version: '20'
     - run: npm install
+    - name: Run Adaptive Tests
+      run: npm test -- __tests__/api_v1_orchestrator.test.js --runInBand
     - run: npm test
+    - name: Show orchestration log tail
+      run: cat data/orchestration_log.json | tail -n 3
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)

@@ -18,6 +18,7 @@ const DEFAULT_SIGN = config.defaultSign;
 
 const app = express();
 const swaggerDocument = YAML.load(path.join(__dirname, '..', 'cimeika-api.yaml'));
+const swaggerJsonDocument = require('../swagger.json');
 // Parse JSON request bodies
 app.use(express.json());
 
@@ -27,6 +28,19 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 // Root path serves index.html for convenience
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+});
+
+// Lightweight service health probe
+app.get('/health', (req, res) => {
+  const baseUrl = `${req.protocol}://${req.get('host')}`;
+
+  res.json({
+    status: 'ok',
+    service: 'cimeika-api',
+    base_url: baseUrl,
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Endpoint to expose config values for client
@@ -46,6 +60,7 @@ app.get('/openapi', (req, res) => {
 
 // Interactive API docs
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerJsonDocument));
 
 // Chat completion endpoint (mock)
 app.post('/chat/completion', (req, res) => {

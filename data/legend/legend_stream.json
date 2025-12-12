@@ -1,0 +1,51 @@
+{
+  "name": "Genesis_Flow",
+  "chapters": [
+    {
+      "id": "chapter_1",
+      "title": "Silence and the First Spark",
+      "from": "Silence",
+      "to": "Spark",
+      "beats": [
+        "Quiet field holds every possibility",
+        "A subtle tremor gives permission to move"
+      ],
+      "modules": ["Kazkar", "Podija", "Nastrij"]
+    },
+    {
+      "id": "chapter_2",
+      "title": "Two Poles, One Axis",
+      "from": "Spark",
+      "to": "Two_Poles",
+      "beats": [
+        "Warm and cool sides recognize each other",
+        "Tension becomes the playground for rhythm"
+      ],
+      "modules": ["Kazkar", "Gallery", "Ci"]
+    },
+    {
+      "id": "chapter_3",
+      "title": "The Birth of Ci",
+      "from": "Two_Poles",
+      "to": "Phenomenon",
+      "beats": [
+        "Opposites meet at a midpoint",
+        "A third state appears as Ci—contact in motion"
+      ],
+      "modules": ["Ci", "Nastrij", "Podija"]
+    },
+    {
+      "id": "chapter_4",
+      "title": "Echoes in the Field",
+      "from": "Phenomenon",
+      "to": "LegendPropagation",
+      "beats": [
+        "The new rhythm travels through memories",
+        "Modules capture mood, image, and timing"
+      ],
+      "modules": ["Gallery", "Calendar", "Kazkar"]
+    }
+  ],
+  "sequence": ["Silence", "Spark", "Two_Poles", "Phenomenon", "LegendPropagation"],
+  "export": "legend_stream.json"
+}
