@@ -9,4 +9,4 @@ class StoryOut(BaseModel):
 
 
 class HistoryOut(RootModel[Dict[str, str]]):
-    pass
+    """A dictionary of story history, mapping story ID to its snippet."""
