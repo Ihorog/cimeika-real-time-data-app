@@ -2,7 +2,6 @@ const express = require('express');
 const { makeResponse } = require('./utils/responseHelper');
 const { appendProfile } = require('./utils/senseStorage');
 const { createApiClient } = require('../../../../core/api');
-
 const router = express.Router();
 const SENSE_ENDPOINT = process.env.SENSE_ENDPOINT || 'http://localhost:8000/mitca/sense';
 const SENSE_TIMEOUT_MS = Number(process.env.SENSE_TIMEOUT_MS || 5000);
