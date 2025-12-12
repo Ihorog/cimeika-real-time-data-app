@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
 from typing import Any, Dict, List
+
 from fastapi import APIRouter, HTTPException, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from backend.utils.connectors import fetch_events
 from backend.utils.orchestrator import Task, TaskOrchestrator
@@ -13,14 +14,16 @@ orchestrator = TaskOrchestrator()
 def handle_podia_task(task: Task) -> Dict[str, Any]:
     payload: Dict[str, Any] = dict(task.payload)
     start_value = payload.get("start")
-    if isinstance(start_value, dt = datetime.now(timezone.utc)):
+    # If the payload contains a datetime object, convert it to ISO format string
+    if isinstance(start_value, datetime):
         payload["start"] = start_value.isoformat()
 
     return {
         "module": task.module,
         "event": payload,
         "message": f"Подія '{payload.get('title', payload.get('id', 'невідома подія'))}' опрацьована",
-        "received_at": dt = datetime.now(timezone.utc)
+        "received_at": datetime.now(timezone.utc),
+    }
 
 
 orchestrator.register_handler("podia", handle_podia_task)
@@ -29,7 +32,8 @@ orchestrator.register_handler("podia", handle_podia_task)
 class Event(BaseModel):
     id: str
     title: str
-    start: dt = datetime.now(timezone.utc)
+    # use default_factory so the default is evaluated at instantiation time
+    start: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     context: str
 
 
