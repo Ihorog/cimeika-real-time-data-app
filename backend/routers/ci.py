@@ -1,4 +1,5 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
+
 from fastapi import APIRouter
 from pydantic import BaseModel
 
@@ -21,8 +22,8 @@ class AxisManifest(BaseModel):
     axes: Dict[str, Dict[str, Any]]
     balance_rule: str
     formula: str
-    status: str | None = None
-    error: str | None = None
+    status: Optional[str] = None
+    error: Optional[str] = None
 
 
 class AxisResonanceRequest(BaseModel):
@@ -32,8 +33,8 @@ class AxisResonanceRequest(BaseModel):
 class AxisResonanceScore(BaseModel):
     match_keywords: List[str]
     coverage: float
-    color: str | None = None
-    symbol: str | None = None
+    color: Optional[str] = None
+    symbol: Optional[str] = None
 
 
 class AxisResonanceResponse(BaseModel):
@@ -43,18 +44,21 @@ class AxisResonanceResponse(BaseModel):
 
 
 @router.post("/chat", response_model=ChatResponse)
-def chat(payload: ChatRequest):
+def chat(payload: ChatRequest) -> ChatResponse:
     nodes = [
         SenseNode("podia", 0.9, 1, (0.6, 0.2, 0.3)),
         SenseNode("mood", 0.8, 1, (0.1, 0.9, 0.2)),
         SenseNode("gallery", 0.7, -1, (0.3, 0.4, 0.8)),
     ]
     resonance = map_resonance(nodes, (0.5, 0.5, 0.2))
-    return ChatResponse(reply=f"Ci отримав: {payload.message}", resonance=resonance)
+    return ChatResponse(
+        reply=f"Ci отримав: {payload.message}",
+        resonance=resonance,
+    )
 
 
 @router.get("/data", response_model=Dict[str, List[str]])
-def data_catalog():
+def data_catalog() -> Dict[str, List[str]]:
     return {
         "streams": ["events", "mood", "creative", "history", "gallery"],
         "connectors": ["openai", "huggingface", "telegram", "google"],
@@ -62,7 +66,7 @@ def data_catalog():
 
 
 @router.get("/components", response_model=Dict[str, str])
-def component_registry():
+def component_registry() -> Dict[str, str]:
     return {
         "dashboard": "Ci Console",
         "timeline": "PoДія Timeline",
@@ -72,13 +76,21 @@ def component_registry():
 
 
 @router.get("/axes", response_model=AxisManifest)
-def axes_manifest():
-    return load_axis_manifest()
+def axes_manifest() -> AxisManifest:
+    manifest_data = load_axis_manifest()
+    return AxisManifest(**manifest_data)
 
 
 @router.post("/axes/resonance", response_model=AxisResonanceResponse)
-def axes_resonance(payload: AxisResonanceRequest):
+def axes_resonance(payload: AxisResonanceRequest) -> AxisResonanceResponse:
     result = score_axis_resonance(payload.focus)
     manifest = AxisManifest(**result["manifest"])
-    scores = {name: AxisResonanceScore(**score) for name, score in result["scores"].items()}
-    return AxisResonanceResponse(manifest=manifest, scores=scores, resonance=result["resonance"])
+    scores = {
+        name: AxisResonanceScore(**score)
+        for name, score in result["scores"].items()
+    }
+    return AxisResonanceResponse(
+        manifest=manifest,
+        scores=scores,
+        resonance=result["resonance"],
+    )

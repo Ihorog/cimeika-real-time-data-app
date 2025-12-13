@@ -13,7 +13,35 @@ const GALLERY_PATH = path.join(DATA_DIR, 'gallery.json');
 const MOOD_CACHE_PATH = path.join(DATA_DIR, 'gallery_moods.json');
 const PYTHON_SCRIPT = path.join(ROOT_DIR, 'api', 'ci_mitca_gallery.py');
 const PYTHON_BIN = process.env.PYTHON_BIN || 'python3';
-const SAFE_IMAGE_BASE = ROOT_DIR;
+
+const ALLOWED_IMAGE_ROOTS = [DATA_DIR, path.join(ROOT_DIR, 'public')];
+fs.mkdirSync(ALLOWED_IMAGE_ROOTS[0], { recursive: true });
+const RESOLVED_IMAGE_ROOTS = ALLOWED_IMAGE_ROOTS.map((entry) => fs.realpathSync.native(entry));
+const DIRECTORY_CACHE_MS = 5000;
+const directoryCache = new Map();
+const pathMemoCache = new Map();
+let galleryCache = null;
+
+function pruneCache(cache) {
+  const now = Date.now();
+  for (const [key, entry] of cache.entries()) {
+    if (!entry?.timestamp || now - entry.timestamp >= DIRECTORY_CACHE_MS) {
+      cache.delete(key);
+    }
+  }
+}
+
+function logStructured(event, payload = {}) {
+  console.log(
+    JSON.stringify({
+      module: 'gallery',
+      event,
+      timestamp: new Date().toISOString(),
+      ...payload
+    })
+  );
+}
+
 
 const DEFAULT_ITEMS = [
   {
@@ -46,21 +74,81 @@ function saveJson(filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
-function resolveSafePath(baseDir, candidatePath) {
-  const resolved = path.resolve(baseDir, candidatePath);
-  if (resolved !== baseDir && !resolved.startsWith(baseDir + path.sep)) {
-    throw new Error('Invalid path traversal attempt');
-  }
+
+function cachedRealpath(targetPath) {
+  pruneCache(directoryCache);
+  const cached = directoryCache.get(targetPath);
+  const now = Date.now();
+  if (cached && now - cached.timestamp < DIRECTORY_CACHE_MS) return cached.value;
+  const resolved = fs.realpathSync.native(targetPath);
+  directoryCache.set(targetPath, { value: resolved, timestamp: now });
   return resolved;
 }
 
+function cachedReaddir(targetPath) {
+  pruneCache(directoryCache);
+  const cached = directoryCache.get(`dir:${targetPath}`);
+  const now = Date.now();
+  if (cached && now - cached.timestamp < DIRECTORY_CACHE_MS) return cached.value;
+  const entries = fs.readdirSync(targetPath, { withFileTypes: true });
+  directoryCache.set(`dir:${targetPath}`, { value: entries, timestamp: now });
+  return entries;
+}
+
+function ensureWithinRoot(targetPath) {
+  try {
+    pruneCache(pathMemoCache);
+    const now = Date.now();
+    const memoKey = String(targetPath);
+    const memoized = pathMemoCache.get(memoKey);
+    if (memoized && now - memoized.timestamp < DIRECTORY_CACHE_MS) {
+      return memoized.value;
+    }
+
+    const decoded = decodeURIComponent(targetPath);
+    const absolute = path.resolve(decoded);
+    const resolvedDir = cachedRealpath(path.dirname(absolute));
+    const resolvedPath = path.join(resolvedDir, path.basename(absolute));
+    const exists = fs.existsSync(resolvedPath);
+
+    const withinAllowed = RESOLVED_IMAGE_ROOTS.some(
+      (root) => resolvedPath === root || resolvedPath.startsWith(`${root}${path.sep}`)
+    );
+
+    if (!withinAllowed) {
+      logStructured('path_denied', { targetPath, resolved: resolvedPath });
+      throw new Error('imagePath is outside the allowed data directory');
+    }
+
+    cachedReaddir(resolvedDir);
+    logStructured('path_ok', { targetPath, resolved: resolvedPath, exists });
+    const value = { resolvedPath, exists };
+    pathMemoCache.set(memoKey, { value, timestamp: now });
+
+    return value;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Invalid imagePath';
+    logStructured('path_error', { targetPath, error: message });
+    throw new Error(message.includes('outside the allowed') ? message : 'Invalid imagePath');
+  }
+}
+
+
 function loadGallery() {
+  if (galleryCache && Date.now() - galleryCache.timestamp < DIRECTORY_CACHE_MS) {
+    logStructured('gallery_cache_hit', { size: galleryCache.data.length });
+    return galleryCache.data;
+  }
   const data = loadJson(GALLERY_PATH, DEFAULT_ITEMS);
-  return Array.isArray(data) ? data : DEFAULT_ITEMS;
+  const normalized = Array.isArray(data) ? data : DEFAULT_ITEMS;
+  galleryCache = { data: normalized, timestamp: Date.now() };
+  logStructured('gallery_cache_miss', { size: normalized.length });
+  return normalized;
 }
 
 function persistGallery(items) {
   saveJson(GALLERY_PATH, items);
+  galleryCache = { data: items, timestamp: Date.now() };
 }
 
 function buildSummary(items) {
@@ -87,6 +175,7 @@ router.get('/', (req, res) => {
 
 router.get('/list', (req, res) => {
   const items = loadGallery();
+  logStructured('gallery_list', { size: items.length });
   res.json(makeResponse('gallery', { items, summary: buildSummary(items) }));
 });
 
@@ -123,6 +212,7 @@ router.post('/upload', (req, res) => {
 
   const updated = [newItem, ...items];
   persistGallery(updated);
+  logStructured('gallery_upload', { id, emotion, location });
 
   res.status(201).json(makeResponse('gallery_upload', { item: newItem }));
 });
@@ -136,12 +226,34 @@ router.post('/mood', (req, res) => {
   }
 
   try {
-    const resolvedImagePath = resolveSafePath(SAFE_IMAGE_BASE, imagePath);
-    const stdout = execFileSync(PYTHON_BIN, [PYTHON_SCRIPT, '--image', resolvedImagePath], {
+
+    logStructured('path_attempt', { targetPath: imagePath });
+    const { resolvedPath, exists } = ensureWithinRoot(imagePath);
+
+    if (!exists) {
+      const fallback = { emotion: 'neutral', resonance: 0.5 };
+      logStructured('mood_fallback', { imagePath, resolvedPath, reason: 'missing_file' });
+      return res.json(
+        makeResponse('gallery_mood', {
+          image: imagePath,
+          ...fallback,
+          cacheSize: 0,
+          source: 'ci_mitca_gallery'
+        })
+      );
+    }
+
+    const stdout = execFileSync(PYTHON_BIN, [PYTHON_SCRIPT, '--image', resolvedPath], {
+
       encoding: 'utf-8'
     });
     const payload = JSON.parse(stdout);
     const cacheSnapshot = loadJson(MOOD_CACHE_PATH, {});
+
+    logStructured('mood_success', {
+      imagePath: resolvedPath,
+      cacheSize: Object.keys(cacheSnapshot).length
+    });
 
     res.json(
       makeResponse('gallery_mood', {
@@ -152,13 +264,15 @@ router.post('/mood', (req, res) => {
       })
     );
   } catch (error) {
-    if (error.message === 'Invalid path traversal attempt') {
-      return res.status(400).json(makeResponse('gallery_mood', { error: 'Invalid image path' }, 'error'));
-    }
+
     res
-      .status(502)
+      .status(status)
       .json(
-        makeResponse('gallery_mood', { error: 'Unable to reach gallery mood analyzer', details: error.message }, 'error')
+        makeResponse(
+          'gallery_mood',
+          { error: 'Unable to reach gallery mood analyzer', details: message },
+          'error'
+        )
       );
   }
 });

@@ -2,7 +2,10 @@ export const gallerySeed = [
   {
     id: "g-aurora",
     type: "photo",
-    src: "/images/gallery/aurora.jpg",
+    src: "/gallery/aurora.svg",
+    preview: "/gallery/aurora.svg",
+    blurDataURL:
+      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIxMiI+PGRlZnM+PGxpbmVhcmdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeDI9IjEiIHkxPSIwIiB5Mj0iMSI+PHN0b3Agc3RvcC1jb2xvcj0iIzBlYTVlOSIgb2Zmc2V0PSIwIi8+PHN0b3Agc3RvcC1jb2xvcj0iIzYzNjZmMSIgb2Zmc2V0PSIxIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjEyIiBmaWxsPSJ1cmwoI2cpIi8+PC9zdmc+",
     date: "2024-11-21T07:20:00Z",
     location: "Kyiv, UA",
     emotion: "happy",
@@ -14,7 +17,10 @@ export const gallerySeed = [
   {
     id: "g-river",
     type: "video",
-    src: "/images/gallery/river.mp4",
+    src: "/gallery/river.svg",
+    preview: "/gallery/river.svg",
+    blurDataURL:
+      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIxMiI+PGRlZnM+PGxpbmVhcmdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeDI9IjEiIHkxPSIwIiB5Mj0iMSI+PHN0b3Agc3RvcC1jb2xvcj0iIzBlYTVlOSIgb2Zmc2V0PSIwIi8+PHN0b3Agc3RvcC1jb2xvcj0iIzYzNjZmMSIgb2Zmc2V0PSIxIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjEyIiBmaWxsPSJ1cmwoI2cpIi8+PC9zdmc+",
     date: "2024-10-05T16:45:00Z",
     location: "Dnipro River",
     emotion: "nostalgic",
@@ -26,7 +32,10 @@ export const gallerySeed = [
   {
     id: "g-workshop",
     type: "photo",
-    src: "/images/gallery/workshop.jpg",
+    src: "/gallery/workshop.svg",
+    preview: "/gallery/workshop.svg",
+    blurDataURL:
+      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIxMiI+PGRlZnM+PGxpbmVhcmdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeDI9IjEiIHkxPSIwIiB5Mj0iMSI+PHN0b3Agc3RvcC1jb2xvcj0iIzBlYTVlOSIgb2Zmc2V0PSIwIi8+PHN0b3Agc3RvcC1jb2xvcj0iIzYzNjZmMSIgb2Zmc2V0PSIxIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjEyIiBmaWxsPSJ1cmwoI2cpIi8+PC9zdmc+",
     date: "2024-09-14T12:10:00Z",
     location: "Lviv, Makerspace",
     emotion: "calm",
@@ -38,7 +47,10 @@ export const gallerySeed = [
   {
     id: "g-midnight",
     type: "photo",
-    src: "/images/gallery/midnight.jpg",
+    src: "/gallery/midnight.svg",
+    preview: "/gallery/midnight.svg",
+    blurDataURL:
+      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIxMiI+PGRlZnM+PGxpbmVhcmdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeDI9IjEiIHkxPSIwIiB5Mj0iMSI+PHN0b3Agc3RvcC1jb2xvcj0iIzBlYTVlOSIgb2Zmc2V0PSIwIi8+PHN0b3Agc3RvcC1jb2xvcj0iIzYzNjZmMSIgb2Zmc2V0PSIxIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjEyIiBmaWxsPSJ1cmwoI2cpIi8+PC9zdmc+",
     date: "2024-12-28T23:50:00Z",
     location: "Kharkiv, UA",
     emotion: "neutral",

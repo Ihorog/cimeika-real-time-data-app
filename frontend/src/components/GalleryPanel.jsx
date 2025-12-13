@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import GalleryGrid from "./GalleryGrid";
 import GalleryViewer from "./GalleryViewer";
 import GalleryTimeline from "./GalleryTimeline";
@@ -10,6 +10,23 @@ import { gallerySeed } from "./galleryData";
 export default function GalleryPanel() {
   const [items, setItems] = useState(gallerySeed);
   const latest = useMemo(() => items.slice(0, 3), [items]);
+  const [deferSections, setDeferSections] = useState(true);
+  const lazyRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setDeferSections(false);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "160px" },
+    );
+
+    if (lazyRef.current) observer.observe(lazyRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   const handleUpload = (payload) => {
     setItems((prev) => [payload, ...prev]);
@@ -29,10 +46,18 @@ export default function GalleryPanel() {
       <UploadPanel onUpload={handleUpload} />
 
       <GalleryViewer items={items} />
+      <div ref={lazyRef} className="h-px w-full" />
+      {deferSections ? (
+        <div className="rounded-2xl border border-white/40 bg-white/60 p-6 text-slate-700 animate-pulse">
+          Оптимізуємо ресурси та готуємо галерею...
+        </div>
+      ) : (
+        <>
+          <GalleryGrid items={items} />
 
-      <GalleryGrid items={items} />
-
-      <GalleryTimeline items={latest} />
+          <GalleryTimeline items={latest} />
+        </>
+      )}
     </section>
   );
 }

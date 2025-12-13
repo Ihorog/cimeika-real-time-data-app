@@ -1,4 +1,6 @@
-const axios = require('axios');
+const { createApiClient } = require('../../core/api');
+
+const hfClient = createApiClient({ timeoutMs: 8000, retries: 1, criticalRetries: 2 });
 
 module.exports = async (req, res) => {
   const { prompt, model = 'gpt2', max_tokens = 150, temperature = 0.6 } = req.body || {};
@@ -8,11 +10,15 @@ module.exports = async (req, res) => {
 
   try {
     const url = `https://api-inference.huggingface.co/models/${model}`;
-    const response = await axios.post(
+    const response = await hfClient.post(
       url,
       { inputs: prompt, parameters: { max_new_tokens: max_tokens, temperature } },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` }, critical: true }
     );
+
+    if (response.status === 'error') {
+      throw new Error(response.error);
+    }
 
     let generated = '';
     if (Array.isArray(response.data) && response.data.length > 0 && response.data[0].generated_text) {
@@ -31,7 +37,7 @@ module.exports = async (req, res) => {
       choices: [{ text: generated, index: 0, logprobs: null, finish_reason: 'length' }]
     });
   } catch (err) {
-    console.error('HF API error:', err.response?.data || err.message);
+    console.error('HF API error:', err.message);
     res.status(500).json({ error: 'Hugging Face API error' });
   }
 };

@@ -1,933 +1,448 @@
 openapi: 3.1.0
 info:
-  title: Cimeika API
-  description: API для інтеграції GPT у існуючий інтерфейс чату та управління системою поєднаних компонентів
-  version: 1.1.0
+  title: Cimeika Orchestration API
+  description: >-
+    FastAPI layer that proxies Cimeika core modules (ПоДія, Настрій, Маля, Казкар, Галерея, Календар)
+    and exposes the Ci resonance utilities. Dummy payloads have been removed: every error bubbles up
+    as an explicit 5xx/501 response so clients can detect missing connectors.
+  version: 0.2.0
 servers:
-  - url: https://api.cimeika.com/v1
-    description: Основний сервер
+  - url: http://localhost:8000
+    description: Local development
 paths:
-  /auth/login:
-    post:
-      operationId: authLogin
-      summary: Аутентифікація користувача
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                  description: Ім'я користувача
-                password:
-                  type: string
-                  description: Пароль
-      responses:
-        "200":
-          description: Успішна автентифікація
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  token:
-                    type: string
-  /chat/completion:
-    post:
-      operationId: createChatCompletion
-      summary: Створення запиту до GPT для відповіді у чаті
-      description: Endpoint для створення запиту до GPT для отримання відповіді у чаті
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                model:
-                  type: string
-                  description: Модель GPT для використання
-                  example: text-davinci-003
-                prompt:
-                  type: string
-                  description: Запит для моделі GPT
-                  example: Напиши доповідь про сучасні технології штучного інтелекту.
-                max_tokens:
-                  type: integer
-                  description: Максимальна кількість токенів у відповіді
-                  example: 100
-                temperature:
-                  type: number
-                  description: Температура вибірки
-                  example: 0.7
-      responses:
-        "200":
-          description: Відповідь від GPT
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    example: cmpl-5t6fN9FPjsMxlm8Zy1dJ1Z7P
-                  object:
-                    type: string
-                    example: text_completion
-                  created:
-                    type: integer
-                    example: 1591685959
-                  model:
-                    type: string
-                    example: text-davinci-003
-                  choices:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        text:
-                          type: string
-                          example: Сучасні технології штучного інтелекту включають глибинне навчання, нейронні мережі та обробку природної мови...
-                        index:
-                          type: integer
-                          example: 0
-                        logprobs:
-                          type: object
-                          nullable: true
-                        finish_reason:
-                          type: string
-                          example: length
-  /ai/huggingface/completion:
-    post:
-      operationId: createHuggingFaceCompletion
-      summary: Створення запиту до Hugging Face GPT для відповіді у чаті
-      description: >-
-        Endpoint для створення запиту до Hugging Face GPT для отримання
-        відповіді у чаті. Потребує змінної середовища `HUGGINGFACE_TOKEN`;
-        повертає 503, якщо токен не встановлено.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                model:
-                  type: string
-                  description: Модель GPT на Hugging Face для використання
-                  example: gpt-neo-2.7B
-                prompt:
-                  type: string
-                  description: Запит для моделі GPT
-                  example: Напиши доповідь про сучасні технології штучного інтелекту.
-                max_tokens:
-                  type: integer
-                  description: Максимальна кількість токенів у відповіді
-                  example: 150
-                temperature:
-                  type: number
-                  description: Температура вибірки
-                  example: 0.6
-      responses:
-        "200":
-          description: Відповідь від Hugging Face GPT
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    example: hf-5t6fN9FPjsMxlm8Zy1dJ1Z7P
-                  object:
-                    type: string
-                    example: text_completion
-                  created:
-                    type: integer
-                    example: 1591685959
-                  model:
-                    type: string
-                    example: gpt-neo-2.7B
-                  choices:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        text:
-                          type: string
-                          example: Сучасні технології штучного інтелекту включають глибинне навчання, нейронні мережі та обробку природної мови...
-                        index:
-                          type: integer
-                          example: 0
-                        logprobs:
-                          type: object
-                          nullable: true
-                        finish_reason:
-                          type: string
-                          example: length
-  /ai/hf-space/completion:
-    post:
-      operationId: proxyHuggingFaceSpace
-      summary: Проксі до Hugging Face Space "cimeika-api"
-      description: >-
-        Надсилає запит у розгорнутий Space `https://ihorog-cimeika-api.hf.space/chat/completion`
-        або на адресу, передану в полі `spaceUrl`.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                prompt:
-                  type: string
-                  description: Запит для віддаленого Space
-                  example: Який сьогодні настрій у Cimeika?
-                spaceUrl:
-                  type: string
-                  description: >-
-                    Необов'язково. Перевизначення URL Space; за замовчуванням
-                    використовується змінна середовища `HF_SPACE_URL`.
-                  example: https://ihorog-cimeika-api.hf.space
-      responses:
-        "200":
-          description: Відповідь від віддаленого Space
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TextCompletionResponse'
-        "400":
-          description: Некоректний запит
-        "502":
-          description: Space недоступний
-  /data/collect:
-    post:
-      operationId: collectData
-      summary: Збір даних для аналізу
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                dataSource:
-                  type: string
-                  description: Джерело даних
-                  example: API
-                data:
-                  type: object
-                  description: Дані для збору
-      responses:
-        "200":
-          description: Дані успішно зібрані
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    description: Статус операції
-                    example: success
-  /data/log:
-    post:
-      operationId: logData
-      summary: Фіксація зібраних даних
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                dataId:
-                  type: string
-                  description: ID зібраних даних
-                  example: data-12345
-                logDetails:
-                  type: object
-                  description: Деталі фіксації даних
-      responses:
-        "200":
-          description: Дані успішно зафіксовані
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    description: Статус операції
-                    example: success
-  /data/analyze:
-    post:
-      operationId: analyzeData
-      summary: Аналіз даних
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                dataId:
-                  type: string
-                  description: ID зібраних даних
-                  example: data-12345
-      responses:
-        "200":
-          description: Дані успішно проаналізовані
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  analysis:
-                    type: object
-                    description: Результати аналізу
-  /data/save:
-    post:
-      operationId: saveData
-      summary: Збереження даних в базі даних
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                dataId:
-                  type: string
-                  description: ID зібраних даних
-                  example: data-12345
-                storageDetails:
-                  type: object
-                  description: Деталі збереження даних
-      responses:
-        "200":
-          description: Дані успішно збережені
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    description: Статус операції
-                    example: success
-  /data/transfer:
-    post:
-      operationId: transferData
-      summary: Передача даних до іншої системи
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                dataId:
-                  type: string
-                  description: ID зібраних даних
-                  example: data-12345
-                destination:
-                  type: string
-                  description: Місце призначення даних
-                  example: external-system
-                transferDetails:
-                  type: object
-                  description: Деталі передачі даних
-      responses:
-        "200":
-          description: Дані успішно передані
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    description: Статус операції
-                    example: success
-  /data/predict:
-    post:
-      operationId: predictData
-      summary: Прогнозування на основі зібраних даних
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                dataId:
-                  type: string
-                  description: ID зібраних даних
-                  example: data-12345
-                modelId:
-                  type: string
-                  description: ID моделі прогнозування
-                  example: model-67890
-                predictionParameters:
-                  type: object
-                  description: Параметри для прогнозування
-      responses:
-        "200":
-          description: Прогноз успішно створений
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  prediction:
-                    type: object
-                    description: Результати прогнозування
-  /components:
+  /health:
     get:
-      operationId: getComponents
-      summary: Отримати список всіх компонентів
+      summary: Health probe
       responses:
-        "200":
-          description: Список компонентів успішно отриманий
+        '200':
+          description: Service is reachable
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  service:
+                    type: string
+                  base_url:
+                    type: string
+                  uptime:
+                    type: number
+                    description: Seconds since process start
+                  timestamp:
+                    type: string
+                    format: date-time
+  /ci/chat:
+    post:
+      summary: Echo chat with Ci resonance preview
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: Chat reply with resonance vectors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+  /ci/data:
+    get:
+      summary: List Ci data streams and connectors
+      responses:
+        '200':
+          description: Data catalog
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  streams:
+                    type: array
+                    items:
+                      type: string
+                  connectors:
+                    type: array
+                    items:
+                      type: string
+  /ci/components:
+    get:
+      summary: Known Ci UI components
+      responses:
+        '200':
+          description: Component registry
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+  /ci/axes:
+    get:
+      summary: PLUS/MINUS manifest for Ci resonance
+      responses:
+        '200':
+          description: Manifest loaded from visual_axis_manifest.json
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AxisManifest'
+        '502':
+          description: Manifest could not be loaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /ci/axes/resonance:
+    post:
+      summary: Score resonance for requested axes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AxisResonanceRequest'
+      responses:
+        '200':
+          description: Resonance scores
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AxisResonanceResponse'
+        '502':
+          description: Unable to compute resonance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /podia/events:
+    get:
+      summary: Fetch events from ПоДія
+      responses:
+        '200':
+          description: Events retrieved from connector
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Component"
+                  $ref: '#/components/schemas/Event'
+        '502':
+          description: Connector failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /podia/events/dispatch:
     post:
-      operationId: createComponent
-      summary: Створити новий компонент
+      summary: Dispatch event into orchestrator
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Component"
+              $ref: '#/components/schemas/Event'
       responses:
-        "201":
-          description: Компонент успішно створений
+        '200':
+          description: Task accepted for orchestration
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Component"
-  /components/{id}:
+                type: object
+                properties:
+                  task:
+                    type: object
+                  pending:
+                    type: array
+                    items:
+                      type: object
+  /nastiy/mood:
     get:
-      operationId: getComponentById
-      summary: Отримати інформацію про компонент за ID
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
+      summary: Retrieve latest mood snapshot
       responses:
-        "200":
-          description: Інформація про компонент успішно отримана
+        '200':
+          description: Snapshot pulled from connector
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Component"
-    put:
-      operationId: updateComponent
-      summary: Оновити інформацію про компонент за ID
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
+                $ref: '#/components/schemas/MoodSnapshot'
+        '502':
+          description: Connector failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+    post:
+      summary: Submit mood snapshot
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Component"
+              $ref: '#/components/schemas/MoodSnapshot'
       responses:
-        "200":
-          description: Компонент успішно оновлений
+        '200':
+          description: Mood stored by connector
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Component"
-    delete:
-      operationId: deleteComponent
-      summary: Видалити компонент за ID
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
+                $ref: '#/components/schemas/MoodResponse'
+        '502':
+          description: Connector failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /mala/creative:
+    get:
+      summary: Check creative service status
       responses:
-        "204":
-          description: Компонент успішно видалений
-  /components/{id}/link:
+        '200':
+          description: Creative pipeline is reachable
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        '502':
+          description: Connector failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
     post:
-      operationId: linkComponent
-      summary: Зв'язати компонент з іншим компонентом
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
+      summary: Request creative generation
       requestBody:
         required: true
         content:
           application/json:
+            schema:
+              $ref: '#/components/schemas/CreativePrompt'
+      responses:
+        '200':
+          description: Creative job accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        '502':
+          description: Connector failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /kazkar/story:
+    post:
+      summary: Create a Kazkar story
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoryRequest'
+      responses:
+        '200':
+          description: Story returned by connector
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        '502':
+          description: Connector failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /kazkar/history:
+    get:
+      summary: Retrieve latest stories
+      responses:
+        '200':
+          description: Story history returned by connector
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        '502':
+          description: Connector failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /calendar/time:
+    get:
+      summary: Timeline from calendar module
+      responses:
+        '501':
+          description: Calendar sync not wired yet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /gallery/images:
+    get:
+      summary: List gallery images
+      responses:
+        '501':
+          description: Gallery storage not configured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /gallery/upload:
+    post:
+      summary: Upload image to gallery
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
             schema:
               type: object
               properties:
-                targetComponentId:
+                file:
                   type: string
-                  description: ID компоненту, з яким потрібно зв'язати
-                  example: component-98765
-                linkType:
-                  type: string
-                  description: Тип зв'язку (наприклад, залежність, асоціація)
-                  example: dependency
+                  format: binary
       responses:
-        "200":
-          description: Компоненти успішно зв'язані
+        '501':
+          description: Upload path not configured
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    description: Статус операції
-                    example: linked
-  /components/{id}/unlink:
-    post:
-      operationId: unlinkComponent
-      summary: Розірвати зв'язок між компонентами
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                targetComponentId:
-                  type: string
-                  description: ID компоненту, з яким потрібно розірвати зв'язок
-                  example: component-98765
-      responses:
-        "200":
-          description: Зв'язок між компонентами успішно розірвано
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    description: Статус операції
-                    example: unlinked
-  /components/{id}/attributes:
-    get:
-      operationId: getComponentAttributes
-      summary: Отримати атрибути компоненту за ID
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Атрибути компоненту успішно отримані
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Attribute"
-  /weather/current:
-    get:
-      operationId: getCurrentWeather
-      summary: Отримати поточні погодні дані
-      parameters:
-        - name: city
-          in: query
-          required: false
-          description: >-
-            Назва міста. Якщо параметр не вказано або порожній, сервер за
-            замовчуванням використовує London.
-          schema:
-            type: string
-            example: London
-            default: London
-            minLength: 1
-      responses:
-        "200":
-          description: Поточні погодні дані успішно отримані
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  city:
-                    type: string
-                    description: Назва міста
-                    example: London
-                  weather:
-                    type: string
-                    description: Опис погоди
-                    example: clear sky
-                  temperature:
-                    type: number
-                    description: Температура в градусах Цельсія
-                    example: 20.5
-  /astrology/forecast:
-    get:
-      operationId: getAstrologicalForecast
-      summary: Отримати астрологічний прогноз
-      parameters:
-        - name: sign
-          in: query
-          required: false
-          description: >-
-            Знак зодіаку. Якщо параметр не вказано або порожній, сервер за
-            замовчуванням використовує aries.
-          schema:
-            type: string
-            example: aries
-            default: aries
-            minLength: 1
-      responses:
-        "200":
-          description: Астрологічний прогноз успішно отриманий
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  sign:
-                    type: string
-                    description: Знак зодіаку
-                    example: aries
-                  forecast:
-                    type: string
-                    description: Опис астрологічного прогнозу
-                    example: Today is a good day for new beginnings.
-  /time/current:
-    get:
-      operationId: getCurrentTime
-      summary: Отримати поточний час
-      responses:
-        "200":
-          description: Поточний час успішно отриманий
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  time:
-                    type: string
-                    description: Поточний час
-                    example: 2023-09-15T12:34:56Z
-  /config:
-    get:
-      operationId: getConfig
-      summary: Отримати конфігураційні значення
-      description: Повертає відносні ендпоінти для сервісів погоди й астрології
-      responses:
-        "200":
-          description: Конфігурація успішно отримана
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  weatherEndpoint:
-                    type: string
-                    description: Шлях для отримання поточної погоди
-                    example: /weather/current
-                  astrologyEndpoint:
-                    type: string
-                    description: Шлях для отримання астрологічного прогнозу
-                    example: /astrology/forecast
-  /data/weather:
-    get:
-      operationId: getWeatherData
-      summary: Отримати погодні дані
-      parameters:
-        - name: city
-          in: query
-          required: false
-          description: >-
-            Назва міста. Якщо параметр не вказано або порожній, сервер за
-            замовчуванням використовує London.
-          schema:
-            type: string
-            example: London
-            default: London
-            minLength: 1
-      responses:
-        "200":
-          description: Погодні дані успішно отримані
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  city:
-                    type: string
-                    description: Назва міста
-                    example: London
-                  weather:
-                    type: string
-                    description: Опис погоди
-                    example: clear sky
-                  temperature:
-                    type: number
-                    description: Температура в градусах Цельсія
-                    example: 20.5
-  /data/astrology:
-    get:
-      operationId: getAstrologyData
-      summary: Отримати астрологічні дані
-      parameters:
-        - name: sign
-          in: query
-          required: false
-          description: >-
-            Знак зодіаку. Якщо параметр не вказано або порожній, сервер за
-            замовчуванням використовує aries.
-          schema:
-            type: string
-            example: aries
-            default: aries
-            minLength: 1
-      responses:
-        "200":
-          description: Астрологічні дані успішно отримані
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  sign:
-                    type: string
-                    description: Знак зодіаку
-                    example: aries
-                  forecast:
-                    type: string
-                    description: Опис астрологічного прогнозу
-                    example: Today is a good day for new beginnings.
-  /api/v1/ci/sense:
-    get:
-      operationId: getCiSense
-      summary: Отримати сенсорний профіль від ядра Ci
-      description: >-
-        Запитує Python-сервіс ci_mitca_sense та зберігає профіль резонансу для
-        подальшої аналітики.
-      responses:
-        "200":
-          description: Сенсорний профіль успішно отримано
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: ok
-                  module:
-                    type: string
-                    example: ci_sense
-                  data:
-                    $ref: "#/components/schemas/CiSensePayload"
-                  timestamp:
-                    type: string
-                    format: date-time
-        "502":
-          description: Неможливо отримати дані сенсоматики
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: error
-                  module:
-                    type: string
-                    example: ci_sense
-                  data:
-                    type: object
-                    properties:
-                      error:
-                        type: string
-                        example: Unable to reach semantic sense service
-                  timestamp:
-                    type: string
-                    format: date-time
-  /api/v1/insight:
-    get:
-      operationId: getInsight
-      summary: Отримати агреговану аналітику резонансу
-      description: >-
-        Вивантажує попередньо збережені сенсорні профілі та повертає
-        середні показники резонансу, останній сигнал та рекомендації.
-      responses:
-        "200":
-          description: Аналітика успішно сформована
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: ok
-                  module:
-                    type: string
-                    example: insight
-                  data:
-                    type: object
-                    properties:
-                      summary:
-                        $ref: "#/components/schemas/InsightSummary"
-                      preview:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/CiSensePayload"
-                  timestamp:
-                    type: string
-                    format: date-time
+                $ref: '#/components/schemas/ErrorDetail'
 components:
   schemas:
-    Component:
+    ErrorDetail:
       type: object
+      properties:
+        message:
+          type: string
+        source:
+          type: string
+    Event:
+      type: object
+      required: [id, title, start, context]
       properties:
         id:
           type: string
-          description: Унікальний ідентифікатор компоненту
-          example: component-12345
-        name:
+        title:
           type: string
-          description: Назва компоненту
-          example: Компонент 1
-        type:
-          type: string
-          description: Тип компоненту
-          example: базовий
-        attributes:
-          type: array
-          items:
-            $ref: "#/components/schemas/Attribute"
-    Attribute:
-      type: object
-      properties:
-        key:
-          type: string
-          description: Назва атрибуту
-          example: атрибут-1
-        value:
-          type: string
-          description: Значення атрибуту
-          example: значення-1
-    TextCompletionResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Унікальний ідентифікатор відповіді
-        created:
+        start:
           type: string
           format: date-time
-          description: Час створення відповіді
-        model:
+        context:
           type: string
-          description: Модель Hugging Face Space, яка використана
-        choices:
-          type: array
-          items:
-            type: object
-            properties:
-              text:
-                type: string
-                description: Згенерований текст
-              index:
-                type: integer
-                description: Порядковий номер варіанту
-              finish_reason:
-                type: string
-                description: Причина завершення генерації
-    SemanticNode:
+    MoodSnapshot:
       type: object
+      required: [mood, intensity]
       properties:
-        axis:
+        mood:
           type: string
-          description: Сенсова вісь
-          example: ПоДія
-        polarity:
-          type: string
-          description: Полярність сенсу
-          example: "+"
-        weight:
-          type: number
-          description: Вага сенсу у профілі
-          example: 0.82
-    CiSensePayload:
-      type: object
-      properties:
-        signal:
-          type: object
-          properties:
-            strength:
-              type: number
-              example: 0.78
-            trend:
-              type: string
-              example: steady
-        nodes:
-          type: array
-          items:
-            $ref: "#/components/schemas/SemanticNode"
-        annotations:
-          type: array
-          items:
-            type: object
-        resonance:
-          type: number
-          description: Розрахована відповідність між Ci та користувачем
-          example: 0.91
-        receivedAt:
-          type: string
-          format: date-time
-          description: Час фіксації профілю в Node.js шарі
-    InsightSummary:
-      type: object
-      properties:
-        profilesCached:
+        intensity:
           type: integer
-          example: 5
-        averageResonance:
-          type: number
-          example: 0.88
-        latestSignal:
-          type: object
-        resonanceHealth:
+        note:
           type: string
-          example: stable
-        recommendations:
+          nullable: true
+    MoodResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        summary:
+          type: string
+        source:
+          type: string
+          nullable: true
+    CreativePrompt:
+      type: object
+      required: [idea]
+      properties:
+        idea:
+          type: string
+        style:
+          type: string
+          default: sketch
+    StoryRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        seed:
+          type: string
+          nullable: true
+    ChatRequest:
+      type: object
+      properties:
+        message:
+          type: string
+    ChatResponse:
+      type: object
+      properties:
+        reply:
+          type: string
+        resonance:
+          type: object
+          additionalProperties:
+            type: number
+    AxisManifest:
+      type: object
+      properties:
+        axes:
+          type: object
+          additionalProperties:
+            type: object
+        balance_rule:
+          type: string
+        formula:
+          type: string
+        status:
+          type: string
+          nullable: true
+        error:
+          type: string
+          nullable: true
+    AxisResonanceRequest:
+      type: object
+      properties:
+        focus:
           type: array
           items:
             type: string
-        lastUpdated:
+    AxisResonanceScore:
+      type: object
+      properties:
+        match_keywords:
+          type: array
+          items:
+            type: string
+        coverage:
+          type: number
+        color:
           type: string
-          format: date-time
+          nullable: true
+        symbol:
+          type: string
+          nullable: true
+    AxisResonanceResponse:
+      type: object
+      properties:
+        manifest:
+          $ref: '#/components/schemas/AxisManifest'
+        scores:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/AxisResonanceScore'
+        resonance:
+          type: object
+          additionalProperties:
+            type: number

@@ -1,31 +1,33 @@
-import axios from "axios";
+import { get, post } from "../lib/api";
 
-const DEFAULT_API_BASE = "http://localhost:3000/api/v1";
-const apiBase = (process.env.NEXT_PUBLIC_API_BASE_URL || DEFAULT_API_BASE).replace(/\/$/, "");
+const CALENDAR_BASE_PATH = "/api/v1/calendar";
 
-const calendarClient = axios.create({
-  baseURL: `${apiBase}/calendar`,
-  timeout: 5000,
-});
+async function unwrap(response, message = "Calendar service unavailable") {
+  if (!response || response.status === "error") {
+    throw new Error(response?.error || message);
+  }
+
+  return response.data;
+}
 
 export async function fetchCalendarInsights() {
-  const { data } = await calendarClient.get("/insights");
-  return data;
+  const payload = await get(`${CALENDAR_BASE_PATH}/insights`);
+  return unwrap(payload);
 }
 
 export async function syncExternalCalendar(provider) {
-  const { data } = await calendarClient.post(`/sync/${provider}`);
-  return data;
+  const payload = await post(`${CALENDAR_BASE_PATH}/sync/${provider}`, {});
+  return unwrap(payload);
 }
 
 export async function fetchFamilyCalendar(sharedId) {
-  const { data } = await calendarClient.get(`/family/${sharedId}`);
-  return data;
+  const payload = await get(`${CALENDAR_BASE_PATH}/family/${sharedId}`);
+  return unwrap(payload);
 }
 
 export async function fetchHealthEvents(provider) {
-  const { data } = await calendarClient.get(`/health/${provider}`);
-  return data;
+  const payload = await get(`${CALENDAR_BASE_PATH}/health/${provider}`);
+  return unwrap(payload, "Health events are unavailable");
 }
 
 export async function fetchLocalRecommendations(city, interests = []) {
@@ -33,8 +35,8 @@ export async function fetchLocalRecommendations(city, interests = []) {
   if (city) params.append("city", city);
   interests.forEach((interest) => params.append("interest", interest));
 
-  const { data } = await calendarClient.get(`/local?${params.toString()}`);
-  return data;
+  const payload = await get(`${CALENDAR_BASE_PATH}/local?${params.toString()}`);
+  return unwrap(payload, "Local recommendations unavailable");
 }
 
 export async function analyzePatterns(events = []) {
@@ -109,5 +111,3 @@ export function generateSmartReminders(userContext = {}) {
 
   return reminders;
 }
-
-export default calendarClient;

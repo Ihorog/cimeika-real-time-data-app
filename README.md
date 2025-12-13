@@ -45,7 +45,7 @@ Ensure that you have **Node.js 16 or later** installed.
 
    Dependencies (found in package.json):
    - `express`: For server-side logic
-   - `axios`: For making requests to external APIs
+   - Centralized fetch-based client (`core/api`)
    - `dotenv`: For environment variable loading
 
 4. **Configuration**:
@@ -53,24 +53,25 @@ Ensure that you have **Node.js 16 or later** installed.
     ```bash
     cp .env.example .env
     ```
-    Then edit `.env` to set required tokens such as `OPENAI_API_KEY`,
-    `HF_WRITE_TOKEN`, and optionally `DEFAULT_CITY` (e.g., `London`) and
-    `DEFAULT_SIGN` (e.g., `aries`).
 
-   `HUGGINGFACE_TOKEN` is optional and only needed for the `/ai/huggingface/completion`
-   route. Without it, that endpoint returns a 503 and scripts like `api_scenario.js`
-   log a notice and exit. Adjust `PORT` if you need a different server port (default
-   `7860`). The `.env` file is ignored by git.
-   Set `SENSE_ENDPOINT` to the URL of the Ci semantic sense service if it's running on a
-   different host or path (defaults to `http://localhost:8000/mitca/sense`). You can also
-   tune `SENSE_TIMEOUT_MS`, `SENSE_RETRY_COUNT`, and `SENSE_RETRY_DELAY_MS` to control how
-   long the `/ci/sense` route waits and how many times it retries when the service is
-   slow or temporarily unavailable.
-   If you prefer JSON-based configuration, copy `api_keys.example.json` to
-   `api_keys.json` and replace the placeholder values with your real API keys:
-   ```bash
-   cp api_keys.example.json api_keys.json
-   ```
+  Then edit `.env` to set required tokens such as `OPENAI_API_KEY`,
+   `HF_WRITE_TOKEN`, and optionally `DEFAULT_CITY` (e.g., `London`) and
+   `DEFAULT_SIGN` (e.g., `aries`).
+
+  `HUGGINGFACE_TOKEN` is optional and onlyneeded for the `/ai/huggingface/completion`
+  route. Without it, that endpoint returns a 503 and scripts like `api_scenario.js`
+  log a notice and exit. Adjust `PORT` if you need a different server port (default
+  `7860`). The `.env` file is ignored by git.
+  Set `SENSE_ENDPOINT` to point Ci at a different semantic sensing service
+  (default `http://localhost:8000/mitca/sense`). Optional knobs
+  `SENSE_TIMEOUT_MS` (default `5000`) and `SENSE_RETRIES` (default `2`) govern
+  request timeout and retry behavior when calling that service.
+  If you prefer JSON-based configuration, copy `api_keys.example.json` to
+  `api_keys.json` and replace the placeholder values with your real API keys:
+  ```bash
+  cp api_keys.example.json api_keys.json
+  ``
+
    The `.gitignore` file prevents `api_keys.json` from being committed.
 
    If any required settings are missing or invalid, the server logs the configuration validation errors and exits immediately with an error code. Fix the reported issues before starting the application again.
@@ -99,7 +100,9 @@ Ensure that you have **Node.js 16 or later** installed.
 - **API Integrations**: Connects with multiple APIs to gather and display real-time data.
 - **OpenAPI Documentation**: Available at `/openapi` and browsable through Swagger UI at `/docs`.
 - **Configuration Endpoint**: `GET /config` returns the relative paths for the weather and astrology services used by the frontend.
-- **API Version**: OpenAPI specification version is `1.1.0` (see `cimeika-api.yaml`).
+- **API Version**: OpenAPI specification version is `0.2.0` (see `cimeika-api.yaml`) and mirrors the FastAPI
+  routers. Stub payloads were removed; missing connectors now return explicit 5xx/501 errors so SDKs can react
+  deterministically.
 - **Dual-axis mechanics**: Ci exposes the PLUS/MINUS axis manifest at `/ci/axes` and resonance scoring at `/ci/axes/resonance` to keep brand voices in sync with orchestrated tasks.
 
 ## Dependencies
@@ -107,7 +110,7 @@ Ensure that you have **Node.js 16 or later** installed.
 The project depends on the following packages (as specified in `package.json`):
 
 - `express`: "^4.18.2" (for server handling)
-- `axios`: "^1.10.0" (for making HTTP requests)
+- Unified fetch helper under `core/api`
 - `dotenv`: "^16.3.1" (for loading environment variables)
 
 Additionally, the CSS framework utilized is [Tailwind CSS](https://tailwindcss.com/).
