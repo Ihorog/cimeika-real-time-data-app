@@ -13,6 +13,7 @@ const GALLERY_PATH = path.join(DATA_DIR, 'gallery.json');
 const MOOD_CACHE_PATH = path.join(DATA_DIR, 'gallery_moods.json');
 const PYTHON_SCRIPT = path.join(ROOT_DIR, 'api', 'ci_mitca_gallery.py');
 const PYTHON_BIN = process.env.PYTHON_BIN || 'python3';
+
 const ALLOWED_IMAGE_ROOTS = [DATA_DIR, path.join(ROOT_DIR, 'public')];
 fs.mkdirSync(ALLOWED_IMAGE_ROOTS[0], { recursive: true });
 const RESOLVED_IMAGE_ROOTS = ALLOWED_IMAGE_ROOTS.map((entry) => fs.realpathSync.native(entry));
@@ -40,6 +41,7 @@ function logStructured(event, payload = {}) {
     })
   );
 }
+
 
 const DEFAULT_ITEMS = [
   {
@@ -71,6 +73,7 @@ function saveJson(filePath, data) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
+
 
 function cachedRealpath(targetPath) {
   pruneCache(directoryCache);
@@ -129,6 +132,7 @@ function ensureWithinRoot(targetPath) {
     throw new Error(message.includes('outside the allowed') ? message : 'Invalid imagePath');
   }
 }
+
 
 function loadGallery() {
   if (galleryCache && Date.now() - galleryCache.timestamp < DIRECTORY_CACHE_MS) {
@@ -222,6 +226,7 @@ router.post('/mood', (req, res) => {
   }
 
   try {
+
     logStructured('path_attempt', { targetPath: imagePath });
     const { resolvedPath, exists } = ensureWithinRoot(imagePath);
 
@@ -239,6 +244,7 @@ router.post('/mood', (req, res) => {
     }
 
     const stdout = execFileSync(PYTHON_BIN, [PYTHON_SCRIPT, '--image', resolvedPath], {
+
       encoding: 'utf-8'
     });
     const payload = JSON.parse(stdout);
@@ -251,17 +257,14 @@ router.post('/mood', (req, res) => {
 
     res.json(
       makeResponse('gallery_mood', {
-        image: imagePath,
+        image: resolvedImagePath,
         ...payload,
         cacheSize: Object.keys(cacheSnapshot).length,
         source: 'ci_mitca_gallery'
       })
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unexpected failure';
-    const status =
-      message.includes('outside the allowed data directory') || message.includes('Invalid imagePath') ? 400 : 502;
-    logStructured('mood_error', { targetPath: imagePath, error: message, status });
+
     res
       .status(status)
       .json(

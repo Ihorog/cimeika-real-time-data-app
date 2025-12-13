@@ -18,14 +18,16 @@ function loadModules() {
   const loaded = {};
 
   active.forEach((moduleName) => {
+
     if (!isValidModuleName(moduleName)) {
       console.warn(`Skipping invalid module name: "${moduleName}"`);
       return;
     }
 
+
     const candidates = [
-      path.join(__dirname, `${moduleName}.js`),
-      path.join(staticModuleDir, `${moduleName}.js`)
+      path.join(__dirname, `${safeName}.js`),
+      path.join(staticModuleDir, `${safeName}.js`)
     ];
 
     const modulePath = candidates.find((candidate) => fs.existsSync(candidate));

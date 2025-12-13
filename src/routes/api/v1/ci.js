@@ -5,6 +5,7 @@ const { createApiClient } = require('../../../../core/api');
 const router = express.Router();
 const SENSE_ENDPOINT = process.env.SENSE_ENDPOINT || 'http://localhost:8000/mitca/sense';
 const SENSE_TIMEOUT_MS = Number(process.env.SENSE_TIMEOUT_MS || 5000);
+
 const SENSE_RETRIES = Number(process.env.SENSE_RETRIES || 2);
 
 const senseClient = createApiClient({
@@ -15,6 +16,7 @@ const senseClient = createApiClient({
 
 let lastSuccessfulSense = null;
 
+
 router.get('/', (req, res) => {
   res.json(
     makeResponse('ci', {
@@ -22,13 +24,14 @@ router.get('/', (req, res) => {
     })
   );
 });
-
 router.get('/sense', async (req, res) => {
   try {
+
     const { status, data: payload, error } = await senseClient.get(SENSE_ENDPOINT, { critical: true });
     if (status === 'error') {
       throw new Error(error || 'sense endpoint unreachable');
     }
+
 
     const strength = Number(payload?.signal?.strength ?? 0);
     const resonance = 1 / (1 + Math.abs(strength - 0.8));
@@ -38,6 +41,7 @@ router.get('/sense', async (req, res) => {
       receivedAt: new Date().toISOString()
     };
 
+    lastSuccessfulSenseResponse = enrichedPayload;
     await appendProfile(enrichedPayload);
 
     const enrichedResponse = makeResponse('ci_sense', enrichedPayload);
@@ -45,6 +49,7 @@ router.get('/sense', async (req, res) => {
 
     res.json(enrichedResponse);
   } catch (error) {
+<
     const fallbackSense =
       lastSuccessfulSense ||
       makeResponse('ci_sense', {
@@ -65,6 +70,7 @@ router.get('/sense', async (req, res) => {
         'error'
       )
     );
+
   }
 });
 

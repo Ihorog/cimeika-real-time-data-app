@@ -53,11 +53,12 @@ Ensure that you have **Node.js 16 or later** installed.
     ```bash
     cp .env.example .env
     ```
-   Then edit `.env` to set required tokens such as `OPENAI_API_KEY`,
+
+  Then edit `.env` to set required tokens such as `OPENAI_API_KEY`,
    `HF_WRITE_TOKEN`, and optionally `DEFAULT_CITY` (e.g., `London`) and
    `DEFAULT_SIGN` (e.g., `aries`).
 
-  `HUGGINGFACE_TOKEN` is optional and only needed for the `/ai/huggingface/completion`
+  `HUGGINGFACE_TOKEN` is optional and onlyneeded for the `/ai/huggingface/completion`
   route. Without it, that endpoint returns a 503 and scripts like `api_scenario.js`
   log a notice and exit. Adjust `PORT` if you need a different server port (default
   `7860`). The `.env` file is ignored by git.
@@ -69,7 +70,8 @@ Ensure that you have **Node.js 16 or later** installed.
   `api_keys.json` and replace the placeholder values with your real API keys:
   ```bash
   cp api_keys.example.json api_keys.json
-  ```
+  ``
+
    The `.gitignore` file prevents `api_keys.json` from being committed.
 
    If any required settings are missing or invalid, the server logs the configuration validation errors and exits immediately with an error code. Fix the reported issues before starting the application again.
