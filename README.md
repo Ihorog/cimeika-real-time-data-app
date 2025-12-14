@@ -54,6 +54,7 @@ Ensure that you have **Node.js 16 or later** installed.
     cp .env.example .env
     ```
 
+
   Then edit `.env` to set required tokens such as `OPENAI_API_KEY`,
    `HF_WRITE_TOKEN`, and optionally `DEFAULT_CITY` (e.g., `London`) and
    `DEFAULT_SIGN` (e.g., `aries`).
@@ -71,6 +72,7 @@ Ensure that you have **Node.js 16 or later** installed.
   ```bash
   cp api_keys.example.json api_keys.json
   ``
+
 
    The `.gitignore` file prevents `api_keys.json` from being committed.
 

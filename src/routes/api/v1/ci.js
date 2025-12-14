@@ -26,13 +26,7 @@ router.get('/', (req, res) => {
 });
 router.get('/sense', async (req, res) => {
   try {
-
-    const { status, data: payload, error } = await senseClient.get(SENSE_ENDPOINT, { critical: true });
-    if (status === 'error') {
-      throw new Error(error || 'sense endpoint unreachable');
-    }
-
-
+    const payload = await fetchSenseWithRetry();
     const strength = Number(payload?.signal?.strength ?? 0);
     const resonance = 1 / (1 + Math.abs(strength - 0.8));
     const enrichedPayload = {
