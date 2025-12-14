@@ -44,10 +44,28 @@ class TaskOrchestratorStatusTest(unittest.TestCase):
 
     def test_executor_marks_tasks_without_handlers(self):
         executor = SimpleTaskExecutor()
-        result = executor.execute(Task(id="missing", module="unknown", payload={}, priority=1))
+        task = Task(id="missing", module="unknown", payload={}, priority=1)
+
+        result = executor.execute(task)
 
         self.assertEqual(result["status"], "skipped")
         self.assertEqual(result["message"], "No handler")
+        self.assertEqual(task.status, "skipped")
+
+    def test_executor_marks_tasks_with_handlers(self):
+        executor = SimpleTaskExecutor()
+
+        def handler(task: Task):
+            return {"echo": task.payload.get("value")}
+
+        executor.register_handler("demo", handler)
+        task = Task(id="handled", module="demo", payload={"value": 123}, priority=1)
+
+        result = executor.execute(task)
+
+        self.assertEqual(result["status"], "complete")
+        self.assertEqual(result["result"], {"echo": 123})
+        self.assertEqual(task.status, "complete")
 
 
 if __name__ == "__main__":
