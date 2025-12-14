@@ -11,18 +11,15 @@ router = APIRouter()
 orchestrator = TaskOrchestrator()
 
 
-def handle_podia_task(task: Task) -> Dict[str, Any]:
-    payload: Dict[str, Any] = dict(task.payload)
-    start_value = payload.get("start")
-    # If the payload contains a datetime object, convert it to ISO format string
-    if isinstance(start_value, datetime):
-        payload["start"] = start_value.isoformat()
-
+def handle_podia_task(task: Task):
+    event = Event(**task.payload)
+    timeline = list_events()
     return {
         "module": task.module,
-        "event": payload,
-        "message": f"Подія '{payload.get('title', payload.get('id', 'невідома подія'))}' опрацьована",
-        "received_at": datetime.now(timezone.utc),
+        "scheduled": event.id,
+        "title": event.title,
+        "context": event.context,
+        "existing_events": len(timeline),
     }
 
 
