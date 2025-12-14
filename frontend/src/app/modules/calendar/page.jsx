@@ -100,7 +100,7 @@ export default function CalendarModulePage() {
         <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Calendar+ Module</p>
         <h1 className="text-3xl font-bold">Інтелектуальний тайм-менеджмент</h1>
         <p className="text-slate-300 max-w-3xl">
-          Синхронізація Google/Outlook, соціальні webhooks, фінанси, здоров'я та навчання в одному UI. Календар виявляє патерни,
+          {"Синхронізація Google/Outlook, соціальні webhooks, фінанси, здоров'я та навчання в одному UI. Календар виявляє патерни,"}
           радить наступні кроки та готує сімейні сценарії.
         </p>
       </header>
@@ -110,7 +110,7 @@ export default function CalendarModulePage() {
 
       <div className="grid gap-4 md:grid-cols-2">
         <SyncSettings />
-        <TodayWidget events={sampleEvents} onQuickAdd={() => alert("Голосова команда активована")} />
+        <TodayWidget events={sampleEvents} quickAddMessage="Голосова команда активована" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-[1.2fr_0.8fr]">

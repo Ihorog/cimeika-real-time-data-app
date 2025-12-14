@@ -1,3 +1,4 @@
+
 :root {
   --ci-sky: #63b3f5;
   --ci-wave: #32b4f2;
@@ -8,10 +9,6 @@
   --ci-rose: #f8bbd0;
   --ci-shadow: #021726;
   --ci-black: #020612;
-}
-
-.ci-gradient {
-  background: linear-gradient(135deg, var(--ci-wave), var(--ci-sky));
 }
 
 .ci-panel {
