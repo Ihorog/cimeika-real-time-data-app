@@ -6,6 +6,7 @@ from backend.utils.connectors import request_story
 from backend.schemas.kazkar import StoryOut, HistoryOut
 
 router = APIRouter()
+orchestrator = TaskOrchestrator()
 
 
 class StoryRequest(BaseModel):
@@ -13,7 +14,20 @@ class StoryRequest(BaseModel):
     seed: Optional[str] = None
 
 
-@router.post("/story", response_model=StoryOut)
+def handle_kazkar_task(task: Task):
+    request = StoryRequest(**task.payload)
+    return {
+        "module": task.module,
+        "title": request.title,
+        "seeded": bool(request.seed),
+        "status": "story_queued",
+    }
+
+
+orchestrator.register_handler("kazkar", handle_kazkar_task)
+
+
+@router.post("/story", response_model=Dict[str, str])
 def craft_story(request: StoryRequest):
     """Create a story via the external connector and return selected fields.
 
