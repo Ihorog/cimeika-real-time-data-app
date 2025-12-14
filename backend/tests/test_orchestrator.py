@@ -20,7 +20,7 @@ class PriorityTaskSchedulerTest(unittest.TestCase):
         scheduler.schedule(Task(id="high", module="mood", payload={}, priority=3))
         scheduler.schedule(Task(id="medium", module="gallery", payload={}, priority=2))
 
-        ordered = [scheduler.next().id for _ in range(3)]
+        ordered = [task.id for task in iter(scheduler.next, None)]
 
         self.assertEqual(ordered, ["high", "medium", "low"])
 
