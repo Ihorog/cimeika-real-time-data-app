@@ -1,10 +1,11 @@
 import Link from "next/link";
 import ResonanceGraph from "../../components/ResonanceGraph";
 import RealtimeSummary from "../../components/RealtimeSummary";
-import CiModule from "../modules/ci";
-import InsightModule from "../modules/insight";
-import OrchestratorModule from "../modules/orchestrator";
-import SystemModule from "../modules/system";
+import SystemStatus from "../../components/SystemStatus";
+import CiModule from "../modules/ci/page";
+import InsightModule from "../modules/insight/page";
+import OrchestratorModule from "../modules/orchestrator/page";
+import SystemModule from "../modules/system/page";
 import GalleryPanel from "../../components/GalleryPanel";
 
 export default function DashboardPage() {
@@ -21,6 +22,8 @@ export default function DashboardPage() {
         </div>
 
         <RealtimeSummary />
+
+        <SystemStatus />
 
         <ResonanceGraph />
 

@@ -54,8 +54,9 @@ def _axis_nodes(manifest: Dict[str, Any]) -> List[SenseNode]:
 
 
 def _keyword_matches(axis_keywords: List[str], focus: Set[str]) -> Tuple[List[str], float]:
-    matches = sorted({kw for kw in axis_keywords if kw.lower() in focus})
-    coverage = round(len(matches) / max(len(axis_keywords), 1), 3)
+    normalized_keywords = [kw.lower() for kw in axis_keywords]
+    matches = sorted({kw for kw in normalized_keywords if kw in focus})
+    coverage = round(len(matches) / max(len(normalized_keywords), 1), 3)
     return matches, coverage
 
 

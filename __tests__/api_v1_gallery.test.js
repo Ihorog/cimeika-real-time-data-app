@@ -5,6 +5,8 @@ const app = require('../src/app');
 
 const galleryPath = path.join(__dirname, '..', 'data', 'gallery.json');
 const moodCachePath = path.join(__dirname, '..', 'data', 'gallery_moods.json');
+const fixturesDir = path.join(__dirname, 'fixtures');
+const outsideFixturePath = path.join(fixturesDir, 'outside-mood.jpg');
 
 const readJson = (filePath, fallback = {}) => {
   if (!fs.existsSync(filePath)) return fallback;
@@ -19,6 +21,8 @@ let originalGallery;
 let originalMoodCache;
 
 beforeAll(() => {
+  fs.mkdirSync(fixturesDir, { recursive: true });
+  fs.writeFileSync(outsideFixturePath, 'outside-image');
   originalGallery = readJson(galleryPath, []);
   originalMoodCache = readJson(moodCachePath, {});
 });
@@ -67,6 +71,23 @@ describe('Gallery API', () => {
 
     const cacheAfter = readJson(moodCachePath, {});
     expect(Object.keys(cacheAfter).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('POST /api/v1/gallery/mood → rejects path traversal attempts with ../ sequences', async () => {
+    const res = await request(app)
+      .post('/api/v1/gallery/mood')
+      .send({ imagePath: '../cimeika-real-time-data-app/__tests__/fixtures/outside-mood.jpg' });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.data.error).toBeDefined();
+  });
+
+  it('POST /api/v1/gallery/mood → rejects encoded traversal payloads', async () => {
+    const encodedPath = '..%2Fcimeika-real-time-data-app%2F__tests__%2Ffixtures%2Foutside-mood.jpg';
+    const res = await request(app).post('/api/v1/gallery/mood').send({ imagePath: encodedPath });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.data.error).toBeDefined();
   });
 
   it('POST /api/v1/gallery/link → binds media to calendar event', async () => {

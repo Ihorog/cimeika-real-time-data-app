@@ -1,6 +1,15 @@
 "use client";
-import { useState } from "react";
-import axios from "axios";
+import { useMemo, useState } from "react";
+import { createApiClient } from "@/core/api";
+
+const DEFAULT_BASE_URL = "http://localhost:8000";
+
+function normalizeBaseUrl(value) {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  return trimmed.replace(/\/$/, "");
+}
 
 const endpoints = [
   { label: "Ci Chat", path: "/ci/chat", method: "POST" },
@@ -8,17 +17,32 @@ const endpoints = [
   { label: "Галерея Upload", path: "/gallery/upload", method: "POST" },
 ];
 
-export default function ApiConsole({ baseUrl = "http://localhost:8000" }) {
+export default function ApiConsole({ baseUrl }) {
   const [active, setActive] = useState(endpoints[0]);
   const [payload, setPayload] = useState("{\n  \"message\": \"Привіт, Ci!\"\n}");
   const [response, setResponse] = useState(null);
 
+  const resolvedBaseUrl = useMemo(
+    () => normalizeBaseUrl(baseUrl ?? process.env.NEXT_PUBLIC_CIMEIKA_API_URL) ?? DEFAULT_BASE_URL,
+    [baseUrl],
+  );
+
+  const client = useMemo(
+    () =>
+      createApiClient({
+        baseUrl: resolvedBaseUrl,
+        timeoutMs: 7000,
+        retries: 1,
+        criticalRetries: 2,
+      }),
+    [resolvedBaseUrl],
+  );
+
   const send = async () => {
     try {
       const body = JSON.parse(payload || "{}");
-      const url = `${baseUrl}${active.path}`;
-      const res = await axios({ url, method: active.method.toLowerCase(), data: body });
-      setResponse(res.data);
+      const res = await client.request(active.path, { method: active.method, body });
+      setResponse(res.status === "ok" ? res.data : { error: res.error });
     } catch (error) {
       setResponse({ error: error.message });
     }
@@ -28,7 +52,7 @@ export default function ApiConsole({ baseUrl = "http://localhost:8000" }) {
     <div className="ci-panel rounded-2xl p-4 text-slate-100 space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold">API Console</h3>
-        <span className="text-xs text-slate-400">base: {baseUrl}</span>
+        <span className="text-xs text-slate-400">base: {resolvedBaseUrl}</span>
       </div>
       <div className="flex gap-2 flex-wrap">
         {endpoints.map((ep) => (
