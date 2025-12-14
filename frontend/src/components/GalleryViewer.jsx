@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
 import MoodOverlay from "./MoodOverlay";
 
 export default function GalleryViewer({ items = [] }) {
@@ -31,10 +32,23 @@ export default function GalleryViewer({ items = [] }) {
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.45, ease: "easeOut" }}
             >
-              <div className="text-center space-y-2">
+              <div className="absolute inset-0">
+                <Image
+                  src={media.preview || media.src}
+                  alt={media.note || media.location}
+                  fill
+                  sizes="(min-width: 1024px) 60vw, 100vw"
+                  className="object-cover"
+                  placeholder={media.blurDataURL ? "blur" : "empty"}
+                  blurDataURL={media.blurDataURL}
+                  loading="lazy"
+                  priority={false}
+                />
+              </div>
+              <div className="relative z-10 text-center space-y-2 bg-slate-900/60 px-4 py-3 rounded-xl shadow-lg">
                 <p className="text-sm uppercase tracking-[0.3em] text-slate-300">{media.type}</p>
                 <p className="text-2xl font-semibold text-white">{media.location}</p>
-                <p className="text-sm text-slate-400">{media.note}</p>
+                <p className="text-sm text-slate-200 line-clamp-2">{media.note}</p>
               </div>
               <MoodOverlay resonance={media.resonance} emotion={media.emotion} />
             </motion.div>

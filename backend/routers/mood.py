@@ -1,8 +1,8 @@
-from typing import Dict
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
+from typing import Optional
 
-from backend.utils.connectors import summarize_with_openai
+from backend.utils.connectors import fetch_mood, submit_mood
 
 router = APIRouter(prefix="/nastiy")
 
@@ -10,18 +10,45 @@ router = APIRouter(prefix="/nastiy")
 class MoodSnapshot(BaseModel):
     mood: str
     intensity: int
-    note: str | None = None
+    note: Optional[str] = None
 
 
-@router.post("/mood", response_model=Dict[str, str])
+class MoodResponse(BaseModel):
+    status: str
+    summary: str
+    source: Optional[str] = None
+
+
+@router.post("/mood", response_model=MoodResponse)
 def capture_mood(snapshot: MoodSnapshot):
-    summary = summarize_with_openai(f"Mood: {snapshot.mood}, intensity: {snapshot.intensity}")
-    return {
-        "status": summary.get("status", "ok"),
-        "summary": snapshot.note or "Настрій зафіксовано",
-    }
+    api_response = submit_mood(snapshot.model_dump())
+    if api_response.get("status") == "ok":
+        data = api_response.get("data", {})
+        return MoodResponse(
+            status="ok",
+            summary=data.get("summary", snapshot.note or "Настрій зафіксовано"),
+            source="api",
+        )
+
+    raise HTTPException(
+        status_code=status.HTTP_502_BAD_GATEWAY,
+        detail={
+            "message": api_response.get("message", "Не вдалося записати настрій"),
+            "source": api_response.get("error", "connector"),
+        },
+    )
 
 
 @router.get("/mood", response_model=MoodSnapshot)
 def latest_mood():
-    return MoodSnapshot(mood="врівноважений", intensity=7, note="Ранкова хвиля спокою")
+    api_response = fetch_mood()
+    if api_response.get("status") == "ok" and isinstance(api_response.get("data"), dict):
+        return MoodSnapshot(**api_response["data"])
+
+    raise HTTPException(
+        status_code=status.HTTP_502_BAD_GATEWAY,
+        detail={
+            "message": api_response.get("message", "Не вдалося отримати поточний настрій"),
+            "source": api_response.get("error", "connector"),
+        },
+    )

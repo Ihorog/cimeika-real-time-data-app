@@ -1,6 +1,6 @@
 const express = require('express');
 const { makeResponse } = require('./utils/responseHelper');
-const realtimeRouter = require('../../realtime');
+const realtimeRouter = require('../../realtime.js');
 const systemModule = require('./system');
 
 const router = express.Router();

@@ -42,6 +42,40 @@ document.addEventListener('DOMContentLoaded', async function() {
     setupRealTimeData();
 });
 
+function sanitizeHTML(htmlString) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+
+    doc.querySelectorAll('script, iframe, object, embed').forEach(el => el.remove());
+
+    doc.querySelectorAll('*').forEach(el => {
+        [...el.attributes].forEach(attr => {
+            const attrName = attr.name.toLowerCase();
+            const attrValue = (attr.value || '').trim().toLowerCase();
+
+            if (attrName.startsWith('on')) {
+                el.removeAttribute(attr.name);
+            }
+
+            if (
+                (attrName === 'src' || attrName === 'href') &&
+                attrValue.startsWith('javascript:')
+            ) {
+                el.removeAttribute(attr.name);
+            }
+        });
+    });
+
+    return doc.body;
+}
+
+function renderSanitizedHTML(container, htmlString) {
+    const safeBody = sanitizeHTML(htmlString);
+    const fragment = document.createDocumentFragment();
+    fragment.append(...Array.from(safeBody.childNodes));
+    container.replaceChildren(fragment);
+}
+
 async function fetchConfig() {
     const res = await fetch('/config');
     if (!res.ok) throw new Error('Failed to load config');
@@ -98,11 +132,19 @@ async function loadComponent(componentPath, containerSelector) {
             throw new Error(`Failed to load ${componentPath}: ${response.statusText}`);
         }
         const html = await response.text();
-        document.querySelector(containerSelector).innerHTML = html;
+        const container = document.querySelector(containerSelector);
+        if (container) {
+            renderSanitizedHTML(container, html);
+        }
     } catch (error) {
         console.error(error);
-        document.querySelector(containerSelector).innerHTML = 
-            `<div class="error-message">Failed to load component: ${error.message}</div>`;
+        const container = document.querySelector(containerSelector);
+        if (container) {
+            const errorBox = document.createElement('div');
+            errorBox.className = 'error-message';
+            errorBox.textContent = `Failed to load component: ${error.message}`;
+            container.replaceChildren(errorBox);
+        }
         throw error;
     }
 }
@@ -111,22 +153,31 @@ async function loadComponent(componentPath, containerSelector) {
 async function loadPage(url) {
     const mainContent = document.querySelector('main');
     try {
-        mainContent.innerHTML = '<div class="loading text-center py-12">Loading...</div>';
+        const loading = document.createElement('div');
+        loading.className = 'loading text-center py-12';
+        loading.textContent = 'Loading...';
+        mainContent.replaceChildren(loading);
         const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`Error: ${response.statusText}`);
         }
         const data = await response.text();
-        mainContent.innerHTML = data;
+        renderSanitizedHTML(mainContent, data);
     } catch (error) {
         console.error('Error loading page:', error);
-        mainContent.innerHTML = `
-            <div class="error-message">
-                <p>Failed to load page: ${error.message}</p>
-                <button onclick="loadPage('pages/home.html')" class="mt-4 bg-gray-800 text-white px-4 py-2 rounded">
-                    Return Home
-                </button>
-            </div>`;
+        const errorWrapper = document.createElement('div');
+        errorWrapper.className = 'error-message';
+
+        const errorText = document.createElement('p');
+        errorText.textContent = `Failed to load page: ${error.message}`;
+
+        const backButton = document.createElement('button');
+        backButton.className = 'mt-4 bg-gray-800 text-white px-4 py-2 rounded';
+        backButton.textContent = 'Return Home';
+        backButton.addEventListener('click', () => loadPage('pages/home.html'));
+
+        errorWrapper.append(errorText, backButton);
+        mainContent.replaceChildren(errorWrapper);
     }
 }
 

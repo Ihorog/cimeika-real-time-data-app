@@ -2,14 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import MoodOverlay from "./MoodOverlay";
+import { DATE_SHORT_OPTIONS, DEFAULT_LOCALE } from "../../config/locale";
 
 function formatDate(date) {
-  return new Date(date).toLocaleDateString("uk-UA", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+  return new Date(date).toLocaleDateString(DEFAULT_LOCALE, DATE_SHORT_OPTIONS);
 }
 
 export default function GalleryGrid({ items = [] }) {
@@ -61,8 +59,20 @@ export default function GalleryGrid({ items = [] }) {
             whileHover={{ scale: 1.02 }}
             className="relative overflow-hidden rounded-2xl bg-gradient-to-tr from-sky-100 via-rose-100 to-emerald-100 shadow-md hover:scale-[1.01] transition-all"
           >
-            <div className="relative h-40 w-full bg-slate-900/40 flex items-center justify-center text-slate-100 uppercase tracking-[0.3em]">
-              <span className="text-xs">{item.type}</span>
+            <div className="relative h-40 w-full bg-slate-900/40">
+              <Image
+                src={item.preview || item.src}
+                alt={item.location}
+                fill
+                sizes="(min-width: 1024px) 30vw, 100vw"
+                className="object-cover"
+                placeholder={item.blurDataURL ? "blur" : "empty"}
+                blurDataURL={item.blurDataURL}
+                loading="lazy"
+              />
+              <div className="absolute inset-0 flex items-center justify-center text-slate-100 uppercase tracking-[0.3em] bg-slate-900/30">
+                <span className="text-xs">{item.type}</span>
+              </div>
               <MoodOverlay resonance={item.resonance} emotion={item.emotion} />
             </div>
             <div className="p-4 space-y-1 text-slate-800">

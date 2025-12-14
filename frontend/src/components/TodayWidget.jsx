@@ -1,13 +1,52 @@
 "use client";
 
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { motion } from "framer-motion";
+import { DATE_LONG_OPTIONS, DEFAULT_LOCALE } from "../../config/locale";
 
-export default function TodayWidget({ events = [], onQuickAdd }) {
-  const todayLabel = new Date().toLocaleDateString("uk-UA", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
+const DISMISS_MS = 2400;
+
+export default function TodayWidget({ events = [], quickAddMessage = "Голосова команда активована", onQuickAdd }) {
+  const [notification, setNotification] = useState(null);
+  const hideTimerRef = useRef(null);
+  const [isPending, startTransition] = useTransition();
+
+  const todayLabel = useMemo(
+    () => new Date().toLocaleDateString(DEFAULT_LOCALE, DATE_LONG_OPTIONS),
+    [],
+  );
+
+  useEffect(() => {
+    if (!notification) return undefined;
+
+    hideTimerRef.current = window.setTimeout(() => setNotification(null), DISMISS_MS);
+    return () => {
+      if (hideTimerRef.current) {
+        clearTimeout(hideTimerRef.current);
+      }
+    };
+  }, [notification]);
+
+  const showNotification = useCallback((message) => {
+    if (!message) return;
+    startTransition(() => {
+      setNotification({ id: crypto.randomUUID?.() ?? Date.now(), message });
+    });
+  }, [startTransition]);
+
+  const handleQuickAdd = useCallback(async () => {
+    const handler = onQuickAdd || (() => quickAddMessage);
+
+    try {
+      const result = await Promise.resolve(handler());
+      if (result === false) return;
+
+      const message = typeof result === "string" && result.trim().length ? result : quickAddMessage;
+      showNotification(message);
+    } catch (error) {
+      showNotification("Не вдалося запустити швидке додавання");
+    }
+  }, [onQuickAdd, quickAddMessage, showNotification]);
 
   return (
     <motion.div
@@ -22,12 +61,19 @@ export default function TodayWidget({ events = [], onQuickAdd }) {
           <h3 className="text-xl font-semibold">{todayLabel}</h3>
         </div>
         <button
-          onClick={onQuickAdd}
+          onClick={handleQuickAdd}
+          disabled={isPending}
           className="px-3 py-2 rounded-lg bg-sky-500 text-white text-sm font-semibold hover:bg-sky-400 transition"
+          aria-busy={isPending}
         >
           Голос: додати подію
         </button>
       </div>
+      {notification && (
+        <div className="mb-3 rounded-xl border border-slate-800 bg-slate-900/80 px-4 py-3 text-sm text-slate-100">
+          {notification.message}
+        </div>
+      )}
       <div className="space-y-3">
         {events.length === 0 ? (
           <p className="text-slate-400 text-sm">Немає запланованих подій. Спробуйте автоматичні пропозиції.</p>
