@@ -1,15 +1,4 @@
 import "./globals.css";
-import Link from "next/link";
-import Navbar from "../components/Navbar";
-import ConnectionStatus from "../components/ConnectionStatus";
-import SpeedInsights from "../components/SpeedInsights";
-
-export const metadata = {
-  title: "Cimeika Interface",
-  description: "Cimeika AI System Interface",
-};
-import "./globals.css";
-import Link from "next/link";
 import Navbar from "../components/Navbar";
 import ConnectionStatus from "../components/ConnectionStatus";
 import SpeedInsights from "../components/SpeedInsights";
@@ -31,12 +20,12 @@ export default function RootLayout({ children }) {
 
           {/* Системна навігація */}
           <nav className="px-6 sm:px-10 py-3 text-sm text-slate-300 flex gap-6">
-            <Link
+            <a
               href="/encyclopedia"
               className="hover:text-white transition-colors"
             >
               Енциклопедія
-            </Link>
+            </a>
           </nav>
         </header>
 
