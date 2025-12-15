@@ -1,6 +1,5 @@
-import type { Concept } from "../../lib/encyclopedia/types";
-import RelationList from "./RelationList";
-import type { Concept as ConceptType } from "../../lib/encyclopedia/types";
+import type { Concept } from "@/lib/encyclopedia/types";
+import RelationList from "@/components/encyclopedia/RelationList";
 
 function Block({
   title,
@@ -20,7 +19,9 @@ function Block({
 function TimelineRow({ label, value }: { label: string; value?: string }) {
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-950/30 p-4">
-      <div className="text-xs uppercase tracking-wide text-slate-400">{label}</div>
+      <div className="text-xs uppercase tracking-wide text-slate-400">
+        {label}
+      </div>
       <div className="mt-1 text-sm text-slate-100 whitespace-pre-wrap">
         {value || "—"}
       </div>
@@ -33,18 +34,22 @@ export default function ConceptView({
   conceptMap,
 }: {
   concept: Concept;
-  conceptMap: Record<string, ConceptType>;
+  conceptMap: Record<string, Concept>;
 }) {
   return (
     <div className="space-y-6">
       <header className="space-y-2">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold text-slate-50">{concept.name}</h1>
+          <h1 className="text-2xl font-semibold text-slate-50">
+            {concept.name}
+          </h1>
+
           {concept.type ? (
             <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">
               {concept.type}
             </span>
           ) : null}
+
           {concept.polarity ? (
             <span className="rounded-full bg-slate-800/60 px-3 py-1 text-xs text-slate-300">
               {concept.polarity}
