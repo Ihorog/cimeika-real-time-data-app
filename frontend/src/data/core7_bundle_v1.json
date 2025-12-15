@@ -1,0 +1,181 @@
+{
+  "bundle_id": "core7_bundle_v1",
+  "version": "1.0.0",
+  "namespace": ["Сімеіка", "СІ"],
+  "tags": ["encyclopedia", "core7", "v1"],
+  "concepts": [
+    {
+      "id": "ci_core",
+      "name": "Ci",
+      "namespace": ["Сімеіка", "СІ"],
+      "type": "core",
+      "polarity": "neutral",
+      "timeline": {
+        "was": "Інваріант присутності.",
+        "is": "Центр оркестрації сенсів, модулів і дій.",
+        "will": "🔧 Розширення до адаптивного ядра прогнозу."
+      },
+      "description_core": "Ci — центр керування системою: узгоджує модулі, сенси та дії.",
+      "description_story": "Точка «є», що тримає поле в цілості.",
+      "description_technical": "Оркестратор модулів і маршрутів дій; інваріант стабільності системи.",
+      "tags": ["core", "orchestrator", "invariant"],
+      "relations": [
+        { "target_id": "kazkar_legend_ci", "relation_type": "interface_to", "weight": 0.9 },
+        { "target_id": "podija", "relation_type": "governs", "weight": 1.0 },
+        { "target_id": "nastrij", "relation_type": "governs", "weight": 1.0 },
+        { "target_id": "malya", "relation_type": "governs", "weight": 1.0 },
+        { "target_id": "calendar", "relation_type": "governs", "weight": 1.0 },
+        { "target_id": "gallery", "relation_type": "governs", "weight": 1.0 }
+      ]
+    },
+    {
+      "id": "kazkar_legend_ci",
+      "name": "Казкар / ✨Легенда Сі",
+      "namespace": ["Сімеіка", "СІ", "Казкар"],
+      "type": "core-interface",
+      "polarity": "mixed",
+      "timeline": {
+        "was": "Форма знайомства через історію.",
+        "is": "Мультимедійний інтерфейс контакту + аналітичний контур сигналів.",
+        "will": "🌀 Персоналізована легенда під контекст і стан."
+      },
+      "description_core": "Казкар — голос; ✨Легенда Сі — жива сцена контакту користувача з Ci.",
+      "description_story": "Історія, що торкається досвіду і запускає рух уваги.",
+      "description_technical": "UI/UX-модуль подачі сенсів + збір сигналів взаємодії для інтерпретації стану.",
+      "tags": ["kazkar", "legend", "multimedia", "interface", "signals"],
+      "relations": [
+        { "target_id": "ci_core", "relation_type": "embodies", "weight": 1.0 },
+        { "target_id": "nastrij", "relation_type": "collects_signal_for", "weight": 0.8 },
+        { "target_id": "podija", "relation_type": "narrates", "weight": 0.7 },
+        { "target_id": "calendar", "relation_type": "contextualized_by", "weight": 0.5 }
+      ]
+    },
+    {
+      "id": "podija",
+      "name": "Подія",
+      "namespace": ["Сімеіка"],
+      "type": "event",
+      "polarity": "mixed",
+      "timeline": {
+        "was": "Зафіксований факт.",
+        "is": "Активний тригер переходу.",
+        "will": "🔧 Вузол сценаріїв і наслідків."
+      },
+      "description_core": "Подія — момент зміни, що має наслідки для станів і контексту.",
+      "description_story": "Точка, де «було» стає «є» і штовхає «буде».",
+      "description_technical": "Подієвий об’єкт: дані + час + контекст + наслідки/зв’язки.",
+      "tags": ["event", "trigger", "transition"],
+      "relations": [
+        { "target_id": "calendar", "relation_type": "triggered_by", "weight": 0.8 },
+        { "target_id": "nastrij", "relation_type": "affects", "weight": 0.9 },
+        { "target_id": "gallery", "relation_type": "archived_in", "weight": 0.6 }
+      ]
+    },
+    {
+      "id": "nastrij",
+      "name": "Настрій",
+      "namespace": ["Сімеіка"],
+      "type": "state",
+      "polarity": "mixed",
+      "timeline": {
+        "was": "Реакція.",
+        "is": "Поточний емоційний фон системи/людини.",
+        "will": "🔧 Предиктор вибору дій і пріоритетів."
+      },
+      "description_core": "Настрій — сенсор внутрішнього стану та напруги.",
+      "description_story": "Вода, що фарбує весь простір.",
+      "description_technical": "Станова модель: параметри + історія змін + тригери.",
+      "tags": ["state", "mood", "signal"],
+      "relations": [
+        { "target_id": "podija", "relation_type": "influenced_by", "weight": 0.9 },
+        { "target_id": "ci_core", "relation_type": "feeds", "weight": 0.7 },
+        { "target_id": "gallery", "relation_type": "visualized_by", "weight": 0.5 }
+      ]
+    },
+    {
+      "id": "malya",
+      "name": "Маля",
+      "namespace": ["Сімеіка"],
+      "type": "creative",
+      "polarity": "positive",
+      "timeline": {
+        "was": "Імпульс гри.",
+        "is": "Джерело ідей та альтернатив.",
+        "will": "🌀 Генератор інновацій і нестандартних ходів."
+      },
+      "description_core": "Маля — модуль творчості, що створює варіанти та експерименти.",
+      "description_story": "Повітря, яке приносить нове.",
+      "description_technical": "Генератор гіпотез/варіантів із контрольованою подачею.",
+      "tags": ["creative", "ideas", "alternatives"],
+      "relations": [
+        { "target_id": "podija", "relation_type": "inspires", "weight": 0.6 },
+        { "target_id": "ci_core", "relation_type": "softens", "weight": 0.4 }
+      ]
+    },
+    {
+      "id": "calendar",
+      "name": "Календар",
+      "namespace": ["Сімеіка"],
+      "type": "time",
+      "polarity": "neutral",
+      "timeline": {
+        "was": "Облік часу.",
+        "is": "Координатор ритмів, циклів і планів.",
+        "will": "🔧 Прогнозний таймлайн і вузлова мапа часу."
+      },
+      "description_core": "Календар — структура «коли» для подій і дій.",
+      "description_story": "Річка часу з вузлами переходів.",
+      "description_technical": "Сутність таймлайну: події, правила повторів, контекстні прив’язки.",
+      "tags": ["time", "schedule", "rhythm"],
+      "relations": [
+        { "target_id": "podija", "relation_type": "schedules", "weight": 1.0 },
+        { "target_id": "kazkar_legend_ci", "relation_type": "contextualizes", "weight": 0.5 }
+      ]
+    },
+    {
+      "id": "gallery",
+      "name": "Галерея",
+      "namespace": ["Сімеіка"],
+      "type": "archive",
+      "polarity": "neutral",
+      "timeline": {
+        "was": "Сховище спогадів.",
+        "is": "Візуальний архів досвіду та доказів.",
+        "will": "🔧 Інтерактивна пам’ять зі сценаріями відтворення."
+      },
+      "description_core": "Галерея — фіксація того, що було пережито/створено.",
+      "description_story": "Земля, що зберігає сліди.",
+      "description_technical": "Медіа-архів: метадані, зв’язки з подіями/станами/історіями.",
+      "tags": ["archive", "media", "memory"],
+      "relations": [
+        { "target_id": "podija", "relation_type": "stores", "weight": 0.8 },
+        { "target_id": "nastrij", "relation_type": "reflects", "weight": 0.6 }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": ["ci_core", "kazkar_legend_ci", "podija", "nastrij", "malya", "calendar", "gallery"],
+    "edges": [
+      { "from": "ci_core", "to": "kazkar_legend_ci", "type": "interface_to", "weight": 0.9 },
+      { "from": "ci_core", "to": "podija", "type": "governs", "weight": 1.0 },
+      { "from": "ci_core", "to": "nastrij", "type": "governs", "weight": 1.0 },
+      { "from": "ci_core", "to": "malya", "type": "governs", "weight": 1.0 },
+      { "from": "ci_core", "to": "calendar", "type": "governs", "weight": 1.0 },
+      { "from": "ci_core", "to": "gallery", "type": "governs", "weight": 1.0 },
+
+      { "from": "kazkar_legend_ci", "to": "ci_core", "type": "embodies", "weight": 1.0 },
+      { "from": "kazkar_legend_ci", "to": "nastrij", "type": "collects_signal_for", "weight": 0.8 },
+      { "from": "kazkar_legend_ci", "to": "podija", "type": "narrates", "weight": 0.7 },
+      { "from": "kazkar_legend_ci", "to": "calendar", "type": "contextualized_by", "weight": 0.5 },
+
+      { "from": "calendar", "to": "podija", "type": "schedules", "weight": 1.0 },
+      { "from": "podija", "to": "nastrij", "type": "affects", "weight": 0.9 },
+      { "from": "podija", "to": "gallery", "type": "archived_in", "weight": 0.6 },
+
+      { "from": "nastrij", "to": "ci_core", "type": "feeds", "weight": 0.7 },
+      { "from": "malya", "to": "podija", "type": "inspires", "weight": 0.6 },
+      { "from": "gallery", "to": "podija", "type": "stores", "weight": 0.8 },
+      { "from": "gallery", "to": "nastrij", "type": "reflects", "weight": 0.6 }
+    ]
+  }
+}
