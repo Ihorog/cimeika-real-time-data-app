@@ -1,98 +1,66 @@
-import type { Concept } from "@/lib/encyclopedia/types";
-import RelationList from "@/components/encyclopedia/RelationList";
-
-function Block({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-2xl border border-slate-800 bg-slate-900/30 p-5">
-      <h2 className="text-sm font-semibold text-slate-200">{title}</h2>
-      <div className="mt-2 text-sm text-slate-200">{children}</div>
-    </section>
-  );
-}
-
-function TimelineRow({ label, value }: { label: string; value?: string }) {
-  return (
-    <div className="rounded-xl border border-slate-800 bg-slate-950/30 p-4">
-      <div className="text-xs uppercase tracking-wide text-slate-400">
-        {label}
-      </div>
-      <div className="mt-1 text-sm text-slate-100 whitespace-pre-wrap">
-        {value || "—"}
-      </div>
-    </div>
-  );
-}
+type Concept = {
+  id: string;
+  title?: string;
+  summary?: string;
+  content?: string;
+  tags?: string[];
+  links?: { label: string; href: string }[];
+};
 
 export default function ConceptView({
   concept,
-  conceptMap,
 }: {
   concept: Concept;
-  conceptMap: Record<string, Concept>;
 }) {
   return (
-    <div className="space-y-6">
+    <section className="mx-auto max-w-3xl space-y-6">
       <header className="space-y-2">
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold text-slate-50">
-            {concept.name}
-          </h1>
+        <h1 className="text-3xl font-semibold tracking-tight">
+          {concept.title ?? concept.id}
+        </h1>
 
-          {concept.type ? (
-            <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">
-              {concept.type}
-            </span>
-          ) : null}
+        {concept.summary ? (
+          <p className="text-slate-300">{concept.summary}</p>
+        ) : null}
 
-          {concept.polarity ? (
-            <span className="rounded-full bg-slate-800/60 px-3 py-1 text-xs text-slate-300">
-              {concept.polarity}
-            </span>
-          ) : null}
-        </div>
-
-        {concept.namespace?.length ? (
-          <p className="text-sm text-slate-400">
-            {concept.namespace.join(" / ")}
-          </p>
+        {concept.tags?.length ? (
+          <div className="flex flex-wrap gap-2">
+            {concept.tags.map((t) => (
+              <span
+                key={t}
+                className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-200"
+              >
+                {t}
+              </span>
+            ))}
+          </div>
         ) : null}
       </header>
 
-      <section className="grid gap-3 md:grid-cols-3">
-        <TimelineRow label="Було" value={concept.timeline?.was} />
-        <TimelineRow label="Є" value={concept.timeline?.is} />
-        <TimelineRow label="Буде" value={concept.timeline?.will} />
-      </section>
+      {concept.content ? (
+        <article className="prose prose-invert max-w-none">
+          <p>{concept.content}</p>
+        </article>
+      ) : (
+        <div className="rounded-xl border border-slate-800 bg-slate-900/30 p-4 text-slate-300">
+          Контент ще не завантажено.
+        </div>
+      )}
 
-      <section className="grid gap-4 md:grid-cols-3">
-        <Block title="Суть">
-          <div className="whitespace-pre-wrap">
-            {concept.description_core || "—"}
-          </div>
-        </Block>
-
-        <Block title="Образ">
-          <div className="whitespace-pre-wrap">
-            {concept.description_story || "—"}
-          </div>
-        </Block>
-
-        <Block title="Технічно">
-          <div className="whitespace-pre-wrap">
-            {concept.description_technical || "—"}
-          </div>
-        </Block>
-      </section>
-
-      <Block title="Зв’язки">
-        <RelationList relations={concept.relations} conceptMap={conceptMap} />
-      </Block>
-    </div>
+      {concept.links?.length ? (
+        <footer className="space-y-2">
+          <div className="text-sm text-slate-400">Пов’язані посилання</div>
+          <ul className="space-y-1">
+            {concept.links.map((l) => (
+              <li key={l.href}>
+                <a className="underline" href={l.href}>
+                  {l.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </footer>
+      ) : null}
+    </section>
   );
 }
