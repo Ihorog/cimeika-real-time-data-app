@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getConcept, getConceptMap } from "@/lib/encyclopedia/loadBundle";
+import { getConcept } from "@/lib/encyclopedia/loadBundle";
 import ConceptView from "@/components/encyclopedia/ConceptView";
 
 export default async function EncyclopediaConceptPage({
@@ -10,8 +10,6 @@ export default async function EncyclopediaConceptPage({
 }) {
   const concept = await getConcept(params.id);
   if (!concept) return notFound();
-
-  const conceptMap = await getConceptMap();
 
   return (
     <div className="space-y-6">
@@ -32,7 +30,7 @@ export default async function EncyclopediaConceptPage({
         </Link>
       </header>
 
-      <ConceptView concept={concept} conceptMap={conceptMap} />
+      <ConceptView concept={concept} />
     </div>
   );
 }
