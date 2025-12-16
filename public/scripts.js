@@ -145,6 +145,10 @@ function cleanupCache() {
 }
 
 async function retryFetch(url, options = {}, retries = MAX_RETRIES) {
+    if (retries < 1) {
+        throw new Error('retries must be at least 1');
+    }
+    
     let attempt = 0;
     
     while (attempt < retries) {
