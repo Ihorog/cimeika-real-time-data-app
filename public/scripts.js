@@ -1,5 +1,7 @@
 let config = {};
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const MAX_RETRY_ATTEMPTS = 2; // Configurable retry count
+const INITIAL_RETRY_DELAY = 1000; // Initial delay in ms for exponential backoff
 
 const storageAvailable = (() => {
     try {
@@ -76,6 +78,55 @@ function renderSanitizedHTML(container, htmlString) {
     container.replaceChildren(fragment);
 }
 
+// Retry fetch with exponential backoff
+async function retryFetch(url, options = {}, maxAttempts = MAX_RETRY_ATTEMPTS) {
+    let lastError;
+    
+    for (let attempt = 0; attempt <= maxAttempts; attempt++) {
+        try {
+            const response = await fetch(url, options);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response;
+        } catch (error) {
+            lastError = error;
+            
+            // Don't retry on the last attempt
+            if (attempt < maxAttempts) {
+                // Exponential backoff: delay = INITIAL_RETRY_DELAY * 2^attempt
+                const delay = INITIAL_RETRY_DELAY * Math.pow(2, attempt);
+                console.warn(`Fetch attempt ${attempt + 1} failed, retrying in ${delay}ms...`, error);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
+    }
+    
+    // All attempts failed
+    throw lastError;
+}
+
+// Error display management
+function showError(container, message) {
+    if (!container) return;
+    
+    // Remove any existing error messages
+    hideError(container);
+    
+    const errorBox = document.createElement('div');
+    errorBox.className = 'error-message';
+    errorBox.setAttribute('data-error', 'true');
+    errorBox.textContent = message;
+    container.appendChild(errorBox);
+}
+
+function hideError(container) {
+    if (!container) return;
+    
+    const errorElements = container.querySelectorAll('[data-error="true"]');
+    errorElements.forEach(el => el.remove());
+}
+
 async function fetchConfig() {
     const res = await fetch('/config');
     if (!res.ok) throw new Error('Failed to load config');
@@ -126,22 +177,20 @@ function cleanupCache() {
 
 // Component loader
 async function loadComponent(componentPath, containerSelector) {
+    const container = document.querySelector(containerSelector);
     try {
-        const response = await fetch(componentPath);
-        if (!response.ok) {
-            throw new Error(`Failed to load ${componentPath}: ${response.statusText}`);
-        }
+        const response = await retryFetch(componentPath);
         const html = await response.text();
-        const container = document.querySelector(containerSelector);
         if (container) {
             renderSanitizedHTML(container, html);
+            hideError(container); // Clear any previous errors on success
         }
     } catch (error) {
         console.error(error);
-        const container = document.querySelector(containerSelector);
         if (container) {
             const errorBox = document.createElement('div');
             errorBox.className = 'error-message';
+            errorBox.setAttribute('data-error', 'true');
             errorBox.textContent = `Failed to load component: ${error.message}`;
             container.replaceChildren(errorBox);
         }
@@ -157,16 +206,15 @@ async function loadPage(url) {
         loading.className = 'loading text-center py-12';
         loading.textContent = 'Loading...';
         mainContent.replaceChildren(loading);
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Error: ${response.statusText}`);
-        }
+        const response = await retryFetch(url);
         const data = await response.text();
         renderSanitizedHTML(mainContent, data);
+        hideError(mainContent); // Clear any previous errors on success
     } catch (error) {
         console.error('Error loading page:', error);
         const errorWrapper = document.createElement('div');
         errorWrapper.className = 'error-message';
+        errorWrapper.setAttribute('data-error', 'true');
 
         const errorText = document.createElement('p');
         errorText.textContent = `Failed to load page: ${error.message}`;
@@ -251,9 +299,7 @@ async function fetchAndRender(endpoint, params, elementId, formatter, cacheKey) 
             url.searchParams.append(key, value)
         );
 
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Request failed');
-
+        const response = await retryFetch(url.toString());
         const data = await response.json();
         element.textContent = formatter(data);
         element.classList.remove('loading', 'error-message');
