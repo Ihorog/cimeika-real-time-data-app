@@ -72,10 +72,15 @@ npm run lint         # Run ESLint
 
 ### Backend (FastAPI)
 ```bash
+# From project root:
+pip install -r backend/requirements.txt        # Install dependencies
+uvicorn backend.main:app --reload --port 8000  # Development server (from root)
+
+# Or from backend directory:
 cd backend
-pip install -r requirements.txt               # Install dependencies
-uvicorn backend.main:app --reload --port 8000 # Development server
-pytest                                         # Run tests
+pip install -r requirements.txt                # Install dependencies
+uvicorn main:app --reload --port 8000          # Development server (from backend/)
+pytest                                          # Run tests
 ```
 
 ### Docker
