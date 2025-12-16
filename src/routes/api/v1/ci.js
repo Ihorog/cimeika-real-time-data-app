@@ -15,6 +15,15 @@ const senseClient = createApiClient({
 });
 
 let lastSuccessfulSense = null;
+let lastSuccessfulSenseResponse = null;
+
+async function fetchSenseWithRetry() {
+  const result = await senseClient.get(SENSE_ENDPOINT, { critical: true });
+  if (result.status === 'error') {
+    throw new Error(result.error || 'Failed to fetch sense data');
+  }
+  return result.data;
+}
 
 
 router.get('/', (req, res) => {
