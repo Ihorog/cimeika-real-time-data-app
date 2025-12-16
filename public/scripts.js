@@ -1,5 +1,5 @@
 // Configuration constants
-const MAX_RETRIES = 3; // Total attempts: 1 initial + 2 retries
+const MAX_RETRIES = 3; // Total attempts: 3 (1 initial + 2 retries)
 const INITIAL_RETRY_DELAY = 1000; // 1 second
 
 let config = {};
@@ -157,13 +157,11 @@ async function retryFetch(url, options = {}, retries = MAX_RETRIES) {
             if (attempt >= retries) {
                 throw err;
             }
-            // Exponential backoff: 1st retry waits 1s, 2nd waits 2s, 3rd waits 4s, etc.
+            // Exponential backoff: 1st retry after 1s, 2nd retry after 2s
             const delay = INITIAL_RETRY_DELAY * Math.pow(2, attempt - 1);
             await new Promise(resolve => setTimeout(resolve, delay));
         }
     }
-    // This should never be reached due to the logic above, but added for completeness
-    throw new Error('Maximum retries reached');
 }
 
 // Component loader
