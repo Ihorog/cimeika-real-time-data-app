@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Setup error container event delegation
+    setupErrorContainerListeners();
+    
     // Load components first
     loadComponent('components/header.html', '#header-container')
         .then(() => setupMobileMenu())
@@ -17,6 +20,22 @@ document.addEventListener('DOMContentLoaded', function() {
     setupRealTimeData();
 });
 
+// Setup event delegation for error container dismiss buttons
+function setupErrorContainerListeners() {
+    const container = document.getElementById('error-container');
+    if (container) {
+        container.addEventListener('click', function(event) {
+            if (event.target.classList.contains('dismiss-error-btn')) {
+                const errorDiv = event.target.closest('[data-error-id]');
+                if (errorDiv) {
+                    const errorId = parseInt(errorDiv.dataset.errorId, 10);
+                    dismissError(errorId);
+                }
+            }
+        });
+    }
+}
+
 // Error queue to handle multiple errors
 const errorQueue = [];
 let errorIdCounter = 0;
@@ -25,15 +44,12 @@ function showError(message) {
     const container = document.getElementById('error-container');
     if (!container) return;
     
-    // Sanitize the message to prevent XSS
-    const sanitizedMessage = String(message).replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    
     // Add error to queue with timestamp and unique ID
     const timestamp = new Date().toLocaleTimeString();
     const errorId = ++errorIdCounter; // Simple incrementing counter for unique IDs
     
     const errorObj = { 
-        message: sanitizedMessage, 
+        message: String(message), // Convert to string, textContent will be XSS-safe
         timestamp, 
         id: errorId,
         timeoutId: null
@@ -83,7 +99,7 @@ function displayErrors() {
         
         const messageSpan = document.createElement('span');
         messageSpan.className = 'ml-2';
-        messageSpan.textContent = error.message; // Use textContent instead of innerHTML
+        messageSpan.textContent = error.message; // textContent is XSS-safe
         
         contentDiv.appendChild(timeStamp);
         contentDiv.appendChild(messageSpan);
@@ -98,20 +114,6 @@ function displayErrors() {
         errorDiv.appendChild(dismissBtn);
         container.appendChild(errorDiv);
     });
-    
-    // Set up event delegation for dismiss buttons (only once)
-    if (!container.hasAttribute('data-listener-attached')) {
-        container.addEventListener('click', function(event) {
-            if (event.target.classList.contains('dismiss-error-btn')) {
-                const errorDiv = event.target.closest('[data-error-id]');
-                if (errorDiv) {
-                    const errorId = parseInt(errorDiv.dataset.errorId, 10);
-                    dismissError(errorId);
-                }
-            }
-        });
-        container.setAttribute('data-listener-attached', 'true');
-    }
 }
 
 function dismissError(errorId) {
