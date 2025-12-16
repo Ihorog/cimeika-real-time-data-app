@@ -162,6 +162,8 @@ async function retryFetch(url, options = {}, retries = MAX_RETRIES) {
             await new Promise(resolve => setTimeout(resolve, delay));
         }
     }
+    // This should never be reached due to the logic above, but added for completeness
+    throw new Error('Maximum retries reached');
 }
 
 // Component loader
