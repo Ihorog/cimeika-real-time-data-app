@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ci-sky: #63b3f5;
+  --ci-wave: #32b4f2;
+  --ci-deep: #07324f;
+  --ci-glow: #ffd978;
+  --ci-grass: #8bc34a;
+  --ci-calm: #4db6ac;
+  --ci-rose: #f8bbd0;
+  --ci-shadow: #021726;
+  --ci-black: #020612;
+  color-scheme: dark;
+}
+
+.ci-panel {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(3, 7, 18, 0.75);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+}
+
+body {
+  min-height: 100vh;
+  background: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.08), transparent 35%),
+    radial-gradient(circle at 80% 0%, rgba(94, 234, 212, 0.1), transparent 30%),
+    radial-gradient(circle at 50% 80%, rgba(59, 130, 246, 0.08), transparent 30%),
+    #020617;
+}
+
+a {
+  color: inherit;
+}
+
+.glow-card {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  backdrop-filter: blur(10px);
+  transition-property: border-color, box-shadow, background-color;
+  transition-duration: 150ms;
+}
+
+.text-gradient {
+  background: linear-gradient(120deg, #22d3ee, #a855f7, #38bdf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

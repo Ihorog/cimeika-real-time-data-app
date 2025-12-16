@@ -1,5 +1,6 @@
 openapi: 3.1.0
 info:
+<<<<<<< HEAD
   title: Cimeika API
   description: API для інтеграції GPT у існуючий інтерфейс чату та управління системою поєднаних компонентів
   version: 1.0.0
@@ -225,11 +226,30 @@ paths:
       responses:
         "200":
           description: Список моделей успішно отриманий
+=======
+  title: Cimeika Orchestration API
+  description: >-
+    FastAPI layer that proxies Cimeika core modules (ПоДія, Настрій, Маля, Казкар, Галерея, Календар)
+    and exposes the Ci resonance utilities. Dummy payloads have been removed: every error bubbles up
+    as an explicit 5xx/501 response so clients can detect missing connectors.
+  version: 0.2.0
+servers:
+  - url: http://localhost:8000
+    description: Local development
+paths:
+  /health:
+    get:
+      summary: Health probe
+      responses:
+        '200':
+          description: Service is reachable
+>>>>>>> origin/main
           content:
             application/json:
               schema:
                 type: object
                 properties:
+<<<<<<< HEAD
                   models:
                     type: array
                     items:
@@ -445,20 +465,139 @@ paths:
       responses:
         "200":
           description: Список компонентів успішно отриманий
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Component"
+=======
+                  status:
+                    type: string
+                  service:
+                    type: string
+                  base_url:
+                    type: string
+                  uptime:
+                    type: number
+                    description: Seconds since process start
+                  timestamp:
+                    type: string
+                    format: date-time
+  /ci/chat:
     post:
-      operationId: createComponent
-      summary: Створити новий компонент
+      summary: Echo chat with Ci resonance preview
       requestBody:
         required: true
         content:
           application/json:
             schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: Chat reply with resonance vectors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+  /ci/data:
+    get:
+      summary: List Ci data streams and connectors
+      responses:
+        '200':
+          description: Data catalog
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  streams:
+                    type: array
+                    items:
+                      type: string
+                  connectors:
+                    type: array
+                    items:
+                      type: string
+  /ci/components:
+    get:
+      summary: Known Ci UI components
+      responses:
+        '200':
+          description: Component registry
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+  /ci/axes:
+    get:
+      summary: PLUS/MINUS manifest for Ci resonance
+      responses:
+        '200':
+          description: Manifest loaded from visual_axis_manifest.json
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AxisManifest'
+        '502':
+          description: Manifest could not be loaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /ci/axes/resonance:
+    post:
+      summary: Score resonance for requested axes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AxisResonanceRequest'
+      responses:
+        '200':
+          description: Resonance scores
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AxisResonanceResponse'
+        '502':
+          description: Unable to compute resonance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /podia/events:
+    get:
+      summary: Fetch events from ПоДія
+      responses:
+        '200':
+          description: Events retrieved from connector
+>>>>>>> origin/main
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+<<<<<<< HEAD
+                  $ref: "#/components/schemas/Component"
+    post:
+      operationId: createComponent
+      summary: Створити новий компонент
+=======
+                  $ref: '#/components/schemas/Event'
+        '502':
+          description: Connector failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /podia/events/dispatch:
+    post:
+      summary: Dispatch event into orchestrator
+>>>>>>> origin/main
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+<<<<<<< HEAD
               $ref: "#/components/schemas/Component"
       responses:
         "201":
@@ -493,11 +632,47 @@ paths:
           required: true
           schema:
             type: string
+=======
+              $ref: '#/components/schemas/Event'
+      responses:
+        '200':
+          description: Task accepted for orchestration
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    type: object
+                  pending:
+                    type: array
+                    items:
+                      type: object
+  /nastiy/mood:
+    get:
+      summary: Retrieve latest mood snapshot
+      responses:
+        '200':
+          description: Snapshot pulled from connector
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MoodSnapshot'
+        '502':
+          description: Connector failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+    post:
+      summary: Submit mood snapshot
+>>>>>>> origin/main
       requestBody:
         required: true
         content:
           application/json:
             schema:
+<<<<<<< HEAD
               $ref: "#/components/schemas/Component"
       responses:
         "200":
@@ -528,11 +703,48 @@ paths:
           required: true
           schema:
             type: string
+=======
+              $ref: '#/components/schemas/MoodSnapshot'
+      responses:
+        '200':
+          description: Mood stored by connector
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MoodResponse'
+        '502':
+          description: Connector failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /mala/creative:
+    get:
+      summary: Check creative service status
+      responses:
+        '200':
+          description: Creative pipeline is reachable
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        '502':
+          description: Connector failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+    post:
+      summary: Request creative generation
+>>>>>>> origin/main
       requestBody:
         required: true
         content:
           application/json:
             schema:
+<<<<<<< HEAD
               type: object
               properties:
                 targetComponentId:
@@ -765,3 +977,230 @@ components:
           type: string
           description: Значення атрибуту
           example: значення-1
+=======
+              $ref: '#/components/schemas/CreativePrompt'
+      responses:
+        '200':
+          description: Creative job accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        '502':
+          description: Connector failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /kazkar/story:
+    post:
+      summary: Create a Kazkar story
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoryRequest'
+      responses:
+        '200':
+          description: Story returned by connector
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        '502':
+          description: Connector failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /kazkar/history:
+    get:
+      summary: Retrieve latest stories
+      responses:
+        '200':
+          description: Story history returned by connector
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        '502':
+          description: Connector failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /calendar/time:
+    get:
+      summary: Timeline from calendar module
+      responses:
+        '501':
+          description: Calendar sync not wired yet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /gallery/images:
+    get:
+      summary: List gallery images
+      responses:
+        '501':
+          description: Gallery storage not configured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /gallery/upload:
+    post:
+      summary: Upload image to gallery
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '501':
+          description: Upload path not configured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+components:
+  schemas:
+    ErrorDetail:
+      type: object
+      properties:
+        message:
+          type: string
+        source:
+          type: string
+    Event:
+      type: object
+      required: [id, title, start, context]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        start:
+          type: string
+          format: date-time
+        context:
+          type: string
+    MoodSnapshot:
+      type: object
+      required: [mood, intensity]
+      properties:
+        mood:
+          type: string
+        intensity:
+          type: integer
+        note:
+          type: string
+          nullable: true
+    MoodResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        summary:
+          type: string
+        source:
+          type: string
+          nullable: true
+    CreativePrompt:
+      type: object
+      required: [idea]
+      properties:
+        idea:
+          type: string
+        style:
+          type: string
+          default: sketch
+    StoryRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        seed:
+          type: string
+          nullable: true
+    ChatRequest:
+      type: object
+      properties:
+        message:
+          type: string
+    ChatResponse:
+      type: object
+      properties:
+        reply:
+          type: string
+        resonance:
+          type: object
+          additionalProperties:
+            type: number
+    AxisManifest:
+      type: object
+      properties:
+        axes:
+          type: object
+          additionalProperties:
+            type: object
+        balance_rule:
+          type: string
+        formula:
+          type: string
+        status:
+          type: string
+          nullable: true
+        error:
+          type: string
+          nullable: true
+    AxisResonanceRequest:
+      type: object
+      properties:
+        focus:
+          type: array
+          items:
+            type: string
+    AxisResonanceScore:
+      type: object
+      properties:
+        match_keywords:
+          type: array
+          items:
+            type: string
+        coverage:
+          type: number
+        color:
+          type: string
+          nullable: true
+        symbol:
+          type: string
+          nullable: true
+    AxisResonanceResponse:
+      type: object
+      properties:
+        manifest:
+          $ref: '#/components/schemas/AxisManifest'
+        scores:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/AxisResonanceScore'
+        resonance:
+          type: object
+          additionalProperties:
+            type: number
+>>>>>>> origin/main
