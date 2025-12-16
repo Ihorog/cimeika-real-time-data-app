@@ -192,7 +192,11 @@ app.get('/weather/current', async (req, res) => {
   try {
     const city = req.query.city || 'London';
     const key = process.env.OPENWEATHER_KEY;
-    if (!key) throw new Error('OPENWEATHER_KEY not configured');
+    if (!key) {
+      return res
+        .status(503)
+        .json({ error: 'OpenWeather API key not configured' });
+    }
     const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${key}`;
     const response = await axios.get(url);
     const data = response.data;
@@ -209,7 +213,11 @@ app.get('/astrology/forecast', async (req, res) => {
   try {
     const sign = req.query.sign || 'aries';
     const key = process.env.ASTROLOGY_KEY;
-    if (!key) throw new Error('ASTROLOGY_KEY not configured');
+    if (!key) {
+      return res
+        .status(503)
+        .json({ error: 'Astrology API key not configured' });
+    }
     const url = `https://api.freeastrologyapi.com/forecast?sign=${sign}&apikey=${key}`;
     const response = await axios.get(url);
     res.json({ forecast: response.data.forecast });
@@ -218,20 +226,11 @@ app.get('/astrology/forecast', async (req, res) => {
   }
 });
 
-app.get('/time/current', (req, res) => {
-  res.json({ time: new Date().toISOString() });
+const app = require('./src/app');
+
+const PORT = process.env.PORT || 7860;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
-app.get('/data/weather', (req, res) => {
-  res.json({ weather: 'clear sky', temperature: 20.5 });
-});
-
-app.get('/data/astrology', (req, res) => {
-  res.json({ forecast: 'Today is a good day for new beginnings.' });
-});
-
-module.exports = app;
-if (require.main === module) {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-}
