@@ -108,9 +108,9 @@ function displayErrors() {
         const contentDiv = document.createElement('div');
         contentDiv.className = 'flex-1';
         
-        const timeStamp = document.createElement('span');
-        timeStamp.className = 'font-semibold';
-        timeStamp.textContent = `[${error.timestamp}]`;
+        const timestamp = document.createElement('span');
+        timestamp.className = 'font-semibold';
+        timestamp.textContent = `[${error.timestamp}]`;
         
         const messageSpan = document.createElement('span');
         messageSpan.className = 'ml-2';
