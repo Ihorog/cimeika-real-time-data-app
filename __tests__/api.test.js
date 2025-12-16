@@ -96,22 +96,26 @@ describe('Cimeika API', () => {
     });
   });
 
-  it('proxies to Hugging Face Space', async () => {
-    const proxyVars = [
-      'HTTP_PROXY',
-      'http_proxy',
-      'HTTPS_PROXY',
-      'https_proxy',
-      'npm_config_http_proxy',
-      'npm_config_https_proxy'
-    ];
-    const proxyBackup = {};
-    proxyVars.forEach(v => {
-      proxyBackup[v] = process.env[v];
-      delete process.env[v];
-    });
+  it('weather endpoint returns 503 when api key missing', async () => {
+    const originalKey = process.env.OPENWEATHER_KEY;
+    delete process.env.OPENWEATHER_KEY;
+    const res = await request(app).get('/weather/current');
+    expect(res.status).toBe(503);
+    expect(res.body.error).toMatch(/key not configured/i);
+    process.env.OPENWEATHER_KEY = originalKey;
+  });
 
-    nock('https://ihorog-cimeika-api.hf.space')
+  it('astrology endpoint returns 503 when api key missing', async () => {
+    const originalKey = process.env.ASTROLOGY_KEY;
+    delete process.env.ASTROLOGY_KEY;
+    const res = await request(app).get('/astrology/forecast');
+    expect(res.status).toBe(503);
+    expect(res.body.error).toMatch(/key not configured/i);
+    process.env.ASTROLOGY_KEY = originalKey;
+  });
+
+  it('chat completion without prompt returns 400', async () => {
+    const res = await request(app)
       .post('/chat/completion')
       .reply(200, { choices: [{ text: 'space-response' }] });
 
