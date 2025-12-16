@@ -5,7 +5,7 @@
 #  ПЕРЕД ЗАПУСКОМ:
 #    export HF_WRITE_TOKEN="<ваш HF write token>"
 #    export OPENAI_API_KEY="<ваш OpenAI key>"
-#    # (необов’язково) export HUGGINGFACE_TOKEN="<HF Inference API token>"
+#    # (необов’язково) export OPENWEATHER_KEY="<OpenWeather key>"
 # ============================================================
 set -euo pipefail
 
@@ -79,9 +79,7 @@ echo "🚚  Відправляю код у Space…"
 git push hf main --force
 
 # --- 6. Секрети -------------------------------------------------------------
-
-SECRETS=(OPENAI_API_KEY HF_WRITE_TOKEN HUGGINGFACE_TOKEN)
-for secret in "${SECRETS[@]}"; do
+for secret in OPENAI_API_KEY HF_WRITE_TOKEN OPENWEATHER_KEY; do
   if [[ -n "${!secret:-}" ]]; then
     huggingface-cli repo secret set -r "$HF_SPACE_FULL" "$secret" "${!secret}" >/dev/null
   fi
