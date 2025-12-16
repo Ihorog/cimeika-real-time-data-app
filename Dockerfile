@@ -8,4 +8,4 @@ COPY . .
 ARG PORT=7860
 ENV PORT=${PORT}
 EXPOSE ${PORT}
-CMD ["node", "src/app.js"]
+CMD ["node", "server.js"]

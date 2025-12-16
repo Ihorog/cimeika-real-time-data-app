@@ -1,21 +1,23 @@
 const express = require('express');
 const path = require('path');
-const axios = require('axios');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
-require('dotenv').config();
 
 const requireHfToken = require('./middleware/requireHfToken');
 const authRouter = require('./routes/auth');
 const componentsRouter = require('./routes/components');
 const dataRouter = require('./routes/data');
 const realtimeRouter = require('./routes/realtime');
+const huggingfaceCompletion = require('./routes/huggingface');
+const hfSpaceProxy = require('./routes/hfSpaceProxy');
+const apiV1Router = require('./routes/api/v1');
 
-const DEFAULT_CITY = process.env.DEFAULT_CITY || 'London';
-const DEFAULT_SIGN = process.env.DEFAULT_SIGN || 'aries';
+const DEFAULT_CITY = config.defaultCity;
+const DEFAULT_SIGN = config.defaultSign;
 
 const app = express();
 const swaggerDocument = YAML.load(path.join(__dirname, '..', 'cimeika-api.yaml'));
+const swaggerJsonDocument = require('../swagger.json');
 // Parse JSON request bodies
 app.use(express.json());
 
@@ -25,6 +27,19 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 // Root path serves index.html for convenience
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+});
+
+// Lightweight service health probe
+app.get('/health', (req, res) => {
+  const baseUrl = `${req.protocol}://${req.get('host')}`;
+
+  res.json({
+    status: 'ok',
+    service: 'cimeika-api',
+    base_url: baseUrl,
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Endpoint to expose config values for client
@@ -44,6 +59,7 @@ app.get('/openapi', (req, res) => {
 
 // Interactive API docs
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerJsonDocument));
 
 // Chat completion endpoint (mock)
 app.post('/chat/completion', (req, res) => {
@@ -102,12 +118,9 @@ app.post('/ai/huggingface/completion', async (req, res) => {
 app.use('/auth', authRouter);
 app.use('/components', componentsRouter);
 app.use('/data', dataRouter);
+app.use('/api/v1', apiV1Router);
 app.use('/', realtimeRouter);
 
 app.use((req, res) => res.status(404).json({ error: 'not found' }));
 
 module.exports = app;
-  if (require.main === module) {
-    const PORT = process.env.PORT || 7860;
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-  }

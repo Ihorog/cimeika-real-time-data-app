@@ -1,6 +1,10 @@
+process.env.HUGGINGFACE_TOKEN = process.env.HUGGINGFACE_TOKEN || 'test-token';
+
 const request = require('supertest');
+jest.mock('../src/routes/huggingface');
 const app = require('../src/app');
 const nock = require('nock');
+const { stopCacheSweep } = require('../src/routes/realtime');
 const defaultCity = process.env.DEFAULT_CITY || 'London';
 const defaultSign = process.env.DEFAULT_SIGN || 'aries';
 
@@ -20,6 +24,7 @@ describe('Cimeika API', () => {
   });
 
   afterAll(() => {
+    stopCacheSweep();
     nock.cleanAll();
   });
 
@@ -47,16 +52,80 @@ describe('Cimeika API', () => {
     expect(res.body.error).toBeDefined();
   });
 
-  it('huggingface completion without token returns 503', async () => {
+  it('huggingface completion with token returns 200', async () => {
     const original = process.env.HUGGINGFACE_TOKEN;
-    delete process.env.HUGGINGFACE_TOKEN;
-    const res = await request(app)
+    process.env.HUGGINGFACE_TOKEN = 'test-token';
+
+    const proxyVars = [
+      'HTTP_PROXY',
+      'http_proxy',
+      'HTTPS_PROXY',
+      'https_proxy',
+      'npm_config_http_proxy',
+      'npm_config_https_proxy'
+    ];
+    const proxyBackup = {};
+    proxyVars.forEach(v => {
+      proxyBackup[v] = process.env[v];
+      delete process.env[v];
+    });
+
+    const express = require('express');
+    const requireHfToken = require('../src/middleware/requireHfToken');
+    const hfRoute = jest.requireActual('../src/routes/huggingface');
+    const testApp = express();
+    testApp.use(express.json());
+    testApp.post('/ai/huggingface/completion', requireHfToken, hfRoute);
+
+    nock('https://api-inference.huggingface.co')
+      .post('/models/gpt2')
+      .reply(200, { generated_text: 'mocked' });
+
+    const res = await request(testApp)
       .post('/ai/huggingface/completion')
       .send({ prompt: 'Hello' });
-    expect(res.status).toBe(503);
-    expect(res.body.error).toMatch(/HUGGINGFACE_TOKEN/);
+
+    expect(res.status).toBe(200);
+    expect(res.body.choices[0].text).toBe('mocked');
+
     if (original) process.env.HUGGINGFACE_TOKEN = original;
     else delete process.env.HUGGINGFACE_TOKEN;
+    proxyVars.forEach(v => {
+      if (proxyBackup[v] !== undefined) process.env[v] = proxyBackup[v];
+      else delete process.env[v];
+    });
+  });
+
+  it('proxies to Hugging Face Space', async () => {
+    const proxyVars = [
+      'HTTP_PROXY',
+      'http_proxy',
+      'HTTPS_PROXY',
+      'https_proxy',
+      'npm_config_http_proxy',
+      'npm_config_https_proxy'
+    ];
+    const proxyBackup = {};
+    proxyVars.forEach(v => {
+      proxyBackup[v] = process.env[v];
+      delete process.env[v];
+    });
+
+    nock('https://ihorog-cimeika-api.hf.space')
+      .post('/chat/completion')
+      .reply(200, { choices: [{ text: 'space-response' }] });
+
+    const res = await request(app)
+      .post('/ai/hf-space/completion')
+      .send({ prompt: 'Test space' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.choices[0].text).toBe('space-response');
+
+    proxyVars.forEach(v => {
+      if (proxyBackup[v] !== undefined) process.env[v] = proxyBackup[v];
+      else delete process.env[v];
+    });
   });
 
   it('create component without name returns 400', async () => {
