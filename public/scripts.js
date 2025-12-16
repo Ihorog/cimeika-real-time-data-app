@@ -1,5 +1,5 @@
 // Configuration constants
-const MAX_RETRIES = 2;
+const MAX_RETRIES = 3; // Total attempts: 1 initial + 2 retries
 const INITIAL_RETRY_DELAY = 1000; // 1 second
 
 let config = {};
@@ -157,7 +157,7 @@ async function retryFetch(url, options = {}, retries = MAX_RETRIES) {
             if (attempt >= retries) {
                 throw err;
             }
-            // Exponential backoff: wait 1s, 2s, 4s, etc.
+            // Exponential backoff: 1st retry waits 1s, 2nd waits 2s, 3rd waits 4s, etc.
             const delay = INITIAL_RETRY_DELAY * Math.pow(2, attempt - 1);
             await new Promise(resolve => setTimeout(resolve, delay));
         }
@@ -179,7 +179,7 @@ async function loadComponent(componentPath, containerSelector) {
         hideError();
     } catch (error) {
         console.error(error);
-        showError(`Failed to load component: ${error.message}. Please check your internet connection and try reloading.`);
+        showError(`Failed to load component: ${error.message}. Please refresh the page to try again.`);
         throw error;
     }
 }
