@@ -1,6 +1,6 @@
 // Configuration constants
-const MAX_RETRY_ATTEMPTS = 2; // Configurable retry count (total attempts: 2)
-const INITIAL_RETRY_DELAY = 1000; // Initial delay in ms for exponential backoff (1 second)
+const MAX_RETRIES = 3; // Total attempts: 3 (1 initial + 2 retries)
+const INITIAL_RETRY_DELAY = 1000; // 1 second
 
 let config = {};
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
@@ -46,6 +46,23 @@ document.addEventListener('DOMContentLoaded', async function() {
     setupRealTimeData();
 });
 
+// Global error container functions
+function showGlobalError(message) {
+    const container = document.getElementById('error-container');
+    if (container) {
+        container.textContent = message;
+        container.classList.remove('hidden');
+    }
+}
+
+function hideGlobalError() {
+    const container = document.getElementById('error-container');
+    if (container) {
+        container.textContent = '';
+        container.classList.add('hidden');
+    }
+}
+
 function sanitizeHTML(htmlString) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlString, 'text/html');
@@ -81,21 +98,21 @@ function renderSanitizedHTML(container, htmlString) {
 }
 
 // Retry fetch with exponential backoff
-async function retryFetch(url, options = {}, maxAttempts = MAX_RETRY_ATTEMPTS) {
+async function retryFetch(url, options = {}, maxAttempts = MAX_RETRIES) {
     let lastError;
     
-    for (let attempt = 0; attempt <= maxAttempts; attempt++) {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
         try {
             const response = await fetch(url, options);
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                throw new Error(`HTTP ${response.status}: ${response.statusText || 'Request failed'}`);
             }
             return response;
         } catch (error) {
             lastError = error;
             
             // Don't retry on the last attempt
-            if (attempt < maxAttempts) {
+            if (attempt < maxAttempts - 1) {
                 // Exponential backoff: delay = INITIAL_RETRY_DELAY * 2^attempt
                 const delay = INITIAL_RETRY_DELAY * Math.pow(2, attempt);
                 console.warn(`Fetch attempt ${attempt + 1} failed, retrying in ${delay}ms...`, error);
@@ -208,10 +225,7 @@ async function loadPage(url) {
         mainContent.replaceChildren(loading);
         const response = await retryFetch(url);
         const data = await response.text();
-        const globalErrorContainer = document.getElementById('error-container');
-        if (globalErrorContainer) {
-            hideError(globalErrorContainer);
-        }
+        hideGlobalError();
         renderSanitizedHTML(mainContent, data);
     } catch (error) {
         console.error('Error loading page:', error);
