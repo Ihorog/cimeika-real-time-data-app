@@ -1,9 +1,3 @@
-const express = require('express');
-const path = require('path');
-const bodyParser = require('body-parser');
-const axios = require('axios');
-const swaggerUi = require('swagger-ui-express');
-const YAML = require('yamljs');
 require('dotenv').config();
 const app = express();
 const swaggerDocument = YAML.load(path.join(__dirname, 'cimeika-api.yaml'));
@@ -227,20 +221,11 @@ app.get('/astrology/forecast', async (req, res) => {
   }
 });
 
-app.get('/time/current', (req, res) => {
-  res.json({ time: new Date().toISOString() });
+const app = require('./src/app');
+
+const PORT = process.env.PORT || 7860;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
-app.get('/data/weather', (req, res) => {
-  res.json({ weather: 'clear sky', temperature: 20.5 });
-});
-
-app.get('/data/astrology', (req, res) => {
-  res.json({ forecast: 'Today is a good day for new beginnings.' });
-});
-
-module.exports = app;
-if (require.main === module) {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-}
