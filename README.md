@@ -77,9 +77,13 @@ To set up the Cimeika project locally, follow these steps:
 
 The project depends on the following packages (as specified in `package.json`):
 
-- `express`: "^4.18.2" (for server handling)
+- `@huggingface/inference`: "^4.5.1" (for Hugging Face AI completions)
 - `axios`: "^1.10.0" (for making HTTP requests)
+- `body-parser`: "^1.20.2" (for parsing request bodies)
 - `dotenv`: "^16.3.1" (for loading environment variables)
+- `express`: "^4.18.2" (for server handling)
+- `swagger-ui-express`: "^5.0.1" (for API documentation UI)
+- `yamljs`: "^0.3.0" (for parsing OpenAPI YAML specs)
 
 Additionally, the CSS framework utilized is [Tailwind CSS](https://tailwindcss.com/).
 
