@@ -147,14 +147,14 @@ function cleanupCache() {
 async function retryFetch(url, options = {}, retries = MAX_RETRIES) {
     let attempt = 0;
     
-    while (attempt <= retries) {
+    while (attempt < retries) {
         try {
             const response = await fetch(url, options);
             if (!response.ok) throw new Error(response.statusText);
             return response;
         } catch (err) {
             attempt++;
-            if (attempt > retries) {
+            if (attempt >= retries) {
                 throw err;
             }
             // Exponential backoff: wait 1s, 2s, 4s, etc.
@@ -201,10 +201,12 @@ async function loadPage(url) {
         renderSanitizedHTML(mainContent, data);
     } catch (error) {
         console.error('Error loading page:', error);
-        showError(`Failed to load page: ${error.message}. Please check your internet connection and try again.`);
         
         const errorWrapper = document.createElement('div');
         errorWrapper.className = 'error-message';
+
+        const errorText = document.createElement('p');
+        errorText.textContent = `Failed to load page: ${error.message}. Please check your internet connection and try again.`;
 
         const retryButton = document.createElement('button');
         retryButton.className = 'mt-4 bg-gray-800 text-white px-4 py-2 rounded';
@@ -216,7 +218,7 @@ async function loadPage(url) {
         backButton.textContent = 'Return Home';
         backButton.addEventListener('click', () => loadPage('pages/home.html'));
 
-        errorWrapper.append(retryButton, backButton);
+        errorWrapper.append(errorText, retryButton, backButton);
         mainContent.replaceChildren(errorWrapper);
     }
 }
