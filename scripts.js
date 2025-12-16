@@ -19,26 +19,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Error queue to handle multiple errors
 const errorQueue = [];
-let errorDisplayTimeout = null;
 
 function showError(message) {
     const container = document.getElementById('error-container');
     if (!container) return;
     
-    // Add error to queue with timestamp
+    // Sanitize the message to prevent XSS
+    const sanitizedMessage = String(message).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    
+    // Add error to queue with timestamp and unique ID
     const timestamp = new Date().toLocaleTimeString();
-    errorQueue.push({ message, timestamp });
+    const errorId = Date.now() + Math.random(); // Unique ID for this error
+    
+    const errorObj = { 
+        message: sanitizedMessage, 
+        timestamp, 
+        id: errorId 
+    };
+    
+    errorQueue.push(errorObj);
     
     // Display the error
     displayErrors();
     
-    // Auto-dismiss after 10 seconds if not manually dismissed
-    if (errorDisplayTimeout) {
-        clearTimeout(errorDisplayTimeout);
-    }
-    errorDisplayTimeout = setTimeout(() => {
-        if (errorQueue.length > 0) {
-            errorQueue.shift(); // Remove oldest error
+    // Auto-dismiss this specific error after 10 seconds
+    setTimeout(() => {
+        const index = errorQueue.findIndex(e => e.id === errorId);
+        if (index !== -1) {
+            errorQueue.splice(index, 1);
             if (errorQueue.length > 0) {
                 displayErrors();
             } else {
@@ -55,26 +63,41 @@ function displayErrors() {
     container.innerHTML = '';
     container.classList.remove('hidden');
     
-    errorQueue.forEach((error, index) => {
+    errorQueue.forEach((error) => {
         const errorDiv = document.createElement('div');
         errorDiv.className = 'flex items-center justify-between py-2 px-4 border-b border-red-200 last:border-b-0';
-        errorDiv.innerHTML = `
-            <div class="flex-1">
-                <span class="font-semibold">[${error.timestamp}]</span>
-                <span class="ml-2">${error.message}</span>
-            </div>
-            <button 
-                onclick="dismissError(${index})" 
-                class="ml-4 text-red-600 hover:text-red-800 font-bold"
-                aria-label="Dismiss error"
-            >×</button>
-        `;
+        
+        // Create text content safely
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'flex-1';
+        
+        const timeStamp = document.createElement('span');
+        timeStamp.className = 'font-semibold';
+        timeStamp.textContent = `[${error.timestamp}]`;
+        
+        const messageSpan = document.createElement('span');
+        messageSpan.className = 'ml-2';
+        messageSpan.innerHTML = error.message; // Already sanitized in showError
+        
+        contentDiv.appendChild(timeStamp);
+        contentDiv.appendChild(messageSpan);
+        
+        // Create dismiss button
+        const dismissBtn = document.createElement('button');
+        dismissBtn.className = 'ml-4 text-red-600 hover:text-red-800 font-bold';
+        dismissBtn.setAttribute('aria-label', 'Dismiss error');
+        dismissBtn.textContent = '×';
+        dismissBtn.onclick = () => dismissError(error.id);
+        
+        errorDiv.appendChild(contentDiv);
+        errorDiv.appendChild(dismissBtn);
         container.appendChild(errorDiv);
     });
 }
 
-function dismissError(index) {
-    if (index >= 0 && index < errorQueue.length) {
+function dismissError(errorId) {
+    const index = errorQueue.findIndex(e => e.id === errorId);
+    if (index !== -1) {
         errorQueue.splice(index, 1);
         if (errorQueue.length > 0) {
             displayErrors();
@@ -91,10 +114,6 @@ function hideError() {
         container.classList.add('hidden');
     }
     errorQueue.length = 0; // Clear the queue
-    if (errorDisplayTimeout) {
-        clearTimeout(errorDisplayTimeout);
-        errorDisplayTimeout = null;
-    }
 }
 
 // Make dismissError available globally
