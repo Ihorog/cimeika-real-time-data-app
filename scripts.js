@@ -75,16 +75,28 @@ async function loadPage(url) {
     } catch (error) {
         console.error('Error loading page:', error);
         showError(`Failed to load page: ${error.message}. Check your internet connection and try again.`);
-        mainContent.innerHTML = `
-            <div class="error-message">
-                <p>Failed to load page: ${error.message}</p>
-                <button onclick="loadPage('${url}')" class="mt-4 bg-gray-800 text-white px-4 py-2 rounded">
-                    Retry
-                </button>
-                <button onclick="loadPage('pages/home.html')" class="mt-4 bg-gray-800 text-white px-4 py-2 rounded ml-2">
-                    Return Home
-                </button>
-            </div>`;
+        
+        mainContent.innerHTML = ''; // Clear previous content
+        const errorWrapper = document.createElement('div');
+        errorWrapper.className = 'error-message';
+
+        const errorMessage = document.createElement('p');
+        errorMessage.textContent = `Failed to load page: ${error.message}`;
+        errorWrapper.appendChild(errorMessage);
+
+        const retryButton = document.createElement('button');
+        retryButton.textContent = 'Retry';
+        retryButton.className = 'mt-4 bg-gray-800 text-white px-4 py-2 rounded';
+        retryButton.addEventListener('click', () => loadPage(url));
+        errorWrapper.appendChild(retryButton);
+
+        const homeButton = document.createElement('button');
+        homeButton.textContent = 'Return Home';
+        homeButton.className = 'mt-4 bg-gray-800 text-white px-4 py-2 rounded ml-2';
+        homeButton.addEventListener('click', () => loadPage('pages/home.html'));
+        errorWrapper.appendChild(homeButton);
+
+        mainContent.appendChild(errorWrapper);
     }
 }
 
