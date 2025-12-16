@@ -23,7 +23,7 @@ done
 
 # huggingface-cli will be installed below; ensure it's available
 if ! command -v huggingface-cli >/dev/null 2>&1; then
-  echo "ℹ️  Installing huggingface_hub..."
+  echo "ℹ️  Встановлюю huggingface_hub..."
   python3 -m pip install --quiet --upgrade huggingface_hub >/dev/null
 fi
 
@@ -54,6 +54,13 @@ if [[ ! -d .git ]]; then
   cd "$REPO_DIR"
 fi
 REPO_DIR="$(basename "$PWD")"
+
+# ensure Dockerfile exists for the Docker-based Space
+DOCKERFILE="Dockerfile"
+if [[ ! -f "$DOCKERFILE" ]]; then
+  echo "❌  $DOCKERFILE не знайдено в $(pwd)."
+  exit 1
+fi
 
 echo "📥  Репозиторій готовий: $REPO_DIR"
 
@@ -109,5 +116,4 @@ else
   echo "⚠️  Тести не знайдено, пропускаю pytest."
 fi
 
-echo "\n🚀  Успіх! API працює: $SPACE_API_URL"
-
+printf "\n🚀  Успіх! API працює: %s\n" "$SPACE_API_URL"

@@ -1,0 +1,27 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+    - run: npm install
+    - name: Run Adaptive Tests
+      run: npm test -- __tests__/api_v1_orchestrator.test.js --runInBand
+    - run: npm test
+    - name: Show orchestration log tail
+      run: cat data/orchestration_log.json | tail -n 3
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
