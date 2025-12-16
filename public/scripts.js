@@ -107,10 +107,11 @@ async function retryFetch(url, options = {}, maxAttempts = MAX_RETRY_ATTEMPTS) {
 }
 
 // Error display management
+// Note: showError automatically clears previous errors before displaying new ones
 function showError(container, message) {
     if (!container) return;
     
-    // Remove any existing error messages
+    // Remove any existing error messages to avoid duplicates
     hideError(container);
     
     const errorBox = document.createElement('div');
@@ -128,8 +129,7 @@ function hideError(container) {
 }
 
 async function fetchConfig() {
-    const res = await fetch('/config');
-    if (!res.ok) throw new Error('Failed to load config');
+    const res = await retryFetch('/config');
     return res.json();
 }
 
@@ -188,11 +188,8 @@ async function loadComponent(componentPath, containerSelector) {
     } catch (error) {
         console.error(error);
         if (container) {
-            const errorBox = document.createElement('div');
-            errorBox.className = 'error-message';
-            errorBox.setAttribute('data-error', 'true');
-            errorBox.textContent = `Failed to load component: ${error.message}`;
-            container.replaceChildren(errorBox);
+            container.replaceChildren(); // Clear existing content
+            showError(container, `Failed to load component: ${error.message}`);
         }
         throw error;
     }
