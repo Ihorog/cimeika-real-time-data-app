@@ -17,21 +17,88 @@ document.addEventListener('DOMContentLoaded', function() {
     setupRealTimeData();
 });
 
+// Error queue to handle multiple errors
+const errorQueue = [];
+let errorDisplayTimeout = null;
+
 function showError(message) {
     const container = document.getElementById('error-container');
-    if (container) {
-        container.textContent = message;
-        container.classList.remove('hidden');
+    if (!container) return;
+    
+    // Add error to queue with timestamp
+    const timestamp = new Date().toLocaleTimeString();
+    errorQueue.push({ message, timestamp });
+    
+    // Display the error
+    displayErrors();
+    
+    // Auto-dismiss after 10 seconds if not manually dismissed
+    if (errorDisplayTimeout) {
+        clearTimeout(errorDisplayTimeout);
+    }
+    errorDisplayTimeout = setTimeout(() => {
+        if (errorQueue.length > 0) {
+            errorQueue.shift(); // Remove oldest error
+            if (errorQueue.length > 0) {
+                displayErrors();
+            } else {
+                hideError();
+            }
+        }
+    }, 10000);
+}
+
+function displayErrors() {
+    const container = document.getElementById('error-container');
+    if (!container || errorQueue.length === 0) return;
+    
+    container.innerHTML = '';
+    container.classList.remove('hidden');
+    
+    errorQueue.forEach((error, index) => {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'flex items-center justify-between py-2 px-4 border-b border-red-200 last:border-b-0';
+        errorDiv.innerHTML = `
+            <div class="flex-1">
+                <span class="font-semibold">[${error.timestamp}]</span>
+                <span class="ml-2">${error.message}</span>
+            </div>
+            <button 
+                onclick="dismissError(${index})" 
+                class="ml-4 text-red-600 hover:text-red-800 font-bold"
+                aria-label="Dismiss error"
+            >×</button>
+        `;
+        container.appendChild(errorDiv);
+    });
+}
+
+function dismissError(index) {
+    if (index >= 0 && index < errorQueue.length) {
+        errorQueue.splice(index, 1);
+        if (errorQueue.length > 0) {
+            displayErrors();
+        } else {
+            hideError();
+        }
     }
 }
 
 function hideError() {
     const container = document.getElementById('error-container');
     if (container) {
-        container.textContent = '';
+        container.innerHTML = '';
         container.classList.add('hidden');
     }
+    errorQueue.length = 0; // Clear the queue
+    if (errorDisplayTimeout) {
+        clearTimeout(errorDisplayTimeout);
+        errorDisplayTimeout = null;
+    }
 }
+
+// Make dismissError available globally
+window.dismissError = dismissError;
 
 async function retryFetch(url, options = {}, retries = 2) {
     try {
