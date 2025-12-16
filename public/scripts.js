@@ -1,3 +1,7 @@
+// Configuration constants
+const MAX_RETRIES = 3; // Total attempts: 3 (1 initial + 2 retries)
+const INITIAL_RETRY_DELAY = 1000; // 1 second
+
 let config = {};
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const MAX_RETRY_ATTEMPTS = 2; // Configurable retry count
@@ -43,6 +47,22 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Start real-time data updates
     setupRealTimeData();
 });
+
+function showError(message) {
+    const container = document.getElementById('error-container');
+    if (container) {
+        container.textContent = message;
+        container.classList.remove('hidden');
+    }
+}
+
+function hideError() {
+    const container = document.getElementById('error-container');
+    if (container) {
+        container.textContent = '';
+        container.classList.add('hidden');
+    }
+}
 
 function sanitizeHTML(htmlString) {
     const parser = new DOMParser();
@@ -175,6 +195,30 @@ function cleanupCache() {
     }
 }
 
+async function retryFetch(url, options = {}, retries = MAX_RETRIES) {
+    if (retries < 1) {
+        throw new Error('retries must be at least 1');
+    }
+    
+    let attempt = 0;
+    
+    while (attempt < retries) {
+        try {
+            const response = await fetch(url, options);
+            if (!response.ok) throw new Error(response.statusText);
+            return response;
+        } catch (err) {
+            attempt++;
+            if (attempt >= retries) {
+                throw err;
+            }
+            // Exponential backoff: 1st retry after 1s, 2nd retry after 2s
+            const delay = INITIAL_RETRY_DELAY * Math.pow(2, attempt - 1);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+}
+
 // Component loader
 async function loadComponent(componentPath, containerSelector) {
     const container = document.querySelector(containerSelector);
@@ -198,6 +242,8 @@ async function loadComponent(componentPath, containerSelector) {
 // Page loader
 async function loadPage(url) {
     const mainContent = document.querySelector('main');
+    if (!mainContent) return;
+
     try {
         const loading = document.createElement('div');
         loading.className = 'loading text-center py-12';
@@ -205,23 +251,30 @@ async function loadPage(url) {
         mainContent.replaceChildren(loading);
         const response = await retryFetch(url);
         const data = await response.text();
+        hideError();
         renderSanitizedHTML(mainContent, data);
         hideError(mainContent); // Clear any previous errors on success
     } catch (error) {
         console.error('Error loading page:', error);
+        
         const errorWrapper = document.createElement('div');
         errorWrapper.className = 'error-message';
         errorWrapper.setAttribute('data-error', 'true');
 
         const errorText = document.createElement('p');
-        errorText.textContent = `Failed to load page: ${error.message}`;
+        errorText.textContent = `Failed to load page: ${error.message}. Please check your internet connection and try again.`;
+
+        const retryButton = document.createElement('button');
+        retryButton.className = 'mt-4 bg-gray-800 text-white px-4 py-2 rounded';
+        retryButton.textContent = 'Retry';
+        retryButton.addEventListener('click', () => loadPage(url));
 
         const backButton = document.createElement('button');
-        backButton.className = 'mt-4 bg-gray-800 text-white px-4 py-2 rounded';
+        backButton.className = 'mt-4 bg-gray-800 text-white px-4 py-2 rounded ml-2';
         backButton.textContent = 'Return Home';
         backButton.addEventListener('click', () => loadPage('pages/home.html'));
 
-        errorWrapper.append(errorText, backButton);
+        errorWrapper.append(errorText, retryButton, backButton);
         mainContent.replaceChildren(errorWrapper);
     }
 }
@@ -296,7 +349,7 @@ async function fetchAndRender(endpoint, params, elementId, formatter, cacheKey) 
             url.searchParams.append(key, value)
         );
 
-        const response = await retryFetch(url.toString());
+        const response = await retryFetch(url);
         const data = await response.json();
         element.textContent = formatter(data);
         element.classList.remove('loading', 'error-message');
