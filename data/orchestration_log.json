@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "timestamp": "2025-12-16T14:59:58.464Z",
+    "loadIndex": 0,
+    "redirectedTo": "ci",
+    "status": "stable"
+  }
+]

@@ -114,8 +114,22 @@ describe('Cimeika API', () => {
     process.env.ASTROLOGY_KEY = originalKey;
   });
 
-  it('chat completion without prompt returns 400', async () => {
-    const res = await request(app)
+  it('hf-space proxy completion', async () => {
+    const proxyVars = [
+      'HTTP_PROXY',
+      'http_proxy',
+      'HTTPS_PROXY',
+      'https_proxy',
+      'npm_config_http_proxy',
+      'npm_config_https_proxy'
+    ];
+    const proxyBackup = {};
+    proxyVars.forEach(v => {
+      proxyBackup[v] = process.env[v];
+      delete process.env[v];
+    });
+
+    nock('https://ihorog-cimeika-api.hf.space')
       .post('/chat/completion')
       .reply(200, { choices: [{ text: 'space-response' }] });
 
