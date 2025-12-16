@@ -54,7 +54,7 @@ async function loadComponent(componentPath, containerSelector) {
         document.querySelector(containerSelector).innerHTML = html;
         hideError();
     } catch (error) {
-        console.error('Failed to load component:', error);
+        console.error('Failed to load component:', componentPath, error);
         showError('Failed to load component. Check your internet connection and try again.');
         document.querySelector(containerSelector).innerHTML =
             `<div class="error-message">Failed to load component. Please try reloading.</div>`;
