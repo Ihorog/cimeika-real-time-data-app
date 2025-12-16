@@ -173,19 +173,13 @@ async function loadComponent(componentPath, containerSelector) {
     }
 
     try {
-        const response = await retryFetch(componentPath, {}, MAX_RETRIES);
+        const response = await retryFetch(componentPath);
         const html = await response.text();
         renderSanitizedHTML(container, html);
         hideError();
     } catch (error) {
         console.error(error);
-        showError(`Failed to load component: ${error.message}. Check your internet connection and try again.`);
-        
-        const errorBox = document.createElement('div');
-        errorBox.className = 'error-message';
-        errorBox.textContent = `Failed to load component. Please try reloading.`;
-        container.replaceChildren(errorBox);
-        
+        showError(`Failed to load component: ${error.message}. Please check your internet connection and try reloading.`);
         throw error;
     }
 }
@@ -201,19 +195,16 @@ async function loadPage(url) {
         loading.textContent = 'Loading...';
         mainContent.replaceChildren(loading);
 
-        const response = await retryFetch(url, {}, MAX_RETRIES);
+        const response = await retryFetch(url);
         const data = await response.text();
         hideError();
         renderSanitizedHTML(mainContent, data);
     } catch (error) {
         console.error('Error loading page:', error);
-        showError(`Failed to load page: ${error.message}. Check your internet connection and try again.`);
+        showError(`Failed to load page: ${error.message}. Please check your internet connection and try again.`);
         
         const errorWrapper = document.createElement('div');
         errorWrapper.className = 'error-message';
-
-        const errorText = document.createElement('p');
-        errorText.textContent = `Failed to load page: ${error.message}`;
 
         const retryButton = document.createElement('button');
         retryButton.className = 'mt-4 bg-gray-800 text-white px-4 py-2 rounded';
@@ -225,7 +216,7 @@ async function loadPage(url) {
         backButton.textContent = 'Return Home';
         backButton.addEventListener('click', () => loadPage('pages/home.html'));
 
-        errorWrapper.append(errorText, retryButton, backButton);
+        errorWrapper.append(retryButton, backButton);
         mainContent.replaceChildren(errorWrapper);
     }
 }
