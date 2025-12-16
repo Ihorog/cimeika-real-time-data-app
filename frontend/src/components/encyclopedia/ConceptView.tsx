@@ -6,7 +6,14 @@ type Concept = {
   tags?: string[];
   links?: { label: string; href: string }[];
 };
+type ConceptViewProps = {
+  concept: Concept;
+  conceptMap: Record<string, Concept>;
+};
 
+export default function ConceptView({ concept, conceptMap }: ConceptViewProps) {
+  // ...your component code
+}
 export default function ConceptView({
   concept,
 }: {
