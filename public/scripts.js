@@ -1,11 +1,9 @@
 // Configuration constants
-const MAX_RETRIES = 3; // Total attempts: 3 (1 initial + 2 retries)
-const INITIAL_RETRY_DELAY = 1000; // 1 second
+const MAX_RETRY_ATTEMPTS = 2; // Configurable retry count (total attempts: 2)
+const INITIAL_RETRY_DELAY = 1000; // Initial delay in ms for exponential backoff (1 second)
 
 let config = {};
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-const MAX_RETRY_ATTEMPTS = 2; // Configurable retry count
-const INITIAL_RETRY_DELAY = 1000; // Initial delay in ms for exponential backoff
 
 const storageAvailable = (() => {
     try {
@@ -47,22 +45,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Start real-time data updates
     setupRealTimeData();
 });
-
-function showError(message) {
-    const container = document.getElementById('error-container');
-    if (container) {
-        container.textContent = message;
-        container.classList.remove('hidden');
-    }
-}
-
-function hideError() {
-    const container = document.getElementById('error-container');
-    if (container) {
-        container.textContent = '';
-        container.classList.add('hidden');
-    }
-}
 
 function sanitizeHTML(htmlString) {
     const parser = new DOMParser();
@@ -195,30 +177,6 @@ function cleanupCache() {
     }
 }
 
-async function retryFetch(url, options = {}, retries = MAX_RETRIES) {
-    if (retries < 1) {
-        throw new Error('retries must be at least 1');
-    }
-    
-    let attempt = 0;
-    
-    while (attempt < retries) {
-        try {
-            const response = await fetch(url, options);
-            if (!response.ok) throw new Error(response.statusText);
-            return response;
-        } catch (err) {
-            attempt++;
-            if (attempt >= retries) {
-                throw err;
-            }
-            // Exponential backoff: 1st retry after 1s, 2nd retry after 2s
-            const delay = INITIAL_RETRY_DELAY * Math.pow(2, attempt - 1);
-            await new Promise(resolve => setTimeout(resolve, delay));
-        }
-    }
-}
-
 // Component loader
 async function loadComponent(componentPath, containerSelector) {
     const container = document.querySelector(containerSelector);
@@ -251,7 +209,10 @@ async function loadPage(url) {
         mainContent.replaceChildren(loading);
         const response = await retryFetch(url);
         const data = await response.text();
-        hideError();
+        const globalErrorContainer = document.getElementById('error-container');
+        if (globalErrorContainer) {
+            hideError(globalErrorContainer);
+        }
         renderSanitizedHTML(mainContent, data);
         hideError(mainContent); // Clear any previous errors on success
     } catch (error) {
