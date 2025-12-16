@@ -1,3 +1,38 @@
+<<<<<<< HEAD
 node_modules/
 api_keys.json
 .env
+=======
+# Ignore node modules
+node_modules/
+
+# Ignore environment files
+.env
+.env.*
+!**/.env.example
+!**/.env.local.example
+
+# Ignore API key files
+api_keys.json
+api_keys.*.json
+
+# Ignore temporary files and logs
+tmp/
+temp/
+*.tmp
+*.log
+*~
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+>>>>>>> origin/main
+__pycache__/
+*.pyc
+.history/

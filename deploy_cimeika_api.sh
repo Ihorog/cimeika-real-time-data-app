@@ -6,8 +6,11 @@
 #    export HF_WRITE_TOKEN="<ваш HF write token>"
 #    export OPENAI_API_KEY="<ваш OpenAI key>"
 #    # (необов’язково) export OPENWEATHER_KEY="<OpenWeather key>"
+<<<<<<< HEAD
 #    # (необов’язково) export ASTROLOGY_KEY="<Astrology key>"
 #    # (необов’язково) export HUGGINGFACE_TOKEN="<HF Inference API token>"
+=======
+>>>>>>> origin/main
 # ============================================================
 set -euo pipefail
 
@@ -25,7 +28,11 @@ done
 
 # huggingface-cli will be installed below; ensure it's available
 if ! command -v huggingface-cli >/dev/null 2>&1; then
+<<<<<<< HEAD
   echo "ℹ️  Installing huggingface_hub..."
+=======
+  echo "ℹ️  Встановлюю huggingface_hub..."
+>>>>>>> origin/main
   python3 -m pip install --quiet --upgrade huggingface_hub >/dev/null
 fi
 
@@ -60,7 +67,11 @@ REPO_DIR="$(basename "$PWD")"
 # ensure Dockerfile exists for the Docker-based Space
 DOCKERFILE="Dockerfile"
 if [[ ! -f "$DOCKERFILE" ]]; then
+<<<<<<< HEAD
   echo "❌  $DOCKERFILE not found in $(pwd)."
+=======
+  echo "❌  $DOCKERFILE не знайдено в $(pwd)."
+>>>>>>> origin/main
   exit 1
 fi
 
@@ -81,9 +92,13 @@ echo "🚚  Відправляю код у Space…"
 git push hf main --force
 
 # --- 6. Секрети -------------------------------------------------------------
+<<<<<<< HEAD
 
 SECRETS=(OPENAI_API_KEY HF_WRITE_TOKEN OPENWEATHER_KEY ASTROLOGY_KEY HUGGINGFACE_TOKEN)
 for secret in "${SECRETS[@]}"; do
+=======
+for secret in OPENAI_API_KEY HF_WRITE_TOKEN OPENWEATHER_KEY; do
+>>>>>>> origin/main
   if [[ -n "${!secret:-}" ]]; then
     huggingface-cli repo secret set -r "$HF_SPACE_FULL" "$secret" "${!secret}" >/dev/null
   fi
@@ -120,5 +135,9 @@ else
   echo "⚠️  Тести не знайдено, пропускаю pytest."
 fi
 
+<<<<<<< HEAD
 echo "\n🚀  Успіх! API працює: $SPACE_API_URL"
 
+=======
+printf "\n🚀  Успіх! API працює: %s\n" "$SPACE_API_URL"
+>>>>>>> origin/main
