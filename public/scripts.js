@@ -293,9 +293,7 @@ async function fetchAndRender(endpoint, params, elementId, formatter, cacheKey) 
             url.searchParams.append(key, value)
         );
 
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Request failed');
-
+        const response = await retryFetch(url);
         const data = await response.json();
         element.textContent = formatter(data);
         element.classList.remove('loading', 'error-message');
