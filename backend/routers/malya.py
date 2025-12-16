@@ -2,7 +2,7 @@ from typing import Dict
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
-from backend.utils.connectors import fetch_hf_dataset
+from backend.utils.connectors import request_creative
 from backend.utils.orchestrator import Task, TaskOrchestrator
 
 router = APIRouter(prefix="/mala")
@@ -16,12 +16,11 @@ class CreativePrompt(BaseModel):
 
 def handle_malya_task(task: Task):
     prompt = CreativePrompt(**task.payload)
-    dataset_status = fetch_hf_dataset("ci_power")
     return {
         "module": task.module,
         "idea": prompt.idea,
         "style": prompt.style,
-        "hf_dataset": dataset_status.get("status", "unknown"),
+        "status": "creative_queued",
     }
 
 
@@ -36,7 +35,6 @@ def generate_art(prompt: CreativePrompt):
         return {
             "idea": data.get("idea", prompt.idea),
             "style": data.get("style", prompt.style),
-            "hf_dataset": data.get("hf_dataset", "ok"),
         }
 
     raise HTTPException(

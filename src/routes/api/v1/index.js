@@ -26,8 +26,8 @@ function loadModules() {
 
 
     const candidates = [
-      path.join(__dirname, `${safeName}.js`),
-      path.join(staticModuleDir, `${safeName}.js`)
+      path.join(__dirname, `${moduleName}.js`),
+      path.join(staticModuleDir, `${moduleName}.js`)
     ];
 
     const modulePath = candidates.find((candidate) => fs.existsSync(candidate));
