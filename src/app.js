@@ -3,6 +3,7 @@ const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 
+const config = require('./config');
 const requireHfToken = require('./middleware/requireHfToken');
 const authRouter = require('./routes/auth');
 const componentsRouter = require('./routes/components');
