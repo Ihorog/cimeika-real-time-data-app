@@ -1,3 +1,7 @@
+// Configuration constants
+const MAX_RETRIES = 2;
+const INITIAL_RETRY_DELAY = 1000; // 1 second
+
 let config = {};
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
@@ -41,6 +45,22 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Start real-time data updates
     setupRealTimeData();
 });
+
+function showError(message) {
+    const container = document.getElementById('error-container');
+    if (container) {
+        container.textContent = message;
+        container.classList.remove('hidden');
+    }
+}
+
+function hideError() {
+    const container = document.getElementById('error-container');
+    if (container) {
+        container.textContent = '';
+        container.classList.add('hidden');
+    }
+}
 
 function sanitizeHTML(htmlString) {
     const parser = new DOMParser();
@@ -124,27 +144,48 @@ function cleanupCache() {
     }
 }
 
+async function retryFetch(url, options = {}, retries = MAX_RETRIES) {
+    let attempt = 0;
+    
+    while (attempt <= retries) {
+        try {
+            const response = await fetch(url, options);
+            if (!response.ok) throw new Error(response.statusText);
+            return response;
+        } catch (err) {
+            attempt++;
+            if (attempt > retries) {
+                throw err;
+            }
+            // Exponential backoff: wait 1s, 2s, 4s, etc.
+            const delay = INITIAL_RETRY_DELAY * Math.pow(2, attempt - 1);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+}
+
 // Component loader
 async function loadComponent(componentPath, containerSelector) {
+    const container = document.querySelector(containerSelector);
+    if (!container) {
+        console.error(`Container ${containerSelector} not found`);
+        return;
+    }
+
     try {
-        const response = await fetch(componentPath);
-        if (!response.ok) {
-            throw new Error(`Failed to load ${componentPath}: ${response.statusText}`);
-        }
+        const response = await retryFetch(componentPath, {}, MAX_RETRIES);
         const html = await response.text();
-        const container = document.querySelector(containerSelector);
-        if (container) {
-            renderSanitizedHTML(container, html);
-        }
+        renderSanitizedHTML(container, html);
+        hideError();
     } catch (error) {
         console.error(error);
-        const container = document.querySelector(containerSelector);
-        if (container) {
-            const errorBox = document.createElement('div');
-            errorBox.className = 'error-message';
-            errorBox.textContent = `Failed to load component: ${error.message}`;
-            container.replaceChildren(errorBox);
-        }
+        showError(`Failed to load component: ${error.message}. Check your internet connection and try again.`);
+        
+        const errorBox = document.createElement('div');
+        errorBox.className = 'error-message';
+        errorBox.textContent = `Failed to load component. Please try reloading.`;
+        container.replaceChildren(errorBox);
+        
         throw error;
     }
 }
@@ -152,31 +193,39 @@ async function loadComponent(componentPath, containerSelector) {
 // Page loader
 async function loadPage(url) {
     const mainContent = document.querySelector('main');
+    if (!mainContent) return;
+
     try {
         const loading = document.createElement('div');
         loading.className = 'loading text-center py-12';
         loading.textContent = 'Loading...';
         mainContent.replaceChildren(loading);
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Error: ${response.statusText}`);
-        }
+
+        const response = await retryFetch(url, {}, MAX_RETRIES);
         const data = await response.text();
+        hideError();
         renderSanitizedHTML(mainContent, data);
     } catch (error) {
         console.error('Error loading page:', error);
+        showError(`Failed to load page: ${error.message}. Check your internet connection and try again.`);
+        
         const errorWrapper = document.createElement('div');
         errorWrapper.className = 'error-message';
 
         const errorText = document.createElement('p');
         errorText.textContent = `Failed to load page: ${error.message}`;
 
+        const retryButton = document.createElement('button');
+        retryButton.className = 'mt-4 bg-gray-800 text-white px-4 py-2 rounded';
+        retryButton.textContent = 'Retry';
+        retryButton.addEventListener('click', () => loadPage(url));
+
         const backButton = document.createElement('button');
-        backButton.className = 'mt-4 bg-gray-800 text-white px-4 py-2 rounded';
+        backButton.className = 'mt-4 bg-gray-800 text-white px-4 py-2 rounded ml-2';
         backButton.textContent = 'Return Home';
         backButton.addEventListener('click', () => loadPage('pages/home.html'));
 
-        errorWrapper.append(errorText, backButton);
+        errorWrapper.append(errorText, retryButton, backButton);
         mainContent.replaceChildren(errorWrapper);
     }
 }
