@@ -76,7 +76,7 @@ async function loadPage(url) {
         showError('Failed to load page. Check your internet connection and try again.');
         mainContent.innerHTML = `
             <div class="error-message">
-                <p>Failed to load page. Please try again.</p>
+                <p>Failed to load page. Check your internet connection and try again.</p>
                 <button onclick="loadPage('${url}')" class="mt-4 bg-gray-800 text-white px-4 py-2 rounded">
                     Retry
                 </button>
