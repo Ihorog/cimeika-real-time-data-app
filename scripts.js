@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Setup error container event delegation
+    setupErrorContainerListeners();
+    
     // Load components first
     loadComponent('components/header.html', '#header-container')
         .then(() => setupMobileMenu())
@@ -17,20 +20,134 @@ document.addEventListener('DOMContentLoaded', function() {
     setupRealTimeData();
 });
 
-function showError(message) {
+// Setup event delegation for error container dismiss buttons
+function setupErrorContainerListeners() {
     const container = document.getElementById('error-container');
     if (container) {
-        container.textContent = message;
-        container.classList.remove('hidden');
+        container.addEventListener('click', function(event) {
+            if (event.target.classList.contains('dismiss-error-btn')) {
+                const errorDiv = event.target.closest('[data-error-id]');
+                if (errorDiv) {
+                    const errorId = parseInt(errorDiv.dataset.errorId, 10);
+                    dismissError(errorId);
+                }
+            }
+        });
     }
+}
+
+// Error queue to handle multiple errors
+const errorQueue = [];
+let errorIdCounter = 0;
+
+function showError(message) {
+    const container = document.getElementById('error-container');
+    if (!container) return;
+    
+    // Add error to queue with timestamp and unique ID
+    const timestamp = new Date().toLocaleTimeString();
+    const errorId = errorIdCounter + 1;
+    errorIdCounter = errorId; // Increment the counter
+    
+    const errorObj = { 
+        message: String(message), // Convert to string, textContent will be XSS-safe
+        timestamp, 
+        id: errorId,
+        timeoutId: null
+    };
+    
+    errorQueue.push(errorObj);
+    
+    // Display the error
+    displayErrors();
+    
+    // Auto-dismiss this specific error after 10 seconds
+    const timeoutId = setTimeout(() => {
+        removeErrorById(errorId);
+    }, 10000);
+    
+    // Store timeout ID so it can be cleared if manually dismissed
+    errorObj.timeoutId = timeoutId;
+}
+
+// Helper function to remove error by ID and update display
+function removeErrorById(errorId) {
+    const index = errorQueue.findIndex(e => e.id === errorId);
+    if (index !== -1) {
+        // Clear the auto-dismiss timeout if it exists
+        if (errorQueue[index].timeoutId) {
+            clearTimeout(errorQueue[index].timeoutId);
+        }
+        
+        errorQueue.splice(index, 1);
+        if (errorQueue.length > 0) {
+            displayErrors();
+        } else {
+            const container = document.getElementById('error-container');
+            if (container) {
+                container.innerHTML = '';
+                container.classList.add('hidden');
+            }
+        }
+    }
+}
+
+function displayErrors() {
+    const container = document.getElementById('error-container');
+    if (!container || errorQueue.length === 0) return;
+    
+    container.innerHTML = '';
+    container.classList.remove('hidden');
+    
+    errorQueue.forEach((error) => {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'flex items-center justify-between py-2 px-4 border-b border-red-200 last:border-b-0';
+        errorDiv.dataset.errorId = error.id;
+        
+        // Create text content safely
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'flex-1';
+        
+        const timeStamp = document.createElement('span');
+        timeStamp.className = 'font-semibold';
+        timeStamp.textContent = `[${error.timestamp}]`;
+        
+        const messageSpan = document.createElement('span');
+        messageSpan.className = 'ml-2';
+        messageSpan.textContent = error.message; // textContent is XSS-safe
+        
+        contentDiv.appendChild(timeStamp);
+        contentDiv.appendChild(messageSpan);
+        
+        // Create dismiss button
+        const dismissBtn = document.createElement('button');
+        dismissBtn.className = 'ml-4 text-red-600 hover:text-red-800 font-bold dismiss-error-btn';
+        dismissBtn.setAttribute('aria-label', 'Dismiss error');
+        dismissBtn.textContent = '×';
+        
+        errorDiv.appendChild(contentDiv);
+        errorDiv.appendChild(dismissBtn);
+        container.appendChild(errorDiv);
+    });
+}
+
+function dismissError(errorId) {
+    removeErrorById(errorId);
 }
 
 function hideError() {
     const container = document.getElementById('error-container');
     if (container) {
-        container.textContent = '';
+        container.innerHTML = '';
         container.classList.add('hidden');
     }
+    // Clear all pending timeouts before clearing the queue
+    errorQueue.forEach(error => {
+        if (error.timeoutId) {
+            clearTimeout(error.timeoutId);
+        }
+    });
+    errorQueue.length = 0; // Clear the queue
 }
 
 async function retryFetch(url, options = {}, retries = 2, delay = 500) {
@@ -53,7 +170,7 @@ async function loadComponent(componentPath, containerSelector) {
         const response = await retryFetch(componentPath);
         const html = await response.text();
         document.querySelector(containerSelector).innerHTML = html;
-        hideError();
+        // Don't clear errors on success - let them auto-dismiss or be manually dismissed
     } catch (error) {
         console.error(error);
         showError(`Failed to load component: ${error.message}. Check your internet connection and try again.`);
@@ -70,8 +187,8 @@ async function loadPage(url) {
         mainContent.innerHTML = '<div class="loading text-center py-12">Loading...</div>';
         const response = await retryFetch(url);
         const data = await response.text();
-        hideError();
         mainContent.innerHTML = data;
+        // Don't clear errors on success - let them auto-dismiss or be manually dismissed
     } catch (error) {
         console.error('Error loading page:', error);
         showError(`Failed to load page: ${error.message}. Check your internet connection and try again.`);
