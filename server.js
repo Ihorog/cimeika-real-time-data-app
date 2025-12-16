@@ -1,7 +1,12 @@
+const express = require('express');
+const path = require('path');
+const axios = require('axios');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
 require('dotenv').config();
 const app = express();
 const swaggerDocument = YAML.load(path.join(__dirname, 'cimeika-api.yaml'));
-app.use(bodyParser.json());
+app.use(express.json());
 
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
