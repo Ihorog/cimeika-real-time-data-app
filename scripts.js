@@ -49,7 +49,7 @@ async function retryFetch(url, options = {}, retries = 2) {
 // Component loader
 async function loadComponent(componentPath, containerSelector) {
     try {
-        const response = await retryFetch(componentPath, {}, 2);
+        const response = await retryFetch(componentPath);
         const html = await response.text();
         document.querySelector(containerSelector).innerHTML = html;
         hideError();
@@ -67,7 +67,7 @@ async function loadPage(url) {
     const mainContent = document.querySelector('main');
     try {
         mainContent.innerHTML = '<div class="loading text-center py-12">Loading...</div>';
-        const response = await retryFetch(url, {}, 2);
+        const response = await retryFetch(url);
         const data = await response.text();
         hideError();
         mainContent.innerHTML = data;
