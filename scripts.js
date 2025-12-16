@@ -52,6 +52,7 @@ async function loadComponent(componentPath, containerSelector) {
         const response = await retryFetch(componentPath, {}, 2);
         const html = await response.text();
         document.querySelector(containerSelector).innerHTML = html;
+        hideError();
     } catch (error) {
         console.error(error);
         showError(`Failed to load component: ${error.message}. Check your internet connection and try again.`);
