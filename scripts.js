@@ -46,7 +46,8 @@ function showError(message) {
     
     // Add error to queue with timestamp and unique ID
     const timestamp = new Date().toLocaleTimeString();
-    const errorId = ++errorIdCounter; // Simple incrementing counter for unique IDs
+    const errorId = errorIdCounter + 1;
+    errorIdCounter = errorId; // Increment the counter
     
     const errorObj = { 
         message: String(message), // Convert to string, textContent will be XSS-safe
@@ -62,19 +63,33 @@ function showError(message) {
     
     // Auto-dismiss this specific error after 10 seconds
     const timeoutId = setTimeout(() => {
-        const index = errorQueue.findIndex(e => e.id === errorId);
-        if (index !== -1) {
-            errorQueue.splice(index, 1);
-            if (errorQueue.length > 0) {
-                displayErrors();
-            } else {
-                hideError();
-            }
-        }
+        removeErrorById(errorId);
     }, 10000);
     
     // Store timeout ID so it can be cleared if manually dismissed
     errorObj.timeoutId = timeoutId;
+}
+
+// Helper function to remove error by ID and update display
+function removeErrorById(errorId) {
+    const index = errorQueue.findIndex(e => e.id === errorId);
+    if (index !== -1) {
+        // Clear the auto-dismiss timeout if it exists
+        if (errorQueue[index].timeoutId) {
+            clearTimeout(errorQueue[index].timeoutId);
+        }
+        
+        errorQueue.splice(index, 1);
+        if (errorQueue.length > 0) {
+            displayErrors();
+        } else {
+            const container = document.getElementById('error-container');
+            if (container) {
+                container.innerHTML = '';
+                container.classList.add('hidden');
+            }
+        }
+    }
 }
 
 function displayErrors() {
@@ -117,20 +132,7 @@ function displayErrors() {
 }
 
 function dismissError(errorId) {
-    const index = errorQueue.findIndex(e => e.id === errorId);
-    if (index !== -1) {
-        // Clear the auto-dismiss timeout for this error
-        if (errorQueue[index].timeoutId) {
-            clearTimeout(errorQueue[index].timeoutId);
-        }
-        
-        errorQueue.splice(index, 1);
-        if (errorQueue.length > 0) {
-            displayErrors();
-        } else {
-            hideError();
-        }
-    }
+    removeErrorById(errorId);
 }
 
 function hideError() {
@@ -167,7 +169,7 @@ async function loadComponent(componentPath, containerSelector) {
         const response = await retryFetch(componentPath);
         const html = await response.text();
         document.querySelector(containerSelector).innerHTML = html;
-        hideError();
+        // Don't clear errors on success - let them auto-dismiss or be manually dismissed
     } catch (error) {
         console.error(error);
         showError(`Failed to load component: ${error.message}. Check your internet connection and try again.`);
@@ -184,8 +186,8 @@ async function loadPage(url) {
         mainContent.innerHTML = '<div class="loading text-center py-12">Loading...</div>';
         const response = await retryFetch(url);
         const data = await response.text();
-        hideError();
         mainContent.innerHTML = data;
+        // Don't clear errors on success - let them auto-dismiss or be manually dismissed
     } catch (error) {
         console.error('Error loading page:', error);
         showError(`Failed to load page: ${error.message}. Check your internet connection and try again.`);
