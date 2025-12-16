@@ -11,9 +11,6 @@ type ConceptViewProps = {
   conceptMap: Record<string, Concept>;
 };
 
-export default function ConceptView({ concept, conceptMap }: ConceptViewProps) {
-  // ...your component code
-}
 export default function ConceptView({
   concept,
 }: {
