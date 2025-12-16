@@ -1,4 +1,5 @@
 let config = {};
+let modelsLoaded = false;
 
 document.addEventListener('DOMContentLoaded', async function() {
     // Load components first
