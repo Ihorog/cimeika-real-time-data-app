@@ -33,14 +33,15 @@ function hideError() {
     }
 }
 
-async function retryFetch(url, options = {}, retries = 2) {
+async function retryFetch(url, options = {}, retries = 2, delay = 500) {
     try {
         const response = await fetch(url, options);
         if (!response.ok) throw new Error(response.statusText);
         return response;
     } catch (err) {
         if (retries > 0) {
-            return await retryFetch(url, options, retries - 1);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return await retryFetch(url, options, retries - 1, delay * 2);
         }
         throw err;
     }
