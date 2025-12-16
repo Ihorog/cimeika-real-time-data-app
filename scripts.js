@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Error queue to handle multiple errors
 const errorQueue = [];
+let errorIdCounter = 0;
 
 function showError(message) {
     const container = document.getElementById('error-container');
@@ -29,12 +30,13 @@ function showError(message) {
     
     // Add error to queue with timestamp and unique ID
     const timestamp = new Date().toLocaleTimeString();
-    const errorId = Date.now() + Math.random(); // Unique ID for this error
+    const errorId = ++errorIdCounter; // Simple incrementing counter for unique IDs
     
     const errorObj = { 
         message: sanitizedMessage, 
         timestamp, 
-        id: errorId 
+        id: errorId,
+        timeoutId: null
     };
     
     errorQueue.push(errorObj);
@@ -43,7 +45,7 @@ function showError(message) {
     displayErrors();
     
     // Auto-dismiss this specific error after 10 seconds
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
         const index = errorQueue.findIndex(e => e.id === errorId);
         if (index !== -1) {
             errorQueue.splice(index, 1);
@@ -54,6 +56,9 @@ function showError(message) {
             }
         }
     }, 10000);
+    
+    // Store timeout ID so it can be cleared if manually dismissed
+    errorObj.timeoutId = timeoutId;
 }
 
 function displayErrors() {
@@ -66,6 +71,7 @@ function displayErrors() {
     errorQueue.forEach((error) => {
         const errorDiv = document.createElement('div');
         errorDiv.className = 'flex items-center justify-between py-2 px-4 border-b border-red-200 last:border-b-0';
+        errorDiv.dataset.errorId = error.id;
         
         // Create text content safely
         const contentDiv = document.createElement('div');
@@ -77,27 +83,45 @@ function displayErrors() {
         
         const messageSpan = document.createElement('span');
         messageSpan.className = 'ml-2';
-        messageSpan.innerHTML = error.message; // Already sanitized in showError
+        messageSpan.textContent = error.message; // Use textContent instead of innerHTML
         
         contentDiv.appendChild(timeStamp);
         contentDiv.appendChild(messageSpan);
         
         // Create dismiss button
         const dismissBtn = document.createElement('button');
-        dismissBtn.className = 'ml-4 text-red-600 hover:text-red-800 font-bold';
+        dismissBtn.className = 'ml-4 text-red-600 hover:text-red-800 font-bold dismiss-error-btn';
         dismissBtn.setAttribute('aria-label', 'Dismiss error');
         dismissBtn.textContent = '×';
-        dismissBtn.onclick = () => dismissError(error.id);
         
         errorDiv.appendChild(contentDiv);
         errorDiv.appendChild(dismissBtn);
         container.appendChild(errorDiv);
     });
+    
+    // Set up event delegation for dismiss buttons (only once)
+    if (!container.hasAttribute('data-listener-attached')) {
+        container.addEventListener('click', function(event) {
+            if (event.target.classList.contains('dismiss-error-btn')) {
+                const errorDiv = event.target.closest('[data-error-id]');
+                if (errorDiv) {
+                    const errorId = parseInt(errorDiv.dataset.errorId, 10);
+                    dismissError(errorId);
+                }
+            }
+        });
+        container.setAttribute('data-listener-attached', 'true');
+    }
 }
 
 function dismissError(errorId) {
     const index = errorQueue.findIndex(e => e.id === errorId);
     if (index !== -1) {
+        // Clear the auto-dismiss timeout for this error
+        if (errorQueue[index].timeoutId) {
+            clearTimeout(errorQueue[index].timeoutId);
+        }
+        
         errorQueue.splice(index, 1);
         if (errorQueue.length > 0) {
             displayErrors();
@@ -113,11 +137,14 @@ function hideError() {
         container.innerHTML = '';
         container.classList.add('hidden');
     }
+    // Clear all pending timeouts before clearing the queue
+    errorQueue.forEach(error => {
+        if (error.timeoutId) {
+            clearTimeout(error.timeoutId);
+        }
+    });
     errorQueue.length = 0; // Clear the queue
 }
-
-// Make dismissError available globally
-window.dismissError = dismissError;
 
 async function retryFetch(url, options = {}, retries = 2) {
     try {
