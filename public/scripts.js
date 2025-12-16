@@ -185,7 +185,6 @@ async function loadComponent(componentPath, containerSelector) {
         const html = await response.text();
         if (container) {
             renderSanitizedHTML(container, html);
-            hideError(container); // Clear any previous errors on success
         }
     } catch (error) {
         console.error(error);
@@ -214,7 +213,6 @@ async function loadPage(url) {
             hideError(globalErrorContainer);
         }
         renderSanitizedHTML(mainContent, data);
-        hideError(mainContent); // Clear any previous errors on success
     } catch (error) {
         console.error('Error loading page:', error);
         
