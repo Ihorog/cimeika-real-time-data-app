@@ -163,7 +163,7 @@ async function updateWeather() {
   if (!weatherElement) return;
 
   try {
-    const endpoint = (config && config.weatherEndpoint) ? config.weatherEndpoint : '/weather/current';
+    const endpoint = config.weatherEndpoint ?? '/weather/current';
     const response = await fetch(endpoint);
     if (!response.ok) throw new Error(`Weather data unavailable: ${response.status}`);
 
@@ -186,7 +186,7 @@ async function updateAstrology() {
   if (!astrologyElement) return;
 
   try {
-    const endpoint = (config && config.astrologyEndpoint) ? config.astrologyEndpoint : '/astrology/forecast';
+    const endpoint = config.astrologyEndpoint ?? '/astrology/forecast';
     const response = await fetch(endpoint);
     if (!response.ok) throw new Error(`Astrological data unavailable: ${response.status}`);
 
@@ -204,9 +204,9 @@ async function updateAstrology() {
 
 function escapeHtml(str) {
   return String(str)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
