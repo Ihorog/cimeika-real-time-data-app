@@ -46,15 +46,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     setupRealTimeData();
 });
 
-// Global error container functions
-function showGlobalError(message) {
-    const container = document.getElementById('error-container');
-    if (container) {
-        container.textContent = message;
-        container.classList.remove('hidden');
-    }
-}
-
+// Global error container function
 function hideGlobalError() {
     const container = document.getElementById('error-container');
     if (container) {

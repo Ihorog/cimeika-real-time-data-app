@@ -1,7 +1,5 @@
-<<<<<<< HEAD
 const request = require('supertest');
 const app = require('../server');
-=======
 process.env.HUGGINGFACE_TOKEN = process.env.HUGGINGFACE_TOKEN || 'test-token';
 
 const request = require('supertest');
@@ -11,14 +9,11 @@ const nock = require('nock');
 const { stopCacheSweep } = require('../src/routes/realtime');
 const defaultCity = process.env.DEFAULT_CITY || 'London';
 const defaultSign = process.env.DEFAULT_SIGN || 'aries';
->>>>>>> origin/main
 
 describe('Cimeika API', () => {
   let createdComponentId;
   let dataId;
 
-<<<<<<< HEAD
-=======
   beforeAll(() => {
     nock('https://goweather.herokuapp.com')
       .persist()
@@ -35,7 +30,6 @@ describe('Cimeika API', () => {
     nock.cleanAll();
   });
 
->>>>>>> origin/main
   it('auth login', async () => {
     const res = await request(app)
       .post('/auth/login')
@@ -52,7 +46,6 @@ describe('Cimeika API', () => {
     expect(res.body.choices).toBeDefined();
   });
 
-<<<<<<< HEAD
   it('get config', async () => {
     const res = await request(app).get('/config');
     expect(res.status).toBe(200);
@@ -95,18 +88,14 @@ describe('Cimeika API', () => {
     expect(res.body.models.length).toBeGreaterThan(0);
   });
 
-=======
->>>>>>> origin/main
   it('chat completion without prompt returns 400', async () => {
     const res = await request(app)
       .post('/chat/completion')
       .send({});
     expect(res.status).toBe(400);
     expect(res.body.error).toBeDefined();
-<<<<<<< HEAD
     // Optionally check for a specific error message:
     // expect(res.body.error).toBe('prompt required');
-=======
   });
 
   it('huggingface completion with token returns 200', async () => {
@@ -257,7 +246,6 @@ describe('Cimeika API', () => {
       .send({ name: 'comp', type: 'basic', attributes: [{ key: 'k', value: { nope: true } }] });
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/value/);
->>>>>>> origin/main
   });
 
   it('create component', async () => {
@@ -276,8 +264,6 @@ describe('Cimeika API', () => {
     expect(res.body.id).toBe(createdComponentId);
   });
 
-<<<<<<< HEAD
-=======
   it('update component with empty name returns 400', async () => {
     const res = await request(app)
       .put(`/components/${createdComponentId}`)
@@ -310,7 +296,6 @@ describe('Cimeika API', () => {
     expect(res.body.error).toMatch(/type/);
   });
 
->>>>>>> origin/main
   it('update component', async () => {
     const res = await request(app)
       .put(`/components/${createdComponentId}`)
@@ -319,8 +304,6 @@ describe('Cimeika API', () => {
     expect(res.body.name).toBe('comp1-upd');
   });
 
-<<<<<<< HEAD
-=======
   it('link component', async () => {
     const res = await request(app)
       .post(`/components/${createdComponentId}/link`);
@@ -360,15 +343,12 @@ describe('Cimeika API', () => {
     expect(res.status).toBe(404);
   });
 
->>>>>>> origin/main
   it('delete component', async () => {
     const res = await request(app)
       .delete(`/components/${createdComponentId}`);
     expect(res.status).toBe(204);
   });
 
-<<<<<<< HEAD
-=======
   it('data collect without dataSource returns 400', async () => {
     const res = await request(app)
       .post('/data/collect')
@@ -385,7 +365,6 @@ describe('Cimeika API', () => {
     expect(res.body.error).toBeDefined();
   });
 
->>>>>>> origin/main
   it('data collect', async () => {
     const res = await request(app)
       .post('/data/collect')
@@ -432,8 +411,6 @@ describe('Cimeika API', () => {
     expect(res.body.prediction).toBeDefined();
   });
 
-<<<<<<< HEAD
-=======
   it('weather endpoint returns structured data', async () => {
     const res = await request(app).get('/weather/current?city=Kyiv');
     expect(res.status).toBe(200);
@@ -504,7 +481,6 @@ describe('Cimeika API', () => {
     expect(typeof res.body.astrologyEndpoint).toBe('string');
   });
 
->>>>>>> origin/main
   it('serves openapi spec', async () => {
     const res = await request(app).get('/openapi');
     expect(res.status).toBe(200);

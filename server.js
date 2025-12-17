@@ -1,6 +1,5 @@
 const express = require('express');
 const path = require('path');
-<<<<<<< HEAD
 const bodyParser = require('body-parser');
 const axios = require('axios');
 const swaggerUi = require('swagger-ui-express');
@@ -10,15 +9,6 @@ require('dotenv').config();
 const app = express();
 const swaggerDocument = YAML.load(path.join(__dirname, 'cimeika-api.yaml'));
 app.use(bodyParser.json());
-=======
-const axios = require('axios');
-const swaggerUi = require('swagger-ui-express');
-const YAML = require('yamljs');
-require('dotenv').config();
-const app = express();
-const swaggerDocument = YAML.load(path.join(__dirname, 'cimeika-api.yaml'));
-app.use(express.json());
->>>>>>> origin/main
 
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
@@ -68,39 +58,32 @@ app.post('/chat/completion', (req, res) => {
   res.json({ id: 'chat1', object: 'text_completion', created: Date.now(), model: 'mock', choices: [{ text: `Echo: ${prompt}`, index: 0, logprobs: null, finish_reason: 'length' }] });
 });
 
-<<<<<<< HEAD
 // Hugging Face completion endpoint (enhanced)
 app.post('/ai/huggingface/completion', async (req, res) => {
   const { prompt, model = 'microsoft/DialoGPT-medium', max_tokens = 150, temperature = 0.6 } = req.body || {};
-=======
 // Hugging Face completion endpoint (mock)
 app.post('/ai/huggingface/completion', async (req, res) => {
   const { prompt, model = 'gpt2', max_tokens = 150, temperature = 0.6 } = req.body || {};
->>>>>>> origin/main
   if (!prompt) return res.status(400).json({ error: 'prompt required' });
 
   const token = process.env.HUGGINGFACE_TOKEN;
   if (!token) {
     // Fallback mock response when no token is configured
     return res.json({
-<<<<<<< HEAD
       id: 'hf-mock-' + Date.now(),
       object: 'text_completion',
       created: Date.now(),
       model: 'mock-hf',
       choices: [{ text: `HF Mock Response: ${prompt}`, index: 0, logprobs: null, finish_reason: 'length' }]
-=======
       id: 'hf1',
       object: 'text_completion',
       created: Date.now(),
       model: 'mock-hf',
       choices: [{ text: `HF Echo: ${prompt}`, index: 0, logprobs: null, finish_reason: 'length' }]
->>>>>>> origin/main
     });
   }
 
   try {
-<<<<<<< HEAD
     // Initialize Hugging Face client
     const hf = new HfInference(token);
 
@@ -128,7 +111,6 @@ app.post('/ai/huggingface/completion', async (req, res) => {
       }
     });
     generated = response.generated_text || '';
-=======
     const url = `https://api-inference.huggingface.co/models/${model}`;
     const response = await axios.post(
       url,
@@ -145,7 +127,6 @@ app.post('/ai/huggingface/completion', async (req, res) => {
       generated = JSON.stringify(response.data);
     }
 
->>>>>>> origin/main
     res.json({
       id: `hf-${Date.now()}`,
       object: 'text_completion',
@@ -154,7 +135,6 @@ app.post('/ai/huggingface/completion', async (req, res) => {
       choices: [{ text: generated, index: 0, logprobs: null, finish_reason: 'length' }]
     });
   } catch (err) {
-<<<<<<< HEAD
     console.error('HF API error:', err.message, err.response?.data || 'No additional response data');
     // More detailed error handling
     if (err.message.includes('Model') && err.message.includes('not found')) {
@@ -210,13 +190,11 @@ app.get('/ai/huggingface/models', (req, res) => {
   });
 });
 
-=======
     console.error('HF API error:', err.response?.data || err.message);
     res.status(500).json({ error: 'Hugging Face API error' });
   }
 });
 
->>>>>>> origin/main
 // Data pipeline endpoints
 app.post('/data/collect', (req, res) => {
   const id = 'data-' + dataCounter++;
@@ -306,15 +284,12 @@ app.get('/weather/current', async (req, res) => {
   try {
     const city = req.query.city || 'London';
     const key = process.env.OPENWEATHER_KEY;
-<<<<<<< HEAD
     if (!key) throw new Error('OPENWEATHER_KEY not configured');
-=======
     if (!key) {
       return res
         .status(503)
         .json({ error: 'OpenWeather API key not configured' });
     }
->>>>>>> origin/main
     const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${key}`;
     const response = await axios.get(url);
     const data = response.data;
@@ -331,15 +306,12 @@ app.get('/astrology/forecast', async (req, res) => {
   try {
     const sign = req.query.sign || 'aries';
     const key = process.env.ASTROLOGY_KEY;
-<<<<<<< HEAD
     if (!key) throw new Error('ASTROLOGY_KEY not configured');
-=======
     if (!key) {
       return res
         .status(503)
         .json({ error: 'Astrology API key not configured' });
     }
->>>>>>> origin/main
     const url = `https://api.freeastrologyapi.com/forecast?sign=${sign}&apikey=${key}`;
     const response = await axios.get(url);
     res.json({ forecast: response.data.forecast });
@@ -348,7 +320,6 @@ app.get('/astrology/forecast', async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
 app.get('/time/current', (req, res) => {
   res.json({ time: new Date().toISOString() });
 });
@@ -366,7 +337,6 @@ if (require.main === module) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
-=======
 const app = require('./src/app');
 
 const PORT = process.env.PORT || 7860;
@@ -375,4 +345,3 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
->>>>>>> origin/main

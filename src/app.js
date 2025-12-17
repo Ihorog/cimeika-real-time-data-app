@@ -9,8 +9,6 @@ const authRouter = require('./routes/auth');
 const componentsRouter = require('./routes/components');
 const dataRouter = require('./routes/data');
 const realtimeRouter = require('./routes/realtime');
-const huggingfaceCompletion = require('./routes/huggingface');
-const hfSpaceProxy = require('./routes/hfSpaceProxy');
 const apiV1Router = require('./routes/api/v1');
 
 const DEFAULT_CITY = config.defaultCity;

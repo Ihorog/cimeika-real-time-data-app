@@ -201,7 +201,7 @@ describe('XSS Protection', () => {
             return doc.body;
         };
 
-        const result = sanitizeHTML(maliciousHTML);
+        sanitizeHTML(maliciousHTML);
         expect(mockElement.remove).toHaveBeenCalled();
     });
 
@@ -248,7 +248,7 @@ describe('XSS Protection', () => {
             return doc.body;
         };
 
-        const result = sanitizeHTML(maliciousHTML);
+        sanitizeHTML(maliciousHTML);
         expect(mockElement.removeAttribute).toHaveBeenCalledWith('onclick');
     });
 });
