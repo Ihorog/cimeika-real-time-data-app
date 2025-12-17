@@ -51,13 +51,14 @@ async function loadComponent(componentPath, containerSelector) {
     try {
         const response = await retryFetch(componentPath);
         const html = await response.text();
-        document.querySelector(containerSelector).innerHTML = html;
+        const container = document.querySelector(containerSelector);
+        if (container) {
+            container.innerHTML = html;
+        }
         hideError();
     } catch (error) {
         console.error(error);
         showError(`Failed to load component: ${error.message}. Check your internet connection and try again.`);
-        document.querySelector(containerSelector).innerHTML =
-            `<div class="error-message">Failed to load component. Please try reloading.</div>`;
         throw error;
     }
 }
@@ -77,13 +78,30 @@ async function loadPage(url) {
         mainContent.innerHTML = `
             <div class="error-message">
                 <p>Failed to load page: ${error.message}</p>
-                <button onclick="loadPage('${url}')" class="mt-4 bg-gray-800 text-white px-4 py-2 rounded">
+                <button data-retry-url="${url}" class="retry-button mt-4 bg-gray-800 text-white px-4 py-2 rounded">
                     Retry
                 </button>
-                <button onclick="loadPage('pages/home.html')" class="mt-4 bg-gray-800 text-white px-4 py-2 rounded ml-2">
+                <button class="home-button mt-4 bg-gray-800 text-white px-4 py-2 rounded ml-2">
                     Return Home
                 </button>
             </div>`;
+        
+        // Add event listeners to buttons instead of inline onclick
+        const retryButton = mainContent.querySelector('.retry-button');
+        const homeButton = mainContent.querySelector('.home-button');
+        
+        if (retryButton) {
+            retryButton.addEventListener('click', () => {
+                const retryUrl = retryButton.getAttribute('data-retry-url');
+                if (retryUrl) loadPage(retryUrl);
+            });
+        }
+        
+        if (homeButton) {
+            homeButton.addEventListener('click', () => {
+                loadPage('pages/home.html');
+            });
+        }
     }
 }
 
