@@ -55,9 +55,9 @@ async function loadComponent(componentPath, containerSelector) {
         hideError();
     } catch (error) {
         console.error(error);
-        showError(`Failed to load component: ${error.message}. Check your internet connection and try again.`);
+        showError('Connection issue detected. Please check your internet connection.');
         document.querySelector(containerSelector).innerHTML =
-            `<div class="error-message">Failed to load component. Please try reloading.</div>`;
+            `<div class="error-message">Unable to load ${componentPath}. Please reload the page to try again.</div>`;
         throw error;
     }
 }
@@ -73,10 +73,10 @@ async function loadPage(url) {
         mainContent.innerHTML = data;
     } catch (error) {
         console.error('Error loading page:', error);
-        showError(`Failed to load page: ${error.message}. Check your internet connection and try again.`);
+        showError('Connection issue detected. Please check your internet connection.');
         mainContent.innerHTML = `
             <div class="error-message">
-                <p>Failed to load page: ${error.message}</p>
+                <p>Unable to load the requested page.</p>
                 <button onclick="loadPage('${url}')" class="mt-4 bg-gray-800 text-white px-4 py-2 rounded">
                     Retry
                 </button>
