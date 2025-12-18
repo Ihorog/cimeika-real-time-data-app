@@ -33,14 +33,17 @@ function hideError() {
     }
 }
 
-async function retryFetch(url, options = {}, retries = 2) {
+async function retryFetch(url, options = {}, retries = 2, attempt = 0) {
     try {
         const response = await fetch(url, options);
         if (!response.ok) throw new Error(response.statusText);
         return response;
     } catch (err) {
         if (retries > 0) {
-            return await retryFetch(url, options, retries - 1);
+            // Exponential backoff: 1s, 2s, 4s, etc.
+            const delay = Math.pow(2, attempt) * 1000;
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return await retryFetch(url, options, retries - 1, attempt + 1);
         }
         throw err;
     }
