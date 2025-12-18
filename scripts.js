@@ -76,7 +76,7 @@ async function loadComponent(componentPath, containerSelector) {
     } catch (error) {
         console.error(error);
         showError(`Failed to load component. Please reload the page.`, errorId);
-        throw error;
+        // Don't throw - error is already displayed to user
     }
 }
 
