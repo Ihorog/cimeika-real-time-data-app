@@ -111,13 +111,14 @@ function setupNavigation() {
     if (!link) return;
 
     const href = link.getAttribute('href');
-    if (typeof href !== 'string') return;
 
-    // Only intercept internal "pages/" navigation
-    if (href.startsWith('pages/')) {
-      event.preventDefault();
-      void loadPage(href);
+    // Only intercept internal "pages/" navigation; ignore missing or external links
+    if (!href || !href.startsWith('pages/')) {
+      return;
     }
+
+    event.preventDefault();
+    void loadPage(href);
   });
 }
 
