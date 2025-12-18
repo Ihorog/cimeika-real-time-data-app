@@ -18,25 +18,31 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Error tracking system to avoid clearing unrelated errors
-const activeErrors = new Set();
+const activeErrors = new Map();
 
 function showError(message, errorId = 'global') {
     const container = document.getElementById('error-container');
     if (container) {
-        activeErrors.add(errorId);
-        container.textContent = message;
+        activeErrors.set(errorId, message);
+        // Display all active error messages
+        const messages = Array.from(activeErrors.values());
+        container.textContent = messages.join(' | ');
         container.classList.remove('hidden');
     }
 }
 
 function hideError(errorId = 'global') {
     activeErrors.delete(errorId);
-    // Only hide the banner if no other errors are active
-    if (activeErrors.size === 0) {
-        const container = document.getElementById('error-container');
-        if (container) {
+    const container = document.getElementById('error-container');
+    if (container) {
+        // Only hide the banner if no other errors are active
+        if (activeErrors.size === 0) {
             container.textContent = '';
             container.classList.add('hidden');
+        } else {
+            // Update to show remaining error messages
+            const messages = Array.from(activeErrors.values());
+            container.textContent = messages.join(' | ');
         }
     }
 }
@@ -59,7 +65,8 @@ async function retryFetch(url, options = {}, retries = 2, attempt = 0) {
 
 // Component loader
 async function loadComponent(componentPath, containerSelector) {
-    const errorId = `component-${containerSelector}`;
+    // Sanitize selector to create valid error ID
+    const errorId = `component-${containerSelector.replace(/[^a-zA-Z0-9-]/g, '_')}`;
     try {
         const response = await retryFetch(componentPath);
         const html = await response.text();
