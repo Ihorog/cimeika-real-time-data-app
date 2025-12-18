@@ -131,7 +131,7 @@ function setupMobileMenu() {
   menuButton.addEventListener('click', () => {
     const isHidden = mobileMenu.classList.contains('hidden');
     mobileMenu.classList.toggle('hidden');
-    menuButton.setAttribute('aria-expanded', String(isHidden));
+    menuButton.setAttribute('aria-expanded', String(!isHidden));
   });
 }
 
