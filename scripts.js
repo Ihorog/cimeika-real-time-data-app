@@ -17,48 +17,47 @@ document.addEventListener('DOMContentLoaded', function() {
     setupRealTimeData();
 });
 
-// Track active errors by operation ID with their messages
+// Error tracking system to avoid clearing unrelated errors
 const activeErrors = new Map();
 
 function showError(message, errorId = 'global') {
     const container = document.getElementById('error-container');
     if (container) {
         activeErrors.set(errorId, message);
-        container.textContent = message;
+        // Display all active error messages
+        const messages = Array.from(activeErrors.values());
+        container.textContent = messages.join(' | ');
         container.classList.remove('hidden');
     }
 }
 
 function hideError(errorId = 'global') {
+    activeErrors.delete(errorId);
     const container = document.getElementById('error-container');
     if (container) {
-        activeErrors.delete(errorId);
-        // If other errors are active, show the most recent one
-        if (activeErrors.size > 0) {
-            const lastError = Array.from(activeErrors.values()).pop();
-            container.textContent = lastError;
-        } else {
+        // Only hide the banner if no other errors are active
+        if (activeErrors.size === 0) {
             container.textContent = '';
             container.classList.add('hidden');
+        } else {
+            // Update to show remaining error messages
+            const messages = Array.from(activeErrors.values());
+            container.textContent = messages.join(' | ');
         }
     }
 }
 
-async function retryFetch(url, options = {}, retries = 2) {
-    return retryFetchInternal(url, options, retries, 0);
-}
-
-async function retryFetchInternal(url, options, retries, attempt) {
+async function retryFetch(url, options = {}, retries = 2, attempt = 0) {
     try {
         const response = await fetch(url, options);
         if (!response.ok) throw new Error(response.statusText);
         return response;
     } catch (err) {
         if (retries > 0) {
-            // Exponential backoff with max delay cap: wait min(2^attempt * 100ms, 5000ms)
-            const delay = Math.min(Math.pow(2, attempt) * 100, 5000);
+            // Exponential backoff with max delay cap: wait min(100 << attempt, 2000) milliseconds
+            const delay = Math.min(100 << attempt, 2000);
             await new Promise(resolve => setTimeout(resolve, delay));
-            return await retryFetchInternal(url, options, retries - 1, attempt + 1);
+            return await retryFetch(url, options, retries - 1, attempt + 1);
         }
         throw err;
     }
@@ -66,22 +65,27 @@ async function retryFetchInternal(url, options, retries, attempt) {
 
 // Component loader
 async function loadComponent(componentPath, containerSelector) {
+    // Sanitize selector to create valid error ID (ensure it starts with a letter)
+    const sanitized = containerSelector.replace(/[^a-zA-Z0-9]/g, '_');
+    // Ensure ID is not empty and starts with a letter
+    const errorId = (sanitized && sanitized.match(/^[a-zA-Z]/)) ? sanitized : `component_${sanitized || 'unknown'}`;
     try {
         const response = await retryFetch(componentPath);
         const html = await response.text();
         document.querySelector(containerSelector).innerHTML = html;
+        hideError(errorId);
+        return true;
     } catch (error) {
         console.error(error);
-        // Show only local error message for component failures
-        document.querySelector(containerSelector).innerHTML =
-            `<div class="error-message">Failed to load component. Please try reloading.</div>`;
-        throw error;
+        showError(`Failed to load component. Please reload the page.`, errorId);
+        return false;
     }
 }
 
 // Page loader
 async function loadPage(url) {
     const mainContent = document.querySelector('main');
+    const errorId = 'page-load';
     // Generate safe error ID from URL
     const errorId = `page-${url.replace(/[^a-zA-Z0-9]/g, '-')}`;
     try {
@@ -92,10 +96,10 @@ async function loadPage(url) {
         mainContent.innerHTML = data;
     } catch (error) {
         console.error('Error loading page:', error);
-        showError(`Failed to load page: ${error.message}. Check your internet connection and try again.`, errorId);
+        showError(`Failed to load page. Please check your connection and try again.`, errorId);
         mainContent.innerHTML = `
-            <div class="error-message">
-                <p>Failed to load page: ${error.message}</p>
+            <div class="error-message text-center">
+                <p class="mb-4">Unable to load the page.</p>
                 <button class="retry-button mt-4 bg-gray-800 text-white px-4 py-2 rounded">
                     Retry
                 </button>
@@ -176,9 +180,7 @@ async function updateWeather() {
     if (!weatherElement) return;
 
     try {
-        const response = await fetch('https://api.openweathermap.org/data/2.5/weather?q=London&appid=YOUR_API_KEY');
-        if (!response.ok) throw new Error('Weather data unavailable');
-        
+        const response = await retryFetch('https://api.openweathermap.org/data/2.5/weather?q=London&appid=YOUR_API_KEY');
         const data = await response.json();
         weatherElement.textContent = `${data.weather[0].description}, ${Math.round(data.main.temp - 273.15)}°C`;
         weatherElement.classList.remove('loading');
@@ -195,9 +197,7 @@ async function updateAstrology() {
     if (!astrologyElement) return;
 
     try {
-        const response = await fetch('https://api.freeastrologyapi.com/forecast?sign=aries&apikey=YOUR_API_KEY');
-        if (!response.ok) throw new Error('Astrological data unavailable');
-        
+        const response = await retryFetch('https://api.freeastrologyapi.com/forecast?sign=aries&apikey=YOUR_API_KEY');
         const data = await response.json();
         astrologyElement.textContent = data.forecast;
         astrologyElement.classList.remove('loading');
