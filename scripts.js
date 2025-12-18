@@ -41,17 +41,21 @@ function hideError(errorId = 'global') {
     }
 }
 
-async function retryFetch(url, options = {}, retries = 2, attempt = 0) {
+async function retryFetch(url, options = {}, retries = 2) {
+    return retryFetchInternal(url, options, retries, 0);
+}
+
+async function retryFetchInternal(url, options, retries, attempt) {
     try {
         const response = await fetch(url, options);
         if (!response.ok) throw new Error(response.statusText);
         return response;
     } catch (err) {
         if (retries > 0) {
-            // Exponential backoff: wait 2^attempt * 100ms before retry
-            const delay = Math.pow(2, attempt) * 100;
+            // Exponential backoff with max delay cap: wait min(2^attempt * 100ms, 5000ms)
+            const delay = Math.min(Math.pow(2, attempt) * 100, 5000);
             await new Promise(resolve => setTimeout(resolve, delay));
-            return await retryFetch(url, options, retries - 1, attempt + 1);
+            return await retryFetchInternal(url, options, retries - 1, attempt + 1);
         }
         throw err;
     }
