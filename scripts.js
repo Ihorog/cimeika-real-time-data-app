@@ -81,8 +81,15 @@ async function loadComponent(componentPath, containerSelector) {
     } catch (error) {
         console.error(error);
         showError(`Failed to load component: ${error.message}. Check your internet connection and try again.`, operationId);
-        document.querySelector(containerSelector).innerHTML =
-            `<div class="error-message">Failed to load component. Please try reloading.</div>`;
+        
+        // Use safe DOM methods for error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = 'Failed to load component. Please try reloading.';
+        
+        const container = document.querySelector(containerSelector);
+        container.innerHTML = '';
+        container.appendChild(errorDiv);
         throw error;
     }
 }
