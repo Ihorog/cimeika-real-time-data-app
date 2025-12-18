@@ -86,6 +86,8 @@ async function loadComponent(componentPath, containerSelector) {
 async function loadPage(url) {
     const mainContent = document.querySelector('main');
     const errorId = 'page-load';
+    // Generate safe error ID from URL
+    const errorId = `page-${url.replace(/[^a-zA-Z0-9]/g, '-')}`;
     try {
         mainContent.innerHTML = '<div class="loading text-center py-12">Loading...</div>';
         const response = await retryFetch(url);
