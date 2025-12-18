@@ -58,7 +58,7 @@ async function retryFetch(url, options = {}, retries = 2, delay = 1000) {
 
 // Component loader
 async function loadComponent(componentPath, containerSelector) {
-    const errorId = `component-${containerSelector}`;
+    const errorId = `component-${containerSelector.replace(/[^a-zA-Z0-9]/g, '-')}`;
     try {
         const response = await retryFetch(componentPath);
         const html = await response.text();
@@ -74,7 +74,7 @@ async function loadComponent(componentPath, containerSelector) {
 // Page loader
 async function loadPage(url) {
     const mainContent = document.querySelector('main');
-    const errorId = `page-${url}`;
+    const errorId = `page-${url.replace(/[^a-zA-Z0-9]/g, '-')}`;
     try {
         mainContent.innerHTML = '<div class="loading text-center py-12">Loading...</div>';
         const response = await retryFetch(url);
