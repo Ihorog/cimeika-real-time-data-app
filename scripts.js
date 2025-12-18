@@ -79,6 +79,11 @@ async function loadPage(url) {
     if (!response.ok) {
       throw new Error(`Error loading page: ${response.status} ${response.statusText}`);
     }
+
+    const contentType = response.headers.get('Content-Type') || '';
+    if (!contentType.toLowerCase().includes('text/html')) {
+      throw new Error(`Unexpected content type when loading page: ${contentType || 'unknown'}`);
+    }
     const data = await response.text();
     mainContent.innerHTML = data;
   } catch (error) {
