@@ -17,19 +17,38 @@ document.addEventListener('DOMContentLoaded', function() {
     setupRealTimeData();
 });
 
-function showError(message) {
+// Error tracking mechanism to prevent concurrent operations from clearing each other's errors
+const activeErrors = new Map();
+
+function showError(message, operationId = null) {
     const container = document.getElementById('error-container');
     if (container) {
-        container.textContent = message;
-        container.classList.remove('hidden');
+        if (operationId) {
+            activeErrors.set(operationId, message);
+        }
+        updateErrorDisplay();
     }
 }
 
-function hideError() {
+function clearError(operationId) {
+    if (operationId && activeErrors.has(operationId)) {
+        activeErrors.delete(operationId);
+        updateErrorDisplay();
+    }
+}
+
+function updateErrorDisplay() {
     const container = document.getElementById('error-container');
-    if (container) {
+    if (!container) return;
+    
+    if (activeErrors.size === 0) {
         container.textContent = '';
         container.classList.add('hidden');
+    } else {
+        // Display all active errors
+        const messages = Array.from(activeErrors.values());
+        container.textContent = messages.join(' | ');
+        container.classList.remove('hidden');
     }
 }
 
@@ -48,14 +67,15 @@ async function retryFetch(url, options = {}, retries = 2) {
 
 // Component loader
 async function loadComponent(componentPath, containerSelector) {
+    const operationId = `loadComponent:${componentPath}`;
     try {
         const response = await retryFetch(componentPath);
         const html = await response.text();
         document.querySelector(containerSelector).innerHTML = html;
-        hideError();
+        clearError(operationId);
     } catch (error) {
         console.error(error);
-        showError(`Failed to load component: ${error.message}. Check your internet connection and try again.`);
+        showError(`Failed to load component: ${error.message}. Check your internet connection and try again.`, operationId);
         document.querySelector(containerSelector).innerHTML =
             `<div class="error-message">Failed to load component. Please try reloading.</div>`;
         throw error;
@@ -64,16 +84,17 @@ async function loadComponent(componentPath, containerSelector) {
 
 // Page loader
 async function loadPage(url) {
+    const operationId = `loadPage:${url}`;
     const mainContent = document.querySelector('main');
     try {
         mainContent.innerHTML = '<div class="loading text-center py-12">Loading...</div>';
         const response = await retryFetch(url);
         const data = await response.text();
-        hideError();
+        clearError(operationId);
         mainContent.innerHTML = data;
     } catch (error) {
         console.error('Error loading page:', error);
-        showError(`Failed to load page: ${error.message}. Check your internet connection and try again.`);
+        showError(`Failed to load page: ${error.message}. Check your internet connection and try again.`, operationId);
         mainContent.innerHTML = `
             <div class="error-message">
                 <p>Failed to load page: ${error.message}</p>
