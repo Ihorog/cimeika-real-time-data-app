@@ -40,8 +40,8 @@ async function retryFetch(url, options = {}, retries = 2, attempt = 0) {
         return response;
     } catch (err) {
         if (retries > 0) {
-            // Exponential backoff: 1s, 2s, 4s, etc.
-            const delay = Math.pow(2, attempt) * 1000;
+            // Exponential backoff with cap: starts at 1s (2^0), then 2s (2^1), 4s (2^2), capped at 8s
+            const delay = Math.min(Math.pow(2, attempt) * 1000, 8000);
             await new Promise(resolve => setTimeout(resolve, delay));
             return await retryFetch(url, options, retries - 1, attempt + 1);
         }
