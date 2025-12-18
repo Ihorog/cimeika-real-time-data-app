@@ -17,30 +17,41 @@ document.addEventListener('DOMContentLoaded', function() {
     setupRealTimeData();
 });
 
-function showError(message) {
+// Error tracking system to avoid clearing unrelated errors
+const activeErrors = new Set();
+
+function showError(message, errorId = 'global') {
     const container = document.getElementById('error-container');
     if (container) {
+        activeErrors.add(errorId);
         container.textContent = message;
         container.classList.remove('hidden');
     }
 }
 
-function hideError() {
-    const container = document.getElementById('error-container');
-    if (container) {
-        container.textContent = '';
-        container.classList.add('hidden');
+function hideError(errorId = 'global') {
+    activeErrors.delete(errorId);
+    // Only hide the banner if no other errors are active
+    if (activeErrors.size === 0) {
+        const container = document.getElementById('error-container');
+        if (container) {
+            container.textContent = '';
+            container.classList.add('hidden');
+        }
     }
 }
 
-async function retryFetch(url, options = {}, retries = 2) {
+async function retryFetch(url, options = {}, retries = 2, attempt = 0) {
     try {
         const response = await fetch(url, options);
         if (!response.ok) throw new Error(response.statusText);
         return response;
     } catch (err) {
         if (retries > 0) {
-            return await retryFetch(url, options, retries - 1);
+            // Exponential backoff: wait 2^attempt * 100ms before retry
+            const delay = Math.pow(2, attempt) * 100;
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return await retryFetch(url, options, retries - 1, attempt + 1);
         }
         throw err;
     }
@@ -48,16 +59,17 @@ async function retryFetch(url, options = {}, retries = 2) {
 
 // Component loader
 async function loadComponent(componentPath, containerSelector) {
+    const errorId = `component-${containerSelector}`;
     try {
         const response = await retryFetch(componentPath);
         const html = await response.text();
         document.querySelector(containerSelector).innerHTML = html;
-        hideError();
+        hideError(errorId);
     } catch (error) {
         console.error(error);
-        showError(`Failed to load component: ${error.message}. Check your internet connection and try again.`);
+        showError(`Failed to load component. Please try reloading the page.`, errorId);
         document.querySelector(containerSelector).innerHTML =
-            `<div class="error-message">Failed to load component. Please try reloading.</div>`;
+            `<div class="error-message">Failed to load component.</div>`;
         throw error;
     }
 }
@@ -65,18 +77,19 @@ async function loadComponent(componentPath, containerSelector) {
 // Page loader
 async function loadPage(url) {
     const mainContent = document.querySelector('main');
+    const errorId = 'page-load';
     try {
         mainContent.innerHTML = '<div class="loading text-center py-12">Loading...</div>';
         const response = await retryFetch(url);
         const data = await response.text();
-        hideError();
+        hideError(errorId);
         mainContent.innerHTML = data;
     } catch (error) {
         console.error('Error loading page:', error);
-        showError(`Failed to load page: ${error.message}. Check your internet connection and try again.`);
+        showError(`Failed to load page. Please check your connection and try again.`, errorId);
         mainContent.innerHTML = `
-            <div class="error-message">
-                <p>Failed to load page: ${error.message}</p>
+            <div class="error-message text-center">
+                <p class="mb-4">Unable to load the page.</p>
                 <button class="retry-button mt-4 bg-gray-800 text-white px-4 py-2 rounded">
                     Retry
                 </button>
