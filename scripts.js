@@ -153,7 +153,7 @@ function hideError() {
 async function retryFetch(url, options = {}, retries = 2, delay = 500) {
     try {
         const response = await fetch(url, options);
-        if (!response.ok) throw new Error(response.statusText);
+        if (!response.ok) throw new Error(`Request failed for ${url}: ${response.status} ${response.statusText}`);
         return response;
     } catch (err) {
         if (retries > 0) {
