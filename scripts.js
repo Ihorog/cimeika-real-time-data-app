@@ -46,8 +46,8 @@ function showError(message) {
     
     // Add error to queue with timestamp and unique ID
     const timestamp = new Date().toLocaleTimeString();
-    const errorId = errorIdCounter + 1;
-    errorIdCounter = errorId; // Increment the counter
+    const errorId = ++errorIdCounter;
+    
     
     const errorObj = { 
         message: String(message), // Convert to string, textContent will be XSS-safe
