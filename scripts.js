@@ -54,8 +54,8 @@ async function retryFetch(url, options = {}, retries = 2, attempt = 0) {
         return response;
     } catch (err) {
         if (retries > 0) {
-            // Exponential backoff with max delay cap: wait min(2^attempt * 100ms, 2000ms)
-            const delay = Math.min(Math.pow(2, attempt) * 100, 2000);
+            // Exponential backoff with max delay cap: wait min(100ms << attempt, 2000ms)
+            const delay = Math.min(100 << attempt, 2000);
             await new Promise(resolve => setTimeout(resolve, delay));
             return await retryFetch(url, options, retries - 1, attempt + 1);
         }
@@ -65,9 +65,9 @@ async function retryFetch(url, options = {}, retries = 2, attempt = 0) {
 
 // Component loader
 async function loadComponent(componentPath, containerSelector) {
-    // Sanitize selector to create valid error ID (remove special chars, ensure it starts with a letter)
+    // Sanitize selector to create valid error ID (ensure it starts with a letter)
     const sanitized = containerSelector.replace(/[^a-zA-Z0-9]/g, '_');
-    const errorId = `component_${sanitized}`;
+    const errorId = sanitized.match(/^[a-zA-Z]/) ? sanitized : `component_${sanitized}`;
     try {
         const response = await retryFetch(componentPath);
         const html = await response.text();
@@ -75,9 +75,7 @@ async function loadComponent(componentPath, containerSelector) {
         hideError(errorId);
     } catch (error) {
         console.error(error);
-        showError(`Failed to load component. Please try reloading the page.`, errorId);
-        document.querySelector(containerSelector).innerHTML =
-            `<div class="error-message">Failed to load component.</div>`;
+        showError(`Failed to load component. Please reload the page.`, errorId);
         throw error;
     }
 }
