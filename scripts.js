@@ -17,13 +17,13 @@ document.addEventListener('DOMContentLoaded', function() {
     setupRealTimeData();
 });
 
-// Track active errors by operation ID
-const activeErrors = new Set();
+// Track active errors by operation ID with their messages
+const activeErrors = new Map();
 
 function showError(message, errorId = 'global') {
     const container = document.getElementById('error-container');
     if (container) {
-        activeErrors.add(errorId);
+        activeErrors.set(errorId, message);
         container.textContent = message;
         container.classList.remove('hidden');
     }
@@ -33,8 +33,11 @@ function hideError(errorId = 'global') {
     const container = document.getElementById('error-container');
     if (container) {
         activeErrors.delete(errorId);
-        // Only hide if no other errors are active
-        if (activeErrors.size === 0) {
+        // If other errors are active, show the most recent one
+        if (activeErrors.size > 0) {
+            const lastError = Array.from(activeErrors.values()).pop();
+            container.textContent = lastError;
+        } else {
             container.textContent = '';
             container.classList.add('hidden');
         }
@@ -79,7 +82,8 @@ async function loadComponent(componentPath, containerSelector) {
 // Page loader
 async function loadPage(url) {
     const mainContent = document.querySelector('main');
-    const errorId = `page-${url}`;
+    // Generate safe error ID from URL
+    const errorId = `page-${url.replace(/[^a-zA-Z0-9]/g, '-')}`;
     try {
         mainContent.innerHTML = '<div class="loading text-center py-12">Loading...</div>';
         const response = await retryFetch(url);
