@@ -54,7 +54,7 @@ async function retryFetch(url, options = {}, retries = 2, attempt = 0) {
         return response;
     } catch (err) {
         if (retries > 0) {
-            // Exponential backoff with max delay cap: wait min(100ms << attempt, 2000ms)
+            // Exponential backoff with max delay cap: wait min(100 << attempt, 2000) milliseconds
             const delay = Math.min(100 << attempt, 2000);
             await new Promise(resolve => setTimeout(resolve, delay));
             return await retryFetch(url, options, retries - 1, attempt + 1);
@@ -67,16 +67,18 @@ async function retryFetch(url, options = {}, retries = 2, attempt = 0) {
 async function loadComponent(componentPath, containerSelector) {
     // Sanitize selector to create valid error ID (ensure it starts with a letter)
     const sanitized = containerSelector.replace(/[^a-zA-Z0-9]/g, '_');
-    const errorId = sanitized.match(/^[a-zA-Z]/) ? sanitized : `component_${sanitized}`;
+    // Ensure ID is not empty and starts with a letter
+    const errorId = (sanitized && sanitized.match(/^[a-zA-Z]/)) ? sanitized : `component_${sanitized || 'unknown'}`;
     try {
         const response = await retryFetch(componentPath);
         const html = await response.text();
         document.querySelector(containerSelector).innerHTML = html;
         hideError(errorId);
+        return true;
     } catch (error) {
         console.error(error);
         showError(`Failed to load component. Please reload the page.`, errorId);
-        // Don't throw - error is already displayed to user
+        return false;
     }
 }
 
