@@ -177,7 +177,7 @@ async function updateWeather() {
     if (!weatherElement) return;
 
     try {
-        const response = await fetch('https://api.openweathermap.org/data/2.5/weather?q=London&appid=YOUR_API_KEY');
+        const response = await retryFetch('https://api.openweathermap.org/data/2.5/weather?q=London&appid=YOUR_API_KEY');
         if (!response.ok) throw new Error('Weather data unavailable');
         
         const data = await response.json();
@@ -196,7 +196,7 @@ async function updateAstrology() {
     if (!astrologyElement) return;
 
     try {
-        const response = await fetch('https://api.freeastrologyapi.com/forecast?sign=aries&apikey=YOUR_API_KEY');
+        const response = await retryFetch('https://api.freeastrologyapi.com/forecast?sign=aries&apikey=YOUR_API_KEY');
         if (!response.ok) throw new Error('Astrological data unavailable');
         
         const data = await response.json();
