@@ -17,19 +17,30 @@ document.addEventListener('DOMContentLoaded', function() {
     setupRealTimeData();
 });
 
-function showError(message) {
+// Error tracking to manage concurrent operations
+let activeErrors = new Set();
+
+function showError(message, errorId = 'default') {
+    activeErrors.add(errorId);
     const container = document.getElementById('error-container');
     if (container) {
-        container.textContent = message;
+        activeErrors.set(errorId, message);
+        // Display all active error messages
+        const messages = Array.from(activeErrors.values());
+        container.textContent = messages.join(' | ');
         container.classList.remove('hidden');
     }
 }
 
-function hideError() {
-    const container = document.getElementById('error-container');
-    if (container) {
-        container.textContent = '';
-        container.classList.add('hidden');
+function hideError(errorId = 'default') {
+    activeErrors.delete(errorId);
+    // Only hide if no other errors are active
+    if (activeErrors.size === 0) {
+        const container = document.getElementById('error-container');
+        if (container) {
+            container.textContent = '';
+            container.classList.add('hidden');
+        }
     }
 }
 
@@ -51,16 +62,15 @@ async function retryFetch(url, options = {}, retries = 2, attempt = 0) {
 
 // Component loader
 async function loadComponent(componentPath, containerSelector) {
+    const errorId = `component-${containerSelector.replace(/[^a-zA-Z0-9]/g, '-')}`;
     try {
         const response = await retryFetch(componentPath);
         const html = await response.text();
         document.querySelector(containerSelector).innerHTML = html;
-        hideError();
+        hideError(errorId);
     } catch (error) {
         console.error(error);
-        showError(`Failed to load component: ${error.message}. Check your internet connection and try again.`);
-        document.querySelector(containerSelector).innerHTML =
-            `<div class="error-message">Failed to load component. Please try reloading.</div>`;
+        showError(`Failed to load component: ${error.message}. Check your internet connection and try again.`, errorId);
         throw error;
     }
 }
@@ -68,18 +78,19 @@ async function loadComponent(componentPath, containerSelector) {
 // Page loader
 async function loadPage(url) {
     const mainContent = document.querySelector('main');
+    const errorId = `page-${url.replace(/[^a-zA-Z0-9]/g, '-')}`;
     try {
         mainContent.innerHTML = '<div class="loading text-center py-12">Loading...</div>';
         const response = await retryFetch(url);
         const data = await response.text();
-        hideError();
+        hideError(errorId);
         mainContent.innerHTML = data;
     } catch (error) {
         console.error('Error loading page:', error);
-        showError(`Failed to load page: ${error.message}. Check your internet connection and try again.`);
+        showError(`Failed to load page: ${error.message}. Check your internet connection and try again.`, errorId);
         mainContent.innerHTML = `
-            <div class="error-message">
-                <p>Failed to load page: ${error.message}</p>
+            <div class="error-message text-center">
+                <p class="mb-4">Unable to load the page.</p>
                 <button class="retry-button mt-4 bg-gray-800 text-white px-4 py-2 rounded">
                     Retry
                 </button>
@@ -160,9 +171,7 @@ async function updateWeather() {
     if (!weatherElement) return;
 
     try {
-        const response = await fetch('https://api.openweathermap.org/data/2.5/weather?q=London&appid=YOUR_API_KEY');
-        if (!response.ok) throw new Error('Weather data unavailable');
-        
+        const response = await retryFetch('https://api.openweathermap.org/data/2.5/weather?q=London&appid=YOUR_API_KEY');
         const data = await response.json();
         weatherElement.textContent = `${data.weather[0].description}, ${Math.round(data.main.temp - 273.15)}°C`;
         weatherElement.classList.remove('loading');
@@ -179,9 +188,7 @@ async function updateAstrology() {
     if (!astrologyElement) return;
 
     try {
-        const response = await fetch('https://api.freeastrologyapi.com/forecast?sign=aries&apikey=YOUR_API_KEY');
-        if (!response.ok) throw new Error('Astrological data unavailable');
-        
+        const response = await retryFetch('https://api.freeastrologyapi.com/forecast?sign=aries&apikey=YOUR_API_KEY');
         const data = await response.json();
         astrologyElement.textContent = data.forecast;
         astrologyElement.classList.remove('loading');
