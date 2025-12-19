@@ -44,16 +44,17 @@ function hideError(errorId = 'default') {
     }
 }
 
-async function retryFetch(url, options = {}, retries = 2, delay = 1000) {
+async function retryFetch(url, options = {}, retries = 2, attempt = 0) {
     try {
         const response = await fetch(url, options);
         if (!response.ok) throw new Error(response.statusText);
         return response;
     } catch (err) {
         if (retries > 0) {
-            // Exponential backoff: wait before retrying
+            // Exponential backoff with cap: 1s (first retry), 2s (second retry), up to max 8s
+            const delay = Math.min(Math.pow(2, attempt) * 1000, 8000);
             await new Promise(resolve => setTimeout(resolve, delay));
-            return await retryFetch(url, options, retries - 1, delay * 2);
+            return await retryFetch(url, options, retries - 1, attempt + 1);
         }
         throw err;
     }
