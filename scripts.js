@@ -17,30 +17,43 @@ document.addEventListener('DOMContentLoaded', function() {
     setupRealTimeData();
 });
 
-// Error tracking to manage concurrent operations
-let activeErrors = new Set();
+// Error tracking mechanism to prevent concurrent operations from clearing each other's errors
+const activeErrors = new Map();
 
-function showError(message, errorId = 'default') {
-    activeErrors.add(errorId);
+function showError(message, operationId = null) {
     const container = document.getElementById('error-container');
     if (container) {
-        activeErrors.set(errorId, message);
-        // Display all active error messages
-        const messages = Array.from(activeErrors.values());
-        container.textContent = messages.join(' | ');
-        container.classList.remove('hidden');
+        if (operationId) {
+            activeErrors.set(operationId, message);
+        } else {
+            // For backward compatibility, show error immediately without tracking
+            container.textContent = message;
+            container.classList.remove('hidden');
+            return;
+        }
+        updateErrorDisplay();
     }
 }
 
-function hideError(errorId = 'default') {
-    activeErrors.delete(errorId);
-    // Only hide if no other errors are active
+function clearError(operationId) {
+    if (operationId && activeErrors.has(operationId)) {
+        activeErrors.delete(operationId);
+        updateErrorDisplay();
+    }
+}
+
+function updateErrorDisplay() {
+    const container = document.getElementById('error-container');
+    if (!container) return;
+    
     if (activeErrors.size === 0) {
-        const container = document.getElementById('error-container');
-        if (container) {
-            container.textContent = '';
-            container.classList.add('hidden');
-        }
+        container.textContent = '';
+        container.classList.add('hidden');
+    } else {
+        // Display all active errors
+        const messages = Array.from(activeErrors.values());
+        container.textContent = messages.join(' | ');
+        container.classList.remove('hidden');
     }
 }
 
@@ -62,54 +75,65 @@ async function retryFetch(url, options = {}, retries = 2, attempt = 0) {
 
 // Component loader
 async function loadComponent(componentPath, containerSelector) {
-    const errorId = `component-${containerSelector.replace(/[^a-zA-Z0-9]/g, '-')}`;
+    const operationId = `loadComponent:${componentPath}`;
     try {
         const response = await retryFetch(componentPath);
         const html = await response.text();
         document.querySelector(containerSelector).innerHTML = html;
-        hideError(errorId);
+        clearError(operationId);
     } catch (error) {
         console.error(error);
-        showError(`Failed to load component: ${error.message}. Check your internet connection and try again.`, errorId);
+        showError(`Failed to load component: ${error.message}. Check your internet connection and try again.`, operationId);
+        
+        // Use safe DOM methods for error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = 'Failed to load component. Please try reloading.';
+        
+        const container = document.querySelector(containerSelector);
+        container.innerHTML = '';
+        container.appendChild(errorDiv);
         throw error;
     }
 }
 
 // Page loader
 async function loadPage(url) {
+    const operationId = `loadPage:${url}`;
     const mainContent = document.querySelector('main');
     const errorId = `page-${url.replace(/[^a-zA-Z0-9]/g, '-')}`;
     try {
         mainContent.innerHTML = '<div class="loading text-center py-12">Loading...</div>';
         const response = await retryFetch(url);
         const data = await response.text();
-        hideError(errorId);
+        clearError(operationId);
         mainContent.innerHTML = data;
     } catch (error) {
         console.error('Error loading page:', error);
-        showError(`Failed to load page: ${error.message}. Check your internet connection and try again.`, errorId);
-        mainContent.innerHTML = `
-            <div class="error-message text-center">
-                <p class="mb-4">Unable to load the page.</p>
-                <button class="retry-button mt-4 bg-gray-800 text-white px-4 py-2 rounded">
-                    Retry
-                </button>
-                <button class="return-home-button mt-4 bg-gray-800 text-white px-4 py-2 rounded ml-2">
-                    Return Home
-                </button>
-            </div>`;
-        const retryButton = mainContent.querySelector('.retry-button');
-        if (retryButton) {
-            retryButton.addEventListener('click', function() {
-                loadPage(url);
-            });
-        }
-        const returnHomeButton = mainContent.querySelector('.return-home-button');
-        if (returnHomeButton) {
-            returnHomeButton.addEventListener('click', function() {
-                loadPage('pages/home.html');
-            });
-        }
+        showError(`Failed to load page: ${error.message}. Check your internet connection and try again.`, operationId);
+        
+        // Create error UI with safe event handlers to prevent XSS
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        
+        const errorText = document.createElement('p');
+        errorText.textContent = `Failed to load page: ${error.message}`;
+        errorDiv.appendChild(errorText);
+        
+        const retryButton = document.createElement('button');
+        retryButton.textContent = 'Retry';
+        retryButton.className = 'mt-4 bg-gray-800 text-white px-4 py-2 rounded';
+        retryButton.addEventListener('click', () => loadPage(url));
+        errorDiv.appendChild(retryButton);
+        
+        const homeButton = document.createElement('button');
+        homeButton.textContent = 'Return Home';
+        homeButton.className = 'mt-4 bg-gray-800 text-white px-4 py-2 rounded ml-2';
+        homeButton.addEventListener('click', () => loadPage('pages/home.html'));
+        errorDiv.appendChild(homeButton);
+        
+        mainContent.innerHTML = '';
+        mainContent.appendChild(errorDiv);
     }
 }
 
