@@ -83,16 +83,9 @@ async function loadComponent(componentPath, containerSelector) {
         clearError(operationId);
     } catch (error) {
         console.error(error);
-        showError(`Failed to load component: ${error.message}. Check your internet connection and try again.`, operationId);
-        
-        // Use safe DOM methods for error message
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-message';
-        errorDiv.textContent = 'Failed to load component. Please try reloading.';
-        
-        const container = document.querySelector(containerSelector);
-        container.innerHTML = '';
-        container.appendChild(errorDiv);
+        showError('Connection issue detected. Please check your internet connection.');
+        document.querySelector(containerSelector).innerHTML =
+            `<div class="error-message">Unable to load ${componentPath}. Please reload the page to try again.</div>`;
         throw error;
     }
 }
@@ -110,30 +103,17 @@ async function loadPage(url) {
         mainContent.innerHTML = data;
     } catch (error) {
         console.error('Error loading page:', error);
-        showError(`Failed to load page: ${error.message}. Check your internet connection and try again.`, operationId);
-        
-        // Create error UI with safe event handlers to prevent XSS
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-message';
-        
-        const errorText = document.createElement('p');
-        errorText.textContent = `Failed to load page: ${error.message}`;
-        errorDiv.appendChild(errorText);
-        
-        const retryButton = document.createElement('button');
-        retryButton.textContent = 'Retry';
-        retryButton.className = 'mt-4 bg-gray-800 text-white px-4 py-2 rounded';
-        retryButton.addEventListener('click', () => loadPage(url));
-        errorDiv.appendChild(retryButton);
-        
-        const homeButton = document.createElement('button');
-        homeButton.textContent = 'Return Home';
-        homeButton.className = 'mt-4 bg-gray-800 text-white px-4 py-2 rounded ml-2';
-        homeButton.addEventListener('click', () => loadPage('pages/home.html'));
-        errorDiv.appendChild(homeButton);
-        
-        mainContent.innerHTML = '';
-        mainContent.appendChild(errorDiv);
+        showError('Connection issue detected. Please check your internet connection.');
+        mainContent.innerHTML = `
+            <div class="error-message">
+                <p>Unable to load the requested page.</p>
+                <button onclick="loadPage('${url}')" class="mt-4 bg-gray-800 text-white px-4 py-2 rounded">
+                    Retry
+                </button>
+                <button onclick="loadPage('pages/home.html')" class="mt-4 bg-gray-800 text-white px-4 py-2 rounded ml-2">
+                    Return Home
+                </button>
+            </div>`;
     }
 }
 
