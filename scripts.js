@@ -57,14 +57,17 @@ function updateErrorDisplay() {
     }
 }
 
-async function retryFetch(url, options = {}, retries = 2) {
+async function retryFetch(url, options = {}, retries = 2, attempt = 0) {
     try {
         const response = await fetch(url, options);
         if (!response.ok) throw new Error(response.statusText);
         return response;
     } catch (err) {
         if (retries > 0) {
-            return await retryFetch(url, options, retries - 1);
+            // Exponential backoff with cap: 1s (first retry), 2s (second retry), up to max 8s
+            const delay = Math.min(Math.pow(2, attempt) * 1000, 8000);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return await retryFetch(url, options, retries - 1, attempt + 1);
         }
         throw err;
     }
@@ -98,6 +101,7 @@ async function loadComponent(componentPath, containerSelector) {
 async function loadPage(url) {
     const operationId = `loadPage:${url}`;
     const mainContent = document.querySelector('main');
+    const errorId = `page-${url.replace(/[^a-zA-Z0-9]/g, '-')}`;
     try {
         mainContent.innerHTML = '<div class="loading text-center py-12">Loading...</div>';
         const response = await retryFetch(url);
@@ -191,9 +195,7 @@ async function updateWeather() {
     if (!weatherElement) return;
 
     try {
-        const response = await fetch('https://api.openweathermap.org/data/2.5/weather?q=London&appid=YOUR_API_KEY');
-        if (!response.ok) throw new Error('Weather data unavailable');
-        
+        const response = await retryFetch('https://api.openweathermap.org/data/2.5/weather?q=London&appid=YOUR_API_KEY');
         const data = await response.json();
         weatherElement.textContent = `${data.weather[0].description}, ${Math.round(data.main.temp - 273.15)}°C`;
         weatherElement.classList.remove('loading');
@@ -210,9 +212,7 @@ async function updateAstrology() {
     if (!astrologyElement) return;
 
     try {
-        const response = await fetch('https://api.freeastrologyapi.com/forecast?sign=aries&apikey=YOUR_API_KEY');
-        if (!response.ok) throw new Error('Astrological data unavailable');
-        
+        const response = await retryFetch('https://api.freeastrologyapi.com/forecast?sign=aries&apikey=YOUR_API_KEY');
         const data = await response.json();
         astrologyElement.textContent = data.forecast;
         astrologyElement.classList.remove('loading');
