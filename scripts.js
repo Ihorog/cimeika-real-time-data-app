@@ -17,10 +17,11 @@ document.addEventListener('DOMContentLoaded', function() {
     setupRealTimeData();
 });
 
-// Error tracking system to avoid clearing unrelated errors
-const activeErrors = new Map();
+// Error tracking to manage concurrent operations
+let activeErrors = new Set();
 
-function showError(message, errorId = 'global') {
+function showError(message, errorId = 'default') {
+    activeErrors.add(errorId);
     const container = document.getElementById('error-container');
     if (container) {
         activeErrors.set(errorId, message);
@@ -31,33 +32,28 @@ function showError(message, errorId = 'global') {
     }
 }
 
-function hideError(errorId = 'global') {
+function hideError(errorId = 'default') {
     activeErrors.delete(errorId);
-    const container = document.getElementById('error-container');
-    if (container) {
-        // Only hide the banner if no other errors are active
-        if (activeErrors.size === 0) {
+    // Only hide if no other errors are active
+    if (activeErrors.size === 0) {
+        const container = document.getElementById('error-container');
+        if (container) {
             container.textContent = '';
             container.classList.add('hidden');
-        } else {
-            // Update to show remaining error messages
-            const messages = Array.from(activeErrors.values());
-            container.textContent = messages.join(' | ');
         }
     }
 }
 
-async function retryFetch(url, options = {}, retries = 2, attempt = 0) {
+async function retryFetch(url, options = {}, retries = 2, delay = 1000) {
     try {
         const response = await fetch(url, options);
         if (!response.ok) throw new Error(response.statusText);
         return response;
     } catch (err) {
         if (retries > 0) {
-            // Exponential backoff with max delay cap: wait min(100 << attempt, 2000) milliseconds
-            const delay = Math.min(100 << attempt, 2000);
+            // Exponential backoff: wait before retrying
             await new Promise(resolve => setTimeout(resolve, delay));
-            return await retryFetch(url, options, retries - 1, attempt + 1);
+            return await retryFetch(url, options, retries - 1, delay * 2);
         }
         throw err;
     }
@@ -65,28 +61,22 @@ async function retryFetch(url, options = {}, retries = 2, attempt = 0) {
 
 // Component loader
 async function loadComponent(componentPath, containerSelector) {
-    // Sanitize selector to create valid error ID (ensure it starts with a letter)
-    const sanitized = containerSelector.replace(/[^a-zA-Z0-9]/g, '_');
-    // Ensure ID is not empty and starts with a letter
-    const errorId = (sanitized && sanitized.match(/^[a-zA-Z]/)) ? sanitized : `component_${sanitized || 'unknown'}`;
+    const errorId = `component-${containerSelector.replace(/[^a-zA-Z0-9]/g, '-')}`;
     try {
         const response = await retryFetch(componentPath);
         const html = await response.text();
         document.querySelector(containerSelector).innerHTML = html;
         hideError(errorId);
-        return true;
     } catch (error) {
         console.error(error);
-        showError(`Failed to load component. Please reload the page.`, errorId);
-        return false;
+        showError(`Failed to load component: ${error.message}. Check your internet connection and try again.`, errorId);
+        throw error;
     }
 }
 
 // Page loader
 async function loadPage(url) {
     const mainContent = document.querySelector('main');
-    const errorId = 'page-load';
-    // Generate safe error ID from URL
     const errorId = `page-${url.replace(/[^a-zA-Z0-9]/g, '-')}`;
     try {
         mainContent.innerHTML = '<div class="loading text-center py-12">Loading...</div>';
@@ -96,7 +86,7 @@ async function loadPage(url) {
         mainContent.innerHTML = data;
     } catch (error) {
         console.error('Error loading page:', error);
-        showError(`Failed to load page. Please check your connection and try again.`, errorId);
+        showError(`Failed to load page: ${error.message}. Check your internet connection and try again.`, errorId);
         mainContent.innerHTML = `
             <div class="error-message text-center">
                 <p class="mb-4">Unable to load the page.</p>
