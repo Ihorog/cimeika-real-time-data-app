@@ -17,19 +17,43 @@ document.addEventListener('DOMContentLoaded', function() {
     setupRealTimeData();
 });
 
-function showError(message) {
+// Error tracking mechanism to prevent concurrent operations from clearing each other's errors
+const activeErrors = new Map();
+
+function showError(message, operationId = null) {
     const container = document.getElementById('error-container');
     if (container) {
-        container.textContent = message;
-        container.classList.remove('hidden');
+        if (operationId) {
+            activeErrors.set(operationId, message);
+        } else {
+            // For backward compatibility, show error immediately without tracking
+            container.textContent = message;
+            container.classList.remove('hidden');
+            return;
+        }
+        updateErrorDisplay();
     }
 }
 
-function hideError() {
+function clearError(operationId) {
+    if (operationId && activeErrors.has(operationId)) {
+        activeErrors.delete(operationId);
+        updateErrorDisplay();
+    }
+}
+
+function updateErrorDisplay() {
     const container = document.getElementById('error-container');
-    if (container) {
+    if (!container) return;
+    
+    if (activeErrors.size === 0) {
         container.textContent = '';
         container.classList.add('hidden');
+    } else {
+        // Display all active errors
+        const messages = Array.from(activeErrors.values());
+        container.textContent = messages.join(' | ');
+        container.classList.remove('hidden');
     }
 }
 
@@ -52,54 +76,45 @@ async function retryFetch(url, options = {}, retries = 2, attempt = 0) {
 
 // Component loader
 async function loadComponent(componentPath, containerSelector) {
+    const operationId = `loadComponent:${componentPath}`;
     try {
         const response = await retryFetch(componentPath);
         const html = await response.text();
         document.querySelector(containerSelector).innerHTML = html;
-        hideError();
+        clearError(operationId);
     } catch (error) {
         console.error(error);
-        showError(`Failed to load component: ${error.message}. Check your internet connection and try again.`);
+        showError('Connection issue detected. Please check your internet connection.');
         document.querySelector(containerSelector).innerHTML =
-            `<div class="error-message">Failed to load component. Please try reloading.</div>`;
+            `<div class="error-message">Unable to load ${componentPath}. Please reload the page to try again.</div>`;
         throw error;
     }
 }
 
 // Page loader
 async function loadPage(url) {
+    const operationId = `loadPage:${url}`;
     const mainContent = document.querySelector('main');
+    const errorId = `page-${url.replace(/[^a-zA-Z0-9]/g, '-')}`;
     try {
         mainContent.innerHTML = '<div class="loading text-center py-12">Loading...</div>';
         const response = await retryFetch(url);
         const data = await response.text();
-        hideError();
+        clearError(operationId);
         mainContent.innerHTML = data;
     } catch (error) {
         console.error('Error loading page:', error);
-        showError(`Failed to load page: ${error.message}. Check your internet connection and try again.`);
+        showError('Connection issue detected. Please check your internet connection.');
         mainContent.innerHTML = `
             <div class="error-message">
-                <p>Failed to load page: ${error.message}</p>
-                <button class="retry-button mt-4 bg-gray-800 text-white px-4 py-2 rounded">
+                <p>Unable to load the requested page.</p>
+                <button onclick="loadPage('${url}')" class="mt-4 bg-gray-800 text-white px-4 py-2 rounded">
                     Retry
                 </button>
-                <button class="return-home-button mt-4 bg-gray-800 text-white px-4 py-2 rounded ml-2">
+                <button onclick="loadPage('pages/home.html')" class="mt-4 bg-gray-800 text-white px-4 py-2 rounded ml-2">
                     Return Home
                 </button>
             </div>`;
-        const retryButton = mainContent.querySelector('.retry-button');
-        if (retryButton) {
-            retryButton.addEventListener('click', function() {
-                loadPage(url);
-            });
-        }
-        const returnHomeButton = mainContent.querySelector('.return-home-button');
-        if (returnHomeButton) {
-            returnHomeButton.addEventListener('click', function() {
-                loadPage('pages/home.html');
-            });
-        }
     }
 }
 
@@ -161,9 +176,7 @@ async function updateWeather() {
     if (!weatherElement) return;
 
     try {
-        const response = await fetch('https://api.openweathermap.org/data/2.5/weather?q=London&appid=YOUR_API_KEY');
-        if (!response.ok) throw new Error('Weather data unavailable');
-        
+        const response = await retryFetch('https://api.openweathermap.org/data/2.5/weather?q=London&appid=YOUR_API_KEY');
         const data = await response.json();
         weatherElement.textContent = `${data.weather[0].description}, ${Math.round(data.main.temp - 273.15)}°C`;
         weatherElement.classList.remove('loading');
@@ -180,9 +193,7 @@ async function updateAstrology() {
     if (!astrologyElement) return;
 
     try {
-        const response = await fetch('https://api.freeastrologyapi.com/forecast?sign=aries&apikey=YOUR_API_KEY');
-        if (!response.ok) throw new Error('Astrological data unavailable');
-        
+        const response = await retryFetch('https://api.freeastrologyapi.com/forecast?sign=aries&apikey=YOUR_API_KEY');
         const data = await response.json();
         astrologyElement.textContent = data.forecast;
         astrologyElement.classList.remove('loading');
