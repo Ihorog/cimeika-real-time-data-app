@@ -1,5 +1,6 @@
 import "./globals.css";
 
+import { Analytics } from "@vercel/analytics/next";
 import Navbar from "../components/Navbar";
 import ConnectionStatus from "../components/ConnectionStatus";
 import SpeedInsights from "../components/SpeedInsights";
@@ -17,6 +18,7 @@ export default function RootLayout({ children }) {
         <Navbar />
         <main className="min-h-screen p-6 sm:p-10">{children}</main>
         <ConnectionStatus />
+        <Analytics />
       </body>
     </html>
   );
