@@ -58,14 +58,15 @@ function updateErrorDisplay() {
 }
 
 async function retryFetch(url, options = {}, retries = 2, attempt = 0) {
+    const RETRY_BASE_DELAY_MS = 100;
     try {
         const response = await fetch(url, options);
         if (!response.ok) throw new Error(response.statusText);
         return response;
     } catch (err) {
         if (retries > 0) {
-            // Exponential backoff with cap: 1s (first retry), 2s (second retry), up to max 8s
-            const delay = Math.min(Math.pow(2, attempt) * 1000, 8000);
+            // Exponential backoff: wait 2^attempt * base delay before retrying
+            const delay = Math.pow(2, attempt) * RETRY_BASE_DELAY_MS;
             await new Promise(resolve => setTimeout(resolve, delay));
             return await retryFetch(url, options, retries - 1, attempt + 1);
         }
