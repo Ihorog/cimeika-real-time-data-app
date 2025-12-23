@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Setup navigation after components are loaded
     setupNavigation();
     
+    // Setup start journey button
+    setupStartJourneyButton();
+    
     // Load initial page
     loadPage('pages/home.html');
 
@@ -40,6 +43,8 @@ async function retryFetch(url, options = {}, retries = 2) {
         return response;
     } catch (err) {
         if (retries > 0) {
+            // Add delay before retry to avoid overwhelming the server
+            await new Promise(resolve => setTimeout(resolve, 300));
             return await retryFetch(url, options, retries - 1);
         }
         throw err;
@@ -55,9 +60,16 @@ async function loadComponent(componentPath, containerSelector) {
         hideError();
     } catch (error) {
         console.error(error);
+        // Use textContent to safely display error message without XSS risk
+        const container = document.querySelector(containerSelector);
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = 'Failed to load component. Please try reloading.';
+        container.innerHTML = '';
+        container.appendChild(errorDiv);
+        
+        // Show global error with safe text
         showError(`Failed to load component: ${error.message}. Check your internet connection and try again.`);
-        document.querySelector(containerSelector).innerHTML =
-            `<div class="error-message">Failed to load component. Please try reloading.</div>`;
         throw error;
     }
 }
@@ -73,17 +85,40 @@ async function loadPage(url) {
         mainContent.innerHTML = data;
     } catch (error) {
         console.error('Error loading page:', error);
+        
+        // Create error display safely without XSS vulnerabilities
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        
+        const errorText = document.createElement('p');
+        errorText.textContent = `Failed to load page: ${error.message}`;
+        errorDiv.appendChild(errorText);
+        
+        // Create retry button with event listener instead of inline onclick
+        const retryButton = document.createElement('button');
+        retryButton.id = 'retry-button';
+        retryButton.className = 'mt-4 bg-gray-800 text-white px-4 py-2 rounded';
+        retryButton.textContent = 'Retry';
+        retryButton.addEventListener('click', function() {
+            loadPage(url);
+        });
+        errorDiv.appendChild(retryButton);
+        
+        // Create return home button with event listener
+        const returnHomeButton = document.createElement('button');
+        returnHomeButton.id = 'return-home-button';
+        returnHomeButton.className = 'mt-4 bg-gray-800 text-white px-4 py-2 rounded ml-2';
+        returnHomeButton.textContent = 'Return Home';
+        returnHomeButton.addEventListener('click', function() {
+            loadPage('pages/home.html');
+        });
+        errorDiv.appendChild(returnHomeButton);
+        
+        mainContent.innerHTML = '';
+        mainContent.appendChild(errorDiv);
+        
+        // Show global error with safe text
         showError(`Failed to load page: ${error.message}. Check your internet connection and try again.`);
-        mainContent.innerHTML = `
-            <div class="error-message">
-                <p>Failed to load page: ${error.message}</p>
-                <button onclick="loadPage('${url}')" class="mt-4 bg-gray-800 text-white px-4 py-2 rounded">
-                    Retry
-                </button>
-                <button onclick="loadPage('pages/home.html')" class="mt-4 bg-gray-800 text-white px-4 py-2 rounded ml-2">
-                    Return Home
-                </button>
-            </div>`;
     }
 }
 
@@ -112,10 +147,15 @@ function setupMobileMenu() {
     }
 }
 
-// Start journey function
-window.startJourney = function() {
-    loadPage('pages/home.html');
-};
+// Setup start journey button
+function setupStartJourneyButton() {
+    const startButton = document.getElementById('start-journey-button');
+    if (startButton) {
+        startButton.addEventListener('click', function() {
+            loadPage('pages/home.html');
+        });
+    }
+}
 
 // Real-time data setup
 function setupRealTimeData() {
