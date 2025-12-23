@@ -257,13 +257,15 @@ router.post('/mood', (req, res) => {
 
     res.json(
       makeResponse('gallery_mood', {
-        image: resolvedImagePath,
+        image: resolvedPath,
         ...payload,
         cacheSize: Object.keys(cacheSnapshot).length,
         source: 'ci_mitca_gallery'
       })
     );
   } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    const status = message.includes('outside the allowed') ? 400 : 500;
 
     res
       .status(status)

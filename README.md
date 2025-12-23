@@ -195,11 +195,9 @@ cp .env.template .env
 Run `deploy_cimeika_api.sh` from the repository root to publish the API to a [Hugging Face Space](https://huggingface.co/spaces). Set the required tokens in your shell and then run the script:
 
 ```bash
-
-  export HF_WRITE_TOKEN=<your-hf-token>
-  export OPENAI_API_KEY=<your-openai-key>
-  # required – for Hugging Face completions (the API scenario script skips this if unset)
-  export HUGGINGFACE_TOKEN=<your-hf-api-token>
+export HF_WRITE_TOKEN=<your-hf-token>
+export OPENAI_API_KEY=<your-openai-key>
+export OPENWEATHER_KEY=<your-openweather-key>
 ./deploy_cimeika_api.sh
 ```
 

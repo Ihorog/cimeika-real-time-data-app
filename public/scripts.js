@@ -1,322 +1,212 @@
-let config = {};
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+'use strict';
 
-const storageAvailable = (() => {
-    try {
-        const testKey = '__test';
-        localStorage.setItem(testKey, '1');
-        localStorage.removeItem(testKey);
-        return true;
-    } catch (e) {
-        console.warn('LocalStorage not available:', e);
-        return false;
-    }
-})();
+let config = {
+  weatherEndpoint: '/weather/current',
+  astrologyEndpoint: '/astrology/forecast',
+};
 
-document.addEventListener('DOMContentLoaded', async function() {
-    if (storageAvailable) {
-        cleanupCache();
-        setInterval(cleanupCache, CACHE_DURATION);
-    }
-    // Load components first
-    loadComponent('components/header.html', '#header-container')
-        .then(() => setupMobileMenu())
-        .catch(error => console.error('Error loading header:', error));
-
-    loadComponent('components/footer.html', '#footer-container')
-        .catch(error => console.error('Error loading footer:', error));
-
-    // Setup navigation after components are loaded
-    setupNavigation();
-    
-    // Load initial page and wait until it's ready
-    await loadPage('pages/home.html');
-
-    try {
-        config = await fetchConfig();
-    } catch (e) {
-        console.error('Config load failed:', e);
-    }
-
-    // Start real-time data updates
-    setupRealTimeData();
+document.addEventListener('DOMContentLoaded', () => {
+  void initApp();
 });
 
-function sanitizeHTML(htmlString) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlString, 'text/html');
+async function initApp() {
+  // 1) Load header/footer (safe even if containers don't exist)
+  try {
+    await loadComponent('components/header.html', '#header-container');
+    setupMobileMenu();
+  } catch (error) {
+    console.error('Error loading header:', error);
+  }
 
-    doc.querySelectorAll('script, iframe, object, embed').forEach(el => el.remove());
+  try {
+    await loadComponent('components/footer.html', '#footer-container');
+  } catch (error) {
+    console.error('Error loading footer:', error);
+  }
 
-    doc.querySelectorAll('*').forEach(el => {
-        [...el.attributes].forEach(attr => {
-            const attrName = attr.name.toLowerCase();
-            const attrValue = (attr.value || '').trim().toLowerCase();
+  // 2) Setup navigation (safe)
+  setupNavigation();
 
-            if (attrName.startsWith('on')) {
-                el.removeAttribute(attr.name);
-            }
+  // 3) Load initial page (safe)
+  await loadPage('pages/home.html');
 
-            if (
-                (attrName === 'src' || attrName === 'href') &&
-                attrValue.startsWith('javascript:')
-            ) {
-                el.removeAttribute(attr.name);
-            }
-        });
-    });
+  // 4) Load config (non-fatal)
+  try {
+    const loaded = await fetchConfig();
+    config = { ...config, ...(loaded || {}) };
+  } catch (e) {
+    console.error('Config load failed:', e);
+  }
 
-    return doc.body;
-}
-
-function renderSanitizedHTML(container, htmlString) {
-    const safeBody = sanitizeHTML(htmlString);
-    const fragment = document.createDocumentFragment();
-    fragment.append(...Array.from(safeBody.childNodes));
-    container.replaceChildren(fragment);
+  // 5) Start real-time data updates
+  setupRealTimeData();
 }
 
 async function fetchConfig() {
-    const res = await fetch('/config');
-    if (!res.ok) throw new Error('Failed to load config');
-    return res.json();
-}
-
-function getCache(key) {
-    if (!storageAvailable) return null;
-    try {
-        const raw = localStorage.getItem(key);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        if (Date.now() - parsed.timestamp < CACHE_DURATION) {
-            return parsed.data;
-        }
-        localStorage.removeItem(key);
-    } catch (e) {
-        console.error('Cache parse error', e);
-    }
-    return null;
-}
-
-function setCache(key, data) {
-    if (!storageAvailable) return;
-    try {
-        localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
-    } catch (e) {
-        console.error('Cache store error', e);
-    }
-}
-
-function cleanupCache() {
-    if (!storageAvailable) return;
-    const now = Date.now();
-    for (let i = localStorage.length - 1; i >= 0; i--) {
-        const key = localStorage.key(i);
-        try {
-            const item = JSON.parse(localStorage.getItem(key));
-            if (!item || typeof item.timestamp !== 'number') continue;
-            if (now - item.timestamp >= CACHE_DURATION) {
-                localStorage.removeItem(key);
-            }
-        } catch (e) {
-            // ignore parsing errors
-        }
-    }
+  const res = await fetch('/config');
+  if (!res.ok) throw new Error(`Failed to load config: ${res.status}`);
+  return res.json();
 }
 
 // Component loader
 async function loadComponent(componentPath, containerSelector) {
-    try {
-        const response = await fetch(componentPath);
-        if (!response.ok) {
-            throw new Error(`Failed to load ${componentPath}: ${response.statusText}`);
-        }
-        const html = await response.text();
-        const container = document.querySelector(containerSelector);
-        if (container) {
-            renderSanitizedHTML(container, html);
-        }
-    } catch (error) {
-        console.error(error);
-        const container = document.querySelector(containerSelector);
-        if (container) {
-            const errorBox = document.createElement('div');
-            errorBox.className = 'error-message';
-            errorBox.textContent = `Failed to load component: ${error.message}`;
-            container.replaceChildren(errorBox);
-        }
-        throw error;
-    }
+  const container = document.querySelector(containerSelector);
+  if (!container) {
+    // Container not present on this page: do not fail hard.
+    return;
+  }
+
+  const response = await fetch(componentPath);
+  if (!response.ok) {
+    throw new Error(`Failed to load ${componentPath}: ${response.status} ${response.statusText}`);
+  }
+
+  const html = await response.text();
+  container.innerHTML = html;
 }
 
 // Page loader
 async function loadPage(url) {
-    const mainContent = document.querySelector('main');
-    try {
-        const loading = document.createElement('div');
-        loading.className = 'loading text-center py-12';
-        loading.textContent = 'Loading...';
-        mainContent.replaceChildren(loading);
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Error: ${response.statusText}`);
-        }
-        const data = await response.text();
-        renderSanitizedHTML(mainContent, data);
-    } catch (error) {
-        console.error('Error loading page:', error);
-        const errorWrapper = document.createElement('div');
-        errorWrapper.className = 'error-message';
+  const mainContent = document.querySelector('main');
+  if (!mainContent) {
+    console.error('Main container <main> not found; cannot load page:', url);
+    return;
+  }
 
-        const errorText = document.createElement('p');
-        errorText.textContent = `Failed to load page: ${error.message}`;
-
-        const backButton = document.createElement('button');
-        backButton.className = 'mt-4 bg-gray-800 text-white px-4 py-2 rounded';
-        backButton.textContent = 'Return Home';
-        backButton.addEventListener('click', () => loadPage('pages/home.html'));
-
-        errorWrapper.append(errorText, backButton);
-        mainContent.replaceChildren(errorWrapper);
+  try {
+    mainContent.innerHTML = '<div class="loading text-center py-12">Loading...</div>';
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Error loading page: ${response.status} ${response.statusText}`);
     }
+    const data = await response.text();
+    mainContent.innerHTML = data;
+  } catch (error) {
+    console.error('Error loading page:', error);
+    mainContent.innerHTML = `
+      <div class="error-message">
+        <p>Failed to load page: ${escapeHtml(error.message)}</p>
+        <button id="return-home" class="mt-4 bg-gray-800 text-white px-4 py-2 rounded">
+          Return Home
+        </button>
+      </div>
+    `;
+
+    const btn = document.getElementById('return-home');
+    if (btn) {
+      btn.addEventListener('click', () => void loadPage('pages/home.html'));
+    }
+  }
 }
 
 // Navigation setup
 function setupNavigation() {
-    document.addEventListener('click', function(event) {
-        const link = event.target.closest('a');
-        if (link && link.getAttribute('href').startsWith('pages/')) {
-            event.preventDefault();
-            loadPage(link.getAttribute('href'));
-        }
-    });
+  document.addEventListener('click', (event) => {
+    const link = event.target && event.target.closest ? event.target.closest('a') : null;
+    if (!link) return;
+
+    const href = link.getAttribute('href');
+    if (typeof href !== 'string') return;
+
+    // Only intercept internal "pages/" navigation
+    if (href.startsWith('pages/')) {
+      event.preventDefault();
+      void loadPage(href);
+    }
+  });
 }
 
 // Mobile menu functionality
 function setupMobileMenu() {
-    const menuButton = document.querySelector('button[aria-label="Toggle menu"]');
-    const mobileMenu = document.getElementById('mobile-menu');
+  const menuButton = document.querySelector('button[aria-label="Toggle menu"]');
+  const mobileMenu = document.getElementById('mobile-menu');
 
-    if (menuButton && mobileMenu) {
-        menuButton.addEventListener('click', () => {
-            const isHidden = mobileMenu.classList.contains('hidden');
-            mobileMenu.classList.toggle('hidden');
-            menuButton.setAttribute('aria-expanded', isHidden);
-        });
-    }
+  if (!menuButton || !mobileMenu) return;
+
+  menuButton.addEventListener('click', () => {
+    const isHidden = mobileMenu.classList.contains('hidden');
+    mobileMenu.classList.toggle('hidden');
+    menuButton.setAttribute('aria-expanded', String(isHidden));
+  });
 }
 
-// Start journey function
-window.startJourney = function() {
-    loadPage('pages/home.html');
+// Start journey function (kept for HTML onclick compatibility)
+window.startJourney = function startJourney() {
+  void loadPage('pages/home.html');
 };
 
 // Real-time data setup
 function setupRealTimeData() {
-    // Update time every second
-    setInterval(updateTime, 1000);
-    
-    // Update weather and astrology every 5 minutes
-    updateWeather();
-    updateAstrology();
-    setInterval(updateWeather, 300000);
-    setInterval(updateAstrology, 300000);
+  // Update time every second
+  setInterval(updateTime, 1000);
+
+  // Update weather and astrology every 5 minutes
+  void updateWeather();
+  void updateAstrology();
+  setInterval(() => void updateWeather(), 300000);
+  setInterval(() => void updateAstrology(), 300000);
 }
 
 // Time update function
 function updateTime() {
-    const timeElement = document.getElementById('time-data');
-    if (timeElement) {
-        const now = new Date();
-        timeElement.textContent = now.toLocaleTimeString();
-        timeElement.classList.remove('loading');
-    }
-}
+  const timeElement = document.getElementById('time-data');
+  if (!timeElement) return;
 
-// Generic fetch/render helper
-async function fetchAndRender(endpoint, params, elementId, formatter, cacheKey) {
-    const element = document.getElementById(elementId);
-    if (!element) return;
-
-    const cached = cacheKey ? getCache(cacheKey) : null;
-    if (cached) {
-        element.textContent = formatter(cached);
-        element.classList.remove('loading', 'error-message');
-        return;
-    }
-
-    try {
-        const url = new URL(endpoint, window.location.origin);
-        Object.entries(params || {}).forEach(([key, value]) =>
-            url.searchParams.append(key, value)
-        );
-
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Request failed');
-
-        const data = await response.json();
-        element.textContent = formatter(data);
-        element.classList.remove('loading', 'error-message');
-        if (cacheKey) setCache(cacheKey, data);
-    } catch (error) {
-        console.error(`${elementId} error:`, error);
-        if (cached) {
-            element.textContent = formatter(cached);
-            element.classList.remove('loading', 'error-message');
-            return;
-        }
-        const suffix = Object.values(params || {}).join(', ');
-        element.textContent = `Data temporarily unavailable${suffix ? ` for ${suffix}` : ''}`;
-        element.classList.add('error-message');
-    }
+  const now = new Date();
+  timeElement.textContent = now.toLocaleTimeString();
+  timeElement.classList.remove('loading');
 }
 
 // Weather update function
-function updateWeather() {
-    const base = config.weatherEndpoint || '/weather/current';
-    const city = config.defaultCity || 'London';
-    fetchAndRender(
-        base,
-        { city },
-        'weather-data',
-        data => {
-            const { city, weather, temperature } = data;
-            if (
-                typeof weather !== 'string' ||
-                typeof temperature !== 'number' ||
-                typeof city !== 'string'
-            ) {
-                throw new Error('Invalid weather payload');
-            }
-            return `${city}: ${weather}, ${temperature}°C`;
-        },
-        `weather_${city}`
-    );
+async function updateWeather() {
+  const weatherElement = document.getElementById('weather-data');
+  if (!weatherElement) return;
+
+  try {
+    const endpoint = (config && config.weatherEndpoint) ? config.weatherEndpoint : '/weather/current';
+    const response = await fetch(endpoint);
+    if (!response.ok) throw new Error(`Weather data unavailable: ${response.status}`);
+
+    const data = await response.json();
+    const weather = data?.weather ?? 'Unknown';
+    const temp = data?.temperature ?? '—';
+    weatherElement.textContent = `${weather}, ${temp}°C`;
+    weatherElement.classList.remove('loading');
+    weatherElement.classList.remove('error-message');
+  } catch (error) {
+    console.error('Weather error:', error);
+    weatherElement.textContent = 'Weather data temporarily unavailable';
+    weatherElement.classList.add('error-message');
+  }
 }
 
 // Astrology update function
-function updateAstrology() {
-    const base = config.astrologyEndpoint || '/astrology/forecast';
-    const sign = config.defaultSign || 'aries';
-    fetchAndRender(
-        base,
-        { sign },
-        'astrology-data',
-        data => {
-            const { sign, forecast } = data;
-            if (typeof forecast !== 'string' || typeof sign !== 'string') {
-                throw new Error('Invalid astrology payload');
-            }
-            return `${sign}: ${forecast}`;
-        },
-        `astrology_${sign}`
-    );
+async function updateAstrology() {
+  const astrologyElement = document.getElementById('astrology-data');
+  if (!astrologyElement) return;
+
+  try {
+    const endpoint = (config && config.astrologyEndpoint) ? config.astrologyEndpoint : '/astrology/forecast';
+    const response = await fetch(endpoint);
+    if (!response.ok) throw new Error(`Astrological data unavailable: ${response.status}`);
+
+    const data = await response.json();
+    const forecast = data?.forecast ?? '—';
+    astrologyElement.textContent = forecast;
+    astrologyElement.classList.remove('loading');
+    astrologyElement.classList.remove('error-message');
+  } catch (error) {
+    console.error('Astrology error:', error);
+    astrologyElement.textContent = 'Astrological forecast temporarily unavailable';
+    astrologyElement.classList.add('error-message');
+  }
 }
 
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker
-            .register('/service-worker.js')
-            .catch(err => console.error('Service worker registration failed:', err));
-    });
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 }

@@ -1,16 +1,11 @@
-const config = require('../config');
-
-let warnedMissingToken = false;
-
 function requireHfToken(req, res, next) {
-  const token = config.hfToken;
+  const token = process.env.HUGGINGFACE_TOKEN;
   if (!token) {
-    if (!warnedMissingToken && process.env.NODE_ENV !== 'test') {
+    if (process.env.NODE_ENV !== 'test') {
       console.warn(
         'HUGGINGFACE_TOKEN is not set. Set it in your environment, e.g.,',
         'export HUGGINGFACE_TOKEN="<your-hf-api-token>" or add it to your .env file.'
       );
-      warnedMissingToken = true;
     }
     return res.status(503).json({ error: 'HUGGINGFACE_TOKEN not configured' });
   }

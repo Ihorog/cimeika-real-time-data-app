@@ -96,7 +96,25 @@ describe('Cimeika API', () => {
     });
   });
 
-  it('proxies to Hugging Face Space', async () => {
+  it('weather endpoint returns 503 when api key missing', async () => {
+    const originalKey = process.env.OPENWEATHER_KEY;
+    delete process.env.OPENWEATHER_KEY;
+    const res = await request(app).get('/weather/current');
+    expect(res.status).toBe(503);
+    expect(res.body.error).toMatch(/key not configured/i);
+    process.env.OPENWEATHER_KEY = originalKey;
+  });
+
+  it('astrology endpoint returns 503 when api key missing', async () => {
+    const originalKey = process.env.ASTROLOGY_KEY;
+    delete process.env.ASTROLOGY_KEY;
+    const res = await request(app).get('/astrology/forecast');
+    expect(res.status).toBe(503);
+    expect(res.body.error).toMatch(/key not configured/i);
+    process.env.ASTROLOGY_KEY = originalKey;
+  });
+
+  it('hf-space proxy completion', async () => {
     const proxyVars = [
       'HTTP_PROXY',
       'http_proxy',

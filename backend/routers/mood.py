@@ -1,10 +1,12 @@
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
-from typing import Optional
+from typing import Dict, Optional
 
-from backend.utils.connectors import fetch_mood, submit_mood
+from backend.utils.connectors import submit_mood, fetch_mood
+from backend.utils.orchestrator import Task, TaskOrchestrator
 
 router = APIRouter(prefix="/nastiy")
+orchestrator = TaskOrchestrator()
 
 
 class MoodSnapshot(BaseModel):
@@ -16,10 +18,22 @@ class MoodSnapshot(BaseModel):
 class MoodResponse(BaseModel):
     status: str
     summary: str
-    source: Optional[str] = None
+    source: str = "api"
 
 
-@router.post("/mood", response_model=MoodResponse)
+def handle_mood_task(task: Task):
+    snapshot = MoodSnapshot(**task.payload)
+    return {
+        "module": task.module,
+        "status": "mood_captured",
+        "note": snapshot.note or "Mood captured",
+    }
+
+
+orchestrator.register_handler("mood", handle_mood_task)
+
+
+@router.post("/mood", response_model=Dict[str, str])
 def capture_mood(snapshot: MoodSnapshot):
     api_response = submit_mood(snapshot.model_dump())
     if api_response.get("status") == "ok":

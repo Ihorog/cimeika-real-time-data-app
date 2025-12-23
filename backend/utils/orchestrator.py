@@ -1,6 +1,20 @@
+import logging
 from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Callable, Deque, Dict, List, Optional
+
+
+LOG_FILE = Path(__file__).resolve().parents[2] / "data" / "orchestrator_status.log"
+
+logger = logging.getLogger("backend.orchestrator")
+if not logger.handlers:
+    LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
+    handler = logging.FileHandler(LOG_FILE)
+    formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
 
 
 @dataclass
@@ -19,6 +33,7 @@ class PriorityTaskScheduler:
     def schedule(self, task: Task) -> Task:
         insert_index = next((i for i, existing in enumerate(self.queue) if existing.priority < task.priority), len(self.queue))
         self.queue.insert(insert_index, task)
+        logger.info("Scheduled task %s for module %s with priority %s", task.id, task.module, task.priority)
         return task
 
     def next(self) -> Optional[Task]:
@@ -39,10 +54,13 @@ class SimpleTaskExecutor:
         handler = self.handlers.get(task.module)
         if not handler:
             task.status = "skipped"
+            logger.warning("Skipped task %s: no handler registered for module %s", task.id, task.module)
             return {"id": task.id, "status": task.status, "message": "No handler"}
         task.status = "processing"
+        logger.info("Executing task %s for module %s", task.id, task.module)
         result = handler(task)
         task.status = "complete"
+        logger.info("Completed task %s with status %s", task.id, task.status)
         return {"id": task.id, "status": task.status, **result}
 
 
@@ -59,9 +77,12 @@ class TaskOrchestrator:
         self.scheduler.schedule(task)
         next_task = self.scheduler.next()
         if not next_task:
+            logger.info("No task available for execution")
             return {"status": "idle"}
+        logger.info("Dispatching task %s for module %s", next_task.id, next_task.module)
         result = self.executor.execute(next_task)
         self.history.append(result)
+        logger.info("Task %s archived with result: %s", next_task.id, result.get("status"))
         return result
 
     def status(self) -> Dict[str, Any]:
