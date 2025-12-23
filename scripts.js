@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Error queue management
 let errorQueue = [];
 let isShowingError = false;
+const ERROR_DISPLAY_DURATION = 5000; // Display each error for 5 seconds
 
 function showError(message) {
     errorQueue.push(message);
@@ -45,12 +46,16 @@ function displayNextError() {
         container.textContent = message;
         container.classList.remove('hidden');
         
-        // Auto-hide after 5 seconds and show next error
+        // Auto-hide after configured duration and show next error
         setTimeout(() => {
             container.classList.add('hidden');
             container.textContent = '';
             displayNextError();
-        }, 5000);
+        }, ERROR_DISPLAY_DURATION);
+    } else {
+        // If container not found, reset state and try next error
+        isShowingError = false;
+        displayNextError();
     }
 }
 
