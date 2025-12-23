@@ -53,9 +53,9 @@ function displayNextError() {
             displayNextError();
         }, ERROR_DISPLAY_DURATION);
     } else {
-        // If container not found, reset state and try next error
+        // If container not found, reset state and try next error after a short delay
         isShowingError = false;
-        displayNextError();
+        setTimeout(() => displayNextError(), 100);
     }
 }
 
