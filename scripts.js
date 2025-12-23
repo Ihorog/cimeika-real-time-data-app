@@ -20,11 +20,37 @@ document.addEventListener('DOMContentLoaded', function() {
     setupRealTimeData();
 });
 
+// Error queue management
+let errorQueue = [];
+let isShowingError = false;
+
 function showError(message) {
+    errorQueue.push(message);
+    if (!isShowingError) {
+        displayNextError();
+    }
+}
+
+function displayNextError() {
+    if (errorQueue.length === 0) {
+        isShowingError = false;
+        return;
+    }
+    
+    isShowingError = true;
+    const message = errorQueue.shift();
     const container = document.getElementById('error-container');
+    
     if (container) {
         container.textContent = message;
         container.classList.remove('hidden');
+        
+        // Auto-hide after 5 seconds and show next error
+        setTimeout(() => {
+            container.classList.add('hidden');
+            container.textContent = '';
+            displayNextError();
+        }, 5000);
     }
 }
 
@@ -34,10 +60,11 @@ function hideError() {
         container.textContent = '';
         container.classList.add('hidden');
     }
+    // Clear the queue and reset state
+    errorQueue = [];
+    isShowingError = false;
 }
 
-async function retryFetch(url, options = {}, retries = 2) {
-    try {
 async function retryFetch(url, options = {}, retries = 2) {
     try {
         const response = await fetch(url, options);
