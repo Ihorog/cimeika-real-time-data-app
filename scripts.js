@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Setup navigation after components are loaded
     setupNavigation();
     
+    // Setup start journey button
+    setupStartJourneyButton();
+    
     // Load initial page
     loadPage('pages/home.html');
 
@@ -144,10 +147,15 @@ function setupMobileMenu() {
     }
 }
 
-// Start journey function
-window.startJourney = function() {
-    loadPage('pages/home.html');
-};
+// Setup start journey button
+function setupStartJourneyButton() {
+    const startButton = document.getElementById('start-journey-button');
+    if (startButton) {
+        startButton.addEventListener('click', function() {
+            loadPage('pages/home.html');
+        });
+    }
+}
 
 // Real-time data setup
 function setupRealTimeData() {
