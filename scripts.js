@@ -38,8 +38,6 @@ function hideError() {
 
 async function retryFetch(url, options = {}, retries = 2) {
     try {
-async function retryFetch(url, options = {}, retries = 2) {
-    try {
         const response = await fetch(url, options);
         if (!response.ok) throw new Error(response.statusText);
         return response;
