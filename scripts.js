@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Error queue management
 let errorQueue = [];
 let isShowingError = false;
+let errorTimeoutId = null;
 const ERROR_DISPLAY_DURATION = 5000; // Display each error for 5 seconds
 const ERROR_FALLBACK_DELAY = 100; // Delay before processing next error if container not found
 
@@ -48,24 +49,35 @@ function displayNextError() {
         container.classList.remove('hidden');
         
         // Auto-hide after configured duration and show next error
-        setTimeout(() => {
+        errorTimeoutId = setTimeout(() => {
             container.classList.add('hidden');
             container.textContent = '';
+            errorTimeoutId = null;
             displayNextError();
         }, ERROR_DISPLAY_DURATION);
     } else {
         // If container not found, log warning and continue with next error
         console.warn('Error container not found. Skipping error:', message);
-        setTimeout(() => displayNextError(), ERROR_FALLBACK_DELAY);
+        errorTimeoutId = setTimeout(() => {
+            errorTimeoutId = null;
+            displayNextError();
+        }, ERROR_FALLBACK_DELAY);
     }
 }
 
 function hideError() {
+    // Clear any pending timeout to prevent inconsistent state
+    if (errorTimeoutId) {
+        clearTimeout(errorTimeoutId);
+        errorTimeoutId = null;
+    }
+    
     const container = document.getElementById('error-container');
     if (container) {
         container.textContent = '';
         container.classList.add('hidden');
     }
+    
     // Clear the queue and reset state
     errorQueue = [];
     isShowingError = false;
