@@ -53,8 +53,8 @@ function displayNextError() {
             displayNextError();
         }, ERROR_DISPLAY_DURATION);
     } else {
-        // If container not found, reset state and try next error after a short delay
-        isShowingError = false;
+        // If container not found, log warning and continue with next error
+        console.warn('Error container not found. Skipping error:', message);
         setTimeout(() => displayNextError(), 100);
     }
 }
