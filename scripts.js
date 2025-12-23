@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
 let errorQueue = [];
 let isShowingError = false;
 const ERROR_DISPLAY_DURATION = 5000; // Display each error for 5 seconds
+const ERROR_FALLBACK_DELAY = 100; // Delay before processing next error if container not found
 
 function showError(message) {
     errorQueue.push(message);
@@ -55,7 +56,7 @@ function displayNextError() {
     } else {
         // If container not found, log warning and continue with next error
         console.warn('Error container not found. Skipping error:', message);
-        setTimeout(() => displayNextError(), 100);
+        setTimeout(() => displayNextError(), ERROR_FALLBACK_DELAY);
     }
 }
 
