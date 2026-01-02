@@ -1,14 +1,10 @@
 const request = require('supertest');
 const app = require('../server');
-process.env.HUGGINGFACE_TOKEN = process.env.HUGGINGFACE_TOKEN || 'test-token';
-
-const request = require('supertest');
-jest.mock('../src/routes/huggingface');
-const app = require('../src/app');
 const nock = require('nock');
 const { stopCacheSweep } = require('../src/routes/realtime');
 const defaultCity = process.env.DEFAULT_CITY || 'London';
 const defaultSign = process.env.DEFAULT_SIGN || 'aries';
+process.env.HUGGINGFACE_TOKEN = process.env.HUGGINGFACE_TOKEN || 'test-token';
 
 describe('Cimeika API', () => {
   let createdComponentId;

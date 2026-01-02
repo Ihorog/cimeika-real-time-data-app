@@ -61,9 +61,6 @@ app.post('/chat/completion', (req, res) => {
 // Hugging Face completion endpoint (enhanced)
 app.post('/ai/huggingface/completion', async (req, res) => {
   const { prompt, model = 'microsoft/DialoGPT-medium', max_tokens = 150, temperature = 0.6 } = req.body || {};
-// Hugging Face completion endpoint (mock)
-app.post('/ai/huggingface/completion', async (req, res) => {
-  const { prompt, model = 'gpt2', max_tokens = 150, temperature = 0.6 } = req.body || {};
   if (!prompt) return res.status(400).json({ error: 'prompt required' });
 
   const token = process.env.HUGGINGFACE_TOKEN;
@@ -75,11 +72,6 @@ app.post('/ai/huggingface/completion', async (req, res) => {
       created: Date.now(),
       model: 'mock-hf',
       choices: [{ text: `HF Mock Response: ${prompt}`, index: 0, logprobs: null, finish_reason: 'length' }]
-      id: 'hf1',
-      object: 'text_completion',
-      created: Date.now(),
-      model: 'mock-hf',
-      choices: [{ text: `HF Echo: ${prompt}`, index: 0, logprobs: null, finish_reason: 'length' }]
     });
   }
 
@@ -111,21 +103,6 @@ app.post('/ai/huggingface/completion', async (req, res) => {
       }
     });
     generated = response.generated_text || '';
-    const url = `https://api-inference.huggingface.co/models/${model}`;
-    const response = await axios.post(
-      url,
-      { inputs: prompt, parameters: { max_new_tokens: max_tokens, temperature } },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    let generated = '';
-    if (Array.isArray(response.data) && response.data.length > 0 && response.data[0].generated_text) {
-      generated = response.data[0].generated_text;
-    } else if (typeof response.data === 'object' && response.data.generated_text) {
-      generated = response.data.generated_text;
-    } else {
-      generated = JSON.stringify(response.data);
-    }
 
     res.json({
       id: `hf-${Date.now()}`,
@@ -188,11 +165,6 @@ app.get('/ai/huggingface/models', (req, res) => {
     models: popularModels,
     total: popularModels.length
   });
-});
-
-    console.error('HF API error:', err.response?.data || err.message);
-    res.status(500).json({ error: 'Hugging Face API error' });
-  }
 });
 
 // Data pipeline endpoints
@@ -337,11 +309,4 @@ if (require.main === module) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
-const app = require('./src/app');
-
-const PORT = process.env.PORT || 7860;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
 
