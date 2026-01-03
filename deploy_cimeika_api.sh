@@ -39,8 +39,9 @@ if ! command -v huggingface-cli >/dev/null 2>&1; then
     export PATH="$VENV_DIR/bin:$PATH"
   else
     # Fallback: try to install globally, but warn about permissions
-    echo "⚠️  Could not create a virtual environment. Trying to install huggingface_hub globally (may require sudo or fail if permissions are restricted)..."
-    python3 -m pip install --quiet --upgrade huggingface_hub >/dev/null
+    echo "⚠️  Could not create a virtual environment. Trying to install huggingface_hub with the --user flag..."
+    python3 -m pip install --quiet --upgrade --user huggingface_hub >/dev/null
+    export PATH="$HOME/.local/bin:$PATH"
   fi
 
   # Check again if huggingface-cli is now available
