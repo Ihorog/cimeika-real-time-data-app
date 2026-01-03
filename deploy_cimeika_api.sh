@@ -87,9 +87,9 @@ else
   fi
   cd "$REPO_DIR"
 fi
-REPO_DIR="$(basename "$PWD")"
+CURRENT_DIR_BASENAME="$(basename "$PWD")"
 
-echo "📥  Репозиторій готовий: $REPO_DIR"
+echo "📥  Репозиторій готовий: $CURRENT_DIR_BASENAME"
 
 # --- 4. Створення / підключення Docker‑Space -------------------------------
 if ! huggingface-cli repo info "$HF_SPACE_FULL" &>/dev/null; then
