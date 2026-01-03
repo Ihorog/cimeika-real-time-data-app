@@ -77,7 +77,7 @@ if [[ -d .git ]]; then
     echo "⚠️  Поточний репозиторій не відповідає $REPO_URL."
     
     # Check for uncommitted changes before deleting
-    if ! git diff-index --quiet HEAD -- 2>/dev/null; then
+    if git rev-parse --verify HEAD >/dev/null 2>&1 && ! git diff-index --quiet HEAD -- 2>/dev/null; then
       echo "❌  Виявлено незафіксовані зміни в поточному репозиторії."
       echo "   Будь ласка, збережіть зміни перед запуском скрипта або видаліть каталог вручну."
       exit 1
