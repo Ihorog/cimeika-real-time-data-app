@@ -5,7 +5,7 @@
 #  ПЕРЕД ЗАПУСКОМ:
 #    export HF_WRITE_TOKEN="<ваш HF write token>"
 #    export OPENAI_API_KEY="<ваш OpenAI key>"
-#    # (необов’язково) export WEATHER_API_KEY="<OpenWeather key>"
+#    # (необов’язково) export OPENWEATHER_KEY="<OpenWeather key>"
 # ============================================================
 set -euo pipefail
 
@@ -82,6 +82,8 @@ if [[ -d .git ]]; then
     cd "$REPO_DIR"
   fi
 else
+# --- 4. Клон репозиторію ----------------------------------------------------
+if [[ ! -d .git ]]; then
   if [[ ! -d "$REPO_DIR" ]]; then
     git clone "$REPO_URL" "$REPO_DIR"
   fi

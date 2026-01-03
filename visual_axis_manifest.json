@@ -1,0 +1,26 @@
+{
+  "axes": {
+    "plus": {
+      "color": "#E7FAD9",
+      "keywords": [
+        "clarity",
+        "flow",
+        "spark",
+        "growth"
+      ],
+      "symbol": "+"
+    },
+    "minus": {
+      "color": "#9CAFBF",
+      "keywords": [
+        "still",
+        "memory",
+        "echo",
+        "root"
+      ],
+      "symbol": "-"
+    }
+  },
+  "balance_rule": "each + has its −, each − has its +",
+  "formula": "7 = булоєбуде = немаєвже = - + = Ci"
+}
