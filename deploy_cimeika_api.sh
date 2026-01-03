@@ -38,9 +38,10 @@ if ! command -v huggingface-cli >/dev/null 2>&1; then
     deactivate
     export PATH="$VENV_DIR/bin:$PATH"
   else
-    # Fallback: try to install globally, but warn about permissions
-    echo "⚠️  Could not create a virtual environment. Trying to install huggingface_hub globally (may require sudo or fail if permissions are restricted)..."
-    python3 -m pip install --quiet --upgrade huggingface_hub >/dev/null
+    # Fallback: try to install with --user flag to avoid permission issues
+    echo "⚠️  Could not create a virtual environment. Trying to install huggingface_hub with the --user flag..."
+    python3 -m pip install --quiet --upgrade --user huggingface_hub >/dev/null
+    export PATH="$HOME/.local/bin:$PATH"
   fi
 
   # Check again if huggingface-cli is now available
@@ -73,7 +74,16 @@ huggingface-cli login --token "$HF_WRITE_TOKEN" --stdout >/dev/null
 if [[ -d .git ]]; then
   CURRENT_URL=$(git config --get remote.origin.url)
   if [[ "$CURRENT_URL" != "$REPO_URL" ]]; then
-    echo "⚠️  Поточний репозиторій не відповідає $REPO_URL. Клоную правильний репозиторій..."
+    echo "⚠️  Поточний репозиторій не відповідає $REPO_URL."
+    
+    # Check for uncommitted changes before deleting
+    if ! git diff-index --quiet HEAD -- 2>/dev/null; then
+      echo "❌  Виявлено незафіксовані зміни в поточному репозиторії."
+      echo "   Будь ласка, збережіть зміни перед запуском скрипта або видаліть каталог вручну."
+      exit 1
+    fi
+    
+    echo "   Клоную правильний репозиторій..."
     cd ..
     if [[ -d "$REPO_DIR" ]]; then
       rm -rf "$REPO_DIR"
@@ -115,15 +125,19 @@ done
 echo "🔑  Секрети оновлено."
 
 # --- 6. Очікування запуску Space -------------------------------------------
-printf "⏳  Чекаю запуску Space (макс 90 с)…"
+printf "⏳  Чекаю запуску Space (макс 90 с)…"
+SPACE_RUNNING=false
 for _ in {1..18}; do
-  STATUS=$(huggingface-cli space status "$HF_SPACE_FULL" 2>/dev/null | grep -o "Running" || true)
-  [[ "$STATUS" == "Running" ]] && break
+  # Check if space status command succeeds and space is running
+  if huggingface-cli space status "$HF_SPACE_FULL" 2>/dev/null | grep -q "Running"; then
+    SPACE_RUNNING=true
+    break
+  fi
   printf "."; sleep 5
 done
 echo ""
 
-if [[ "$STATUS" != "Running" ]]; then
+if [[ "$SPACE_RUNNING" != "true" ]]; then
   echo "❌  Space не запустився. Перевірте логи у веб‑інтерфейсі Hugging Face."
   exit 1
 fi
