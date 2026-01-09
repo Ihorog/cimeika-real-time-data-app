@@ -5,7 +5,7 @@
 #  ПЕРЕД ЗАПУСКОМ:
 #    export HF_WRITE_TOKEN="<ваш HF write token>"
 #    export OPENAI_API_KEY="<ваш OpenAI key>"
-#    # (необов’язково) export WEATHER_API_KEY="<OpenWeather key>"
+#    # (необов’язково) export OPENWEATHER_KEY="<OpenWeather key>"
 # ============================================================
 set -euo pipefail
 
@@ -68,6 +68,28 @@ SPACE_API_URL="https://ihorog--${SPACE_NAME}.hf.space"  # default URL
 # --- 2. Логін ---------------------------------------------------------------
 huggingface-cli login --token "$HF_WRITE_TOKEN" --stdout >/dev/null
 
+# --- 3. Клон репозиторію ----------------------------------------------------
+if [[ -d .git ]]; then
+  CURRENT_URL=$(git config --get remote.origin.url)
+  if [[ "$CURRENT_URL" != "$REPO_URL" ]]; then
+    echo "⚠️  Поточний репозиторій не відповідає $REPO_URL."
+    
+    # Check for uncommitted changes before deleting
+    if git rev-parse --verify HEAD >/dev/null 2>&1 && ! git diff-index --quiet HEAD -- 2>/dev/null; then
+      echo "❌  Виявлено незафіксовані зміни в поточному репозиторії."
+      echo "   Будь ласка, збережіть зміни перед запуском скрипта або видаліть каталог вручну."
+      exit 1
+    fi
+    
+    echo "   Клоную правильний репозиторій..."
+    cd ..
+    if [[ -d "$REPO_DIR" ]]; then
+      rm -rf "$REPO_DIR"
+    fi
+    git clone "$REPO_URL" "$REPO_DIR"
+    cd "$REPO_DIR"
+  fi
+else
 # --- 4. Клон репозиторію ----------------------------------------------------
 if [[ -d .git ]]; then
   CURRENT_URL=$(git config --get remote.origin.url)
@@ -88,9 +110,9 @@ else
 fi
 REPO_DIR="$(basename "$PWD")"
 
-echo "📥  Репозиторій готовий: $REPO_DIR"
+echo "📥  Репозиторій готовий: $CURRENT_DIR_BASENAME"
 
-# --- 5. Створення / підключення Docker‑Space -------------------------------
+# --- 4. Створення / підключення Docker‑Space -------------------------------
 if ! huggingface-cli repo info "$HF_SPACE_FULL" &>/dev/null; then
   echo "🚀  Створюємо Space $HF_SPACE_FULL (Docker)..."
   huggingface-cli repo create "$HF_SPACE_FULL" --type space --space-sdk docker
@@ -104,7 +126,7 @@ echo "🚚  Відправляю код у Space…"
 
 git push hf main --force
 
-# --- 6. Секрети -------------------------------------------------------------
+# --- 5. Секрети -------------------------------------------------------------
 for secret in OPENAI_API_KEY HF_WRITE_TOKEN WEATHER_API_KEY; do
   if [[ -n "${!secret:-}" ]]; then
     huggingface-cli repo secret set -r "$HF_SPACE_FULL" "$secret" "${!secret}" >/dev/null
@@ -113,23 +135,27 @@ done
 
 echo "🔑  Секрети оновлено."
 
-# --- 7. Очікування запуску Space -------------------------------------------
-printf "⏳  Чекаю запуску Space (макс 90 с)…"
-for i in {1..18}; do
-  STATUS=$(huggingface-cli space status "$HF_SPACE_FULL" 2>/dev/null | grep -o "Running" || true)
-  [[ "$STATUS" == "Running" ]] && break
+# --- 6. Очікування запуску Space -------------------------------------------
+printf "⏳  Чекаю запуску Space (макс 90 с)…"
+SPACE_RUNNING=false
+for _ in {1..18}; do
+  # Check if space status command succeeds and space is running
+  if huggingface-cli space status "$HF_SPACE_FULL" 2>/dev/null | grep -q "Running"; then
+    SPACE_RUNNING=true
+    break
+  fi
   printf "."; sleep 5
 done
 echo ""
 
-if [[ "$STATUS" != "Running" ]]; then
+if [[ "$SPACE_RUNNING" != "true" ]]; then
   echo "❌  Space не запустився. Перевірте логи у веб‑інтерфейсі Hugging Face."
   exit 1
 fi
 
 echo "✅  Space запущено: $SPACE_API_URL"
 
-# --- 8. Локальні залежності та тести ---------------------------------------
+# --- 7. Локальні залежності та тести ---------------------------------------
 if [[ -f requirements.txt ]]; then
   python3 -m pip install --quiet -r requirements.txt >/dev/null
 fi
@@ -142,5 +168,5 @@ else
   echo "⚠️  Тести не знайдено, пропускаю pytest."
 fi
 
-echo "\n🚀  Успіх! API працює: $SPACE_API_URL"
+printf "\n🚀  Успіх! API працює: %s\n" "$SPACE_API_URL"
 

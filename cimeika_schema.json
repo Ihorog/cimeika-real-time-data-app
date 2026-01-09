@@ -1,0 +1,37 @@
+{
+  "ci": {
+    "description": "Central orchestrator and console",
+    "endpoints": ["/ci/chat", "/ci/data", "/ci/components"],
+    "ui": "frontend/src/app/ci/page.jsx"
+  },
+  "podia": {
+    "description": "Events, scenarios, timelines",
+    "endpoints": ["/podia/events", "/podia/events/dispatch"],
+    "ui": "frontend/src/app/podia/page.jsx"
+  },
+  "nastiy": {
+    "description": "Mood tracking and advice",
+    "endpoints": ["/nastiy/mood"],
+    "ui": "frontend/src/app/mood/page.jsx"
+  },
+  "mala": {
+    "description": "Creative canvas powered by ci_power dataset",
+    "endpoints": ["/mala/creative"],
+    "ui": "frontend/src/app/malya/page.jsx"
+  },
+  "kazkar": {
+    "description": "Story archive and narrative engine",
+    "endpoints": ["/kazkar/story", "/kazkar/history"],
+    "ui": "frontend/src/app/kazkar/page.jsx"
+  },
+  "calendar": {
+    "description": "Time nodes and schedules",
+    "endpoints": ["/calendar/time"],
+    "ui": "frontend/src/app/calendar/page.jsx"
+  },
+  "gallery": {
+    "description": "Images, memories, uploads",
+    "endpoints": ["/gallery/images", "/gallery/upload"],
+    "ui": "frontend/src/app/gallery/page.jsx"
+  }
+}

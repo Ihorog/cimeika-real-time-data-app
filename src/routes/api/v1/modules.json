@@ -1,0 +1,14 @@
+{
+  "active": [
+    "health",
+    "ci",
+    "calendar",
+    "gallery",
+    "legend",
+    "ciwiki",
+    "insight",
+    "system",
+    "orchestrator",
+    "realtime"
+  ]
+}
