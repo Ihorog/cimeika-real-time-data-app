@@ -88,6 +88,23 @@ Ensure that you have **Node.js 16 or later** installed.
    node server.js
    ```
 
+## Running the API Backend
+
+This project includes an Express server scaffolded from the OpenAPI definition
+`cimeika-api.yaml`. The backend provides stub implementations for the API
+endpoints and validates requests against the specification.
+
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+2. **Start the server**:
+   ```bash
+   npm start
+   ```
+   The server will listen on `http://localhost:3000` by default.
+
 ## Usage
 
 1. **Access the Application**: Visit `http://localhost:7860` in your web browser.
@@ -123,149 +140,29 @@ The project is structured as follows:
 
 ```
 cimeika/
-├── public/
-│   ├── components/
-│   │   ├── footer.html          # Footer component template
-│   │   └── header.html          # Header component template
-│   ├── pages/
-│   │   └── home.html            # Main landing page content
-│   ├── styles.css               # Custom styles for the application
-│   ├── scripts.js               # JavaScript for dynamic functionality
-│   └── index.html               # Main HTML entry point
-└── cimeika-api.yaml         # OpenAPI definition for the API
-```
-
-### Interface system (Next.js + FastAPI)
-
-The new interface stack introduced in this update lives alongside the legacy Node server:
-
-```
-frontend/                      # Next.js SPA for Ci and modules
-  src/app/ci                  # Ci console
-  src/app/podia               # ПоДія timeline
-  src/app/mood                # Настрій wave interface
-  src/app/malya               # Маля creative canvas
-  src/app/kazkar              # Казкар stories
-  src/app/calendar            # Календар time map
-  src/app/gallery             # Галерея memories
-  src/styles/tokens.css       # Design tokens derived from Ci palette
-backend/                      # FastAPI orchestration layer
-  main.py                     # App entry and router registry
-  routers/                    # REST routes per module
-  utils/                      # Sense engine + orchestrator
-```
-
-Start the FastAPI service locally:
-
-```bash
-uvicorn backend.main:app --reload --port 8000
-```
-
-Start the Next.js frontend from `frontend/`:
-
-```bash
-npm install
-npm run dev
-```
-
-Copy `.env.template` to `.env` to set the Ci/OpenAI/Hugging Face/Telegram/GitHub tokens used by the orchestrator stubs and deployment scripts:
-
-```bash
-cp .env.template .env
+├── components/
+│   ├── footer.html          # Footer component template
+│   ├── header.html          # Header component template
+├── pages/
+│   ├── home.html            # Main landing page content
+├── styles.css                # Custom styles for the application
+├── scripts.js                # JavaScript for dynamic functionality
+├── index.html               # Main HTML entry point
+├── server.js                # Express server generated from OpenAPI
+├── package.json             # Node.js configuration
+├── api_keys.json           # Configuration file for API keys
+├── cimeika-api.yaml         # OpenAPI definition for the API
+└── .devcontainer.json       # Configuration for development container
 ```
 
 ### File Descriptions:
 
-- `public/index.html`: The main HTML document that loads the application.
-- `public/styles.css`: Contains custom styles and animations to enhance the UI.
-- `public/scripts.js`: JavaScript file for handling dynamic content loading, API interactions, and user interactions.
- - `.env`: Stores your private API keys (`OPENAI_API_KEY`, `HF_WRITE_TOKEN`,
-   `HUGGINGFACE_TOKEN`) and optional settings such as `PORT`, `DEFAULT_CITY`
-   and `DEFAULT_SIGN`. `HUGGINGFACE_TOKEN`
-   must be set for the `/ai/huggingface/completion` route; if it's missing, scripts
-   like `scripts/api_scenario.js` log a message and exit early. This file should
-   not be committed to version control. A `.env.example` template is provided for
-   reference.
- - `HF_SPACE_URL` can be set in the `.env` file if you want the new
-   `/ai/hf-space/completion` proxy and the scenario script to target a different
-   Hugging Face Space (defaults to `https://ihorog-cimeika-api.hf.space`).
-
-## Deployment
-
-Run `deploy_cimeika_api.sh` from the repository root to publish the API to a [Hugging Face Space](https://huggingface.co/spaces). Set the required tokens in your shell and then run the script:
-
-```bash
-export HF_WRITE_TOKEN=<your-hf-token>
-export OPENAI_API_KEY=<your-openai-key>
-export OPENWEATHER_KEY=<your-openweather-key>
-./deploy_cimeika_api.sh
-```
-
-The script builds the container using the included `Dockerfile`. To test the Docker image locally, run:
-
-```bash
-  docker build -t cimeika .
-  docker run -p 7860:7860 cimeika
-```
-
-### What the script does
-
-1. Checks that `git`, `curl`, `python3` and `pip` are available and installs `huggingface_hub` if missing.
-2. Logs in to Hugging Face with `huggingface-cli login` using `HF_WRITE_TOKEN`.
-3. Clones this repository if needed and creates (or reuses) a Docker-based Space.
-4. Pushes the code (including the `Dockerfile`) to the Space and sets the above secrets.
-5. Waits for the Space to start and then installs dependencies and runs any Python tests.
-
-After completion the script prints the URL of your running Space so you can verify the deployment.
-
-## API Scenario
-
-To see a quick example of calling the API with environment variables, run the
-`scripts/api_scenario.js` script. This assumes you have the server running
-locally (default `http://localhost:7860`). Optionally set `BASE_URL` in your
-`.env` file if the server is hosted elsewhere. The script also looks for
-`HUGGINGFACE_TOKEN`; if it's not available, it logs a message and exits before
-creating a component or collecting data.
-
-```bash
-HUGGINGFACE_TOKEN=your_hf_token node scripts/api_scenario.js
-```
-
-The script performs a mock login, requests a Hugging Face completion,
-proxies a chat prompt to the deployed Space at `https://ihorog-cimeika-api.hf.space`,
-creates a demo component and collects a small data payload. When
-`HUGGINGFACE_TOKEN` is absent, the script prints a notice and stops before the
-Space proxy, component creation and data collection steps. You can override the
-server URL by setting `BASE_URL` and the Space host with `HF_SPACE_URL` in your
-environment or `.env` file.
-
-## Testing
-
-This project uses [Jest](https://jestjs.io/) for its test suite. Make sure all Node.js dependencies are installed:
-
-```bash
-npm install
-```
-
-Run the Jest tests with:
-
-```bash
-npm test
-```
-
-### HUGGINGFACE_TOKEN for tests
-
-The `/ai/huggingface/completion` endpoint expects a `HUGGINGFACE_TOKEN`. The test
-suite mocks this route so no token is needed and no log messages are produced.
-If you want to exercise the real endpoint during tests, provide the token:
-
-```bash
-HUGGINGFACE_TOKEN=your_hf_api_token npm test
-```
-
-The mock lives in `src/routes/__mocks__/huggingface.js`. Remove the
-`jest.mock('../src/routes/huggingface')` line in `__tests__/api.test.js` if you
-wish to call the real API.
+- `index.html`: The main HTML document that loads the application.
+- `styles.css`: Contains custom styles and animations to enhance the UI.
+- `scripts.js`: JavaScript file for handling dynamic content loading, API interactions, and user interactions.
+- `server.js`: Express-based API server generated from the OpenAPI file.
+- `package.json`: Lists the Node.js dependencies and start script.
+- `api_keys.json`: Stores sensitive API keys required for external services. Ensure these are not pushed to public repositories.
 
 ## License
 

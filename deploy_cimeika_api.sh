@@ -31,17 +31,14 @@ if ! command -v huggingface-cli >/dev/null 2>&1; then
     if [ ! -d "$VENV_DIR" ]; then
       python3 -m venv "$VENV_DIR"
     fi
-    # shellcheck source=/dev/null
     . "$VENV_DIR/bin/activate"
     python3 -m pip install --quiet --upgrade pip >/dev/null
     python3 -m pip install --quiet --upgrade huggingface_hub >/dev/null
-    deactivate
     export PATH="$VENV_DIR/bin:$PATH"
   else
-    # Fallback: try to install with --user flag to avoid permission issues
-    echo "⚠️  Could not create a virtual environment. Trying to install huggingface_hub with the --user flag..."
-    python3 -m pip install --quiet --upgrade --user huggingface_hub >/dev/null
-    export PATH="$HOME/.local/bin:$PATH"
+    # Fallback: try to install globally, but warn about permissions
+    echo "⚠️  Could not create a virtual environment. Trying to install huggingface_hub globally (may require sudo or fail if permissions are restricted)..."
+    python3 -m pip install --quiet --upgrade huggingface_hub >/dev/null
   fi
 
   # Check again if huggingface-cli is now available
@@ -93,13 +90,24 @@ if [[ -d .git ]]; then
   fi
 else
 # --- 4. Клон репозиторію ----------------------------------------------------
-if [[ ! -d .git ]]; then
+if [[ -d .git ]]; then
+  CURRENT_URL=$(git config --get remote.origin.url)
+  if [[ "$CURRENT_URL" != "$REPO_URL" ]]; then
+    echo "⚠️  Поточний репозиторій не відповідає $REPO_URL. Клоную правильний репозиторій..."
+    cd ..
+    if [[ -d "$REPO_DIR" ]]; then
+      rm -rf "$REPO_DIR"
+    fi
+    git clone "$REPO_URL" "$REPO_DIR"
+    cd "$REPO_DIR"
+  fi
+else
   if [[ ! -d "$REPO_DIR" ]]; then
     git clone "$REPO_URL" "$REPO_DIR"
   fi
   cd "$REPO_DIR"
 fi
-CURRENT_DIR_BASENAME="$(basename "$PWD")"
+REPO_DIR="$(basename "$PWD")"
 
 echo "📥  Репозиторій готовий: $CURRENT_DIR_BASENAME"
 
