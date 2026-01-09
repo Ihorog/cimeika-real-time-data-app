@@ -15,9 +15,10 @@ async function initApp() {
   // 1) Load header/footer (safe even if containers don't exist)
   try {
     await loadComponent('components/header.html', '#header-container');
-    setupMobileMenu();
   } catch (error) {
     console.error('Error loading header:', error);
+  } finally {
+    setupMobileMenu();
   }
 
   try {
