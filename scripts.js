@@ -72,7 +72,14 @@ async function loadComponent(componentPath, containerSelector) {
     throw new Error(`Failed to load ${componentPath}: ${response.status} ${response.statusText}`);
   }
 
+  const contentType = response.headers.get('Content-Type') || '';
   const html = await response.text();
+
+  // Basic validation to ensure we only inject HTML-like responses
+  const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(html.trim());
+  if (!contentType.toLowerCase().includes('text/html') && !looksLikeHtml) {
+    throw new Error(`Unexpected content type for ${componentPath}: "${contentType}"`);
+  }
   container.innerHTML = html;
 }
 
