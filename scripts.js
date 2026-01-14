@@ -108,13 +108,25 @@ async function loadPage(url) {
         mainContent.innerHTML = `
             <div class="error-message">
                 <p>Unable to load the requested page.</p>
-                <button onclick="loadPage('${url}')" class="mt-4 bg-gray-800 text-white px-4 py-2 rounded">
+                <button class="retry-button mt-4 bg-gray-800 text-white px-4 py-2 rounded">
                     Retry
                 </button>
-                <button onclick="loadPage('pages/home.html')" class="mt-4 bg-gray-800 text-white px-4 py-2 rounded ml-2">
+                <button class="return-home-button mt-4 bg-gray-800 text-white px-4 py-2 rounded ml-2">
                     Return Home
                 </button>
             </div>`;
+        const retryButton = mainContent.querySelector('.retry-button');
+        if (retryButton) {
+            retryButton.addEventListener('click', function() {
+                loadPage(url);
+            });
+        }
+        const returnHomeButton = mainContent.querySelector('.return-home-button');
+        if (returnHomeButton) {
+            returnHomeButton.addEventListener('click', function() {
+                loadPage('pages/home.html');
+            });
+        }
     }
 }
 
