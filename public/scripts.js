@@ -240,8 +240,8 @@ async function retryFetch(url, options = {}, maxAttempts = MAX_RETRY_ATTEMPTS) {
 // XSS Protection - Sanitize HTML content
 function sanitizeHTML(htmlString) {
   if (typeof DOMParser === 'undefined') {
-    // Fallback for non-browser environments
-    return htmlString;
+    // Fallback for non-browser environments - strip all HTML tags
+    return String(htmlString).replace(/<[^>]*>/g, '');
   }
   
   const parser = new DOMParser();
@@ -260,7 +260,7 @@ function sanitizeHTML(htmlString) {
     });
   });
   
-  return doc.body;
+  return doc.body.innerHTML;
 }
 
 // Error display management
