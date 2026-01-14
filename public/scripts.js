@@ -260,7 +260,7 @@ function sanitizeHTML(htmlString) {
     });
   });
   
-  return doc.body.innerHTML;
+  return doc.body ? doc.body.innerHTML : '';
 }
 
 // Error display management
