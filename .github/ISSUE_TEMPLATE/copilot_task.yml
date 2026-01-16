@@ -1,0 +1,81 @@
+name: Copilot Task Spec
+description: Structured task for GitHub Copilot execution
+labels: ["copilot", "task"]
+body:
+  - type: input
+    id: repo
+    attributes:
+      label: Repo
+      description: Target repo (Ihorog/cimeika-real-time-data-app)
+      placeholder: Ihorog/cimeika-real-time-data-app
+    validations:
+      required: true
+
+  - type: input
+    id: component
+    attributes:
+      label: Target component
+      description: Component directory (server/, frontend/, backend/, scripts/, docs/, src/ ...)
+      placeholder: backend/
+    validations:
+      required: true
+
+  - type: textarea
+    id: files
+    attributes:
+      label: Files (exact paths)
+      description: One per line
+      placeholder: |
+        backend/main.py
+        backend/routers/ci.py
+        frontend/src/app/ci/page.tsx
+    validations:
+      required: true
+
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Requirements (MUST)
+      description: Checklist of mandatory requirements
+      placeholder: |
+        - [ ] Add new API endpoint
+        - [ ] Update frontend component
+        - [ ] Add tests
+    validations:
+      required: true
+
+  - type: textarea
+    id: forbidden
+    attributes:
+      label: Forbidden (MUST NOT)
+      description: Checklist of forbidden actions
+      placeholder: |
+        - [ ] No new dependencies
+        - [ ] No secrets
+        - [ ] No breaking changes
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance (DONE WHEN)
+      description: Checklist that defines completion
+      placeholder: |
+        - [ ] API returns correct response
+        - [ ] Frontend displays data correctly
+        - [ ] All tests pass
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Output format
+      description: How Copilot should respond
+      placeholder: |
+        - Edited files list
+        - Unified diff
+        - Acceptance checklist
+    validations:
+      required: true

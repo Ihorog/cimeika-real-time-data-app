@@ -1,12 +1,19 @@
-# Copilot Instructions for Cimeika
+# GitHub Copilot Instructions — Ihorog/cimeika-real-time-data-app (Cimeika App)
 
-This file provides guidance for GitHub Copilot when working with the Cimeika real-time data application.
+## Role of this repository
 
-## Project Overview
+Product application for Cimeika. Mixed stack may exist (frontend + backend/orchestration).
 
 Cimeika is a modern web application integrating real-time data services (weather, time, astrological forecasts) with a multi-agent system centered around "Ci" (the central intelligent assistant). The platform includes specialized agents for different domains: ПоДія (events), Настрій (mood), Маля (creativity), Казкар (stories), Календар (calendar), and Галерея (gallery).
 
 **Primary Languages**: JavaScript/TypeScript (frontend/Node.js), Python (FastAPI backend), Ukrainian (documentation and user-facing text)
+
+## Hard constraints
+
+1. **Do NOT call external inference backends directly from UI.** Use CIT gateway.
+2. **Do NOT add dependencies** unless explicitly requested.
+3. **Do NOT change build/orchestration files** unless the Task Spec targets them.
+4. **Do NOT introduce secrets.**
 
 ## Architecture
 
@@ -18,6 +25,26 @@ The project has a dual-stack architecture:
    - **Backend**: FastAPI + Python 3.x (`backend/`)
 
 See `ARCHITECTURE.md` for detailed architecture documentation and `AGENTS.md` for agent specifications.
+
+## Boundaries
+
+**UI code**: `src/`, `components/`, `pages/`, `frontend/`
+
+**Backend/orchestration**: `app.py`, `requirements.txt`, `docker-compose*.yml`, `scripts/`, `backend/`
+
+## Integration standard
+
+CIT is the canonical gateway.
+
+- Use `CIT_BASE_URL` and optional `CIT_TOKEN`.
+- Prefer `POST /v1/chat` and `POST /v1/jobs` for long operations.
+
+## Preferred implementation style
+
+- **Minimal, readable changes**; smallest viable diff.
+- **Prefer standard library** over new dependencies.
+- **Keep backward compatibility**; if legacy endpoints exist, preserve them.
+- **Ensure deterministic behavior**; avoid hidden side effects.
 
 ## Development Setup
 
@@ -47,6 +74,8 @@ Required environment variables:
 - `PORT` - Server port (default: 7860)
 - `DEFAULT_CITY` - Default city for weather (e.g., "London")
 - `DEFAULT_SIGN` - Default astrological sign (e.g., "aries")
+- `CIT_BASE_URL` - CIT gateway URL (when integrated)
+- `CIT_TOKEN` - CIT authentication token (optional)
 
 **Never** commit `.env` files, `api_keys.json`, or any files containing secrets to version control.
 
@@ -117,6 +146,12 @@ docker run -p 7860:7860 cimeika
 - Use pytest for Python tests (`backend/tests/`)
 - Mock external API calls in tests (see `src/routes/__mocks__/`)
 - Run tests before committing changes
+
+### Testing & validation requirements
+
+- Provide a short checklist to verify changes.
+- If you add new code paths, add minimal smoke tests or validation steps.
+- Do not propose "TODO" placeholders unless the Task Spec allows it.
 
 ### Documentation
 - Update README.md if changing setup/installation steps
@@ -239,3 +274,10 @@ When making changes, ensure:
 - [ ] Environment variables are properly configured
 - [ ] Build and lint commands succeed
 - [ ] Changes work in both development and production modes
+
+## Output format for every task
+
+- **Edited files list**
+- **Unified diff** (or patch-like excerpt)
+- **Acceptance checklist**
+- **Short changelog**
