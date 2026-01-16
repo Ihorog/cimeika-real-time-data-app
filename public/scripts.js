@@ -210,3 +210,72 @@ function escapeHtml(str) {
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
 }
+
+// Retry fetch with exponential backoff
+const MAX_RETRY_ATTEMPTS = 2;
+const INITIAL_RETRY_DELAY = 1000;
+
+async function retryFetch(url, options = {}, maxAttempts = MAX_RETRY_ATTEMPTS) {
+  let lastError;
+  
+  for (let attempt = 0; attempt <= maxAttempts; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return response;
+    } catch (error) {
+      lastError = error;
+      
+      if (attempt < maxAttempts) {
+        const delay = INITIAL_RETRY_DELAY * Math.pow(2, attempt);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  throw lastError;
+}
+
+// XSS Protection - Sanitize HTML content
+function sanitizeHTML(htmlString) {
+  if (typeof DOMParser === 'undefined') {
+    // Fallback for non-browser environments - strip all HTML tags
+    return String(htmlString).replace(/<[^>]*>/g, '');
+  }
+  
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlString, 'text/html');
+  
+  // Remove dangerous elements
+  doc.querySelectorAll('script, iframe, object, embed').forEach(el => el.remove());
+  
+  // Remove event handler attributes
+  doc.querySelectorAll('*').forEach(el => {
+    [...el.attributes].forEach(attr => {
+      const attrName = attr.name.toLowerCase();
+      if (attrName.startsWith('on')) {
+        el.removeAttribute(attr.name);
+      }
+    });
+  });
+  
+  return doc.body ? doc.body.innerHTML : '';
+}
+
+// Error display management
+function hideError(container) {
+  if (!container) return;
+  const errorElements = container.querySelectorAll('[data-error="true"]');
+  errorElements.forEach(el => el.remove());
+}
+
+function showError(container, message) {
+  if (!container) return;
+  
+  const errorBox = document.createElement('div');
+  errorBox.className = 'error-message';
+  errorBox.setAttribute('data-error', 'true');
+  errorBox.textContent = message;
+  container.appendChild(errorBox);
+}
