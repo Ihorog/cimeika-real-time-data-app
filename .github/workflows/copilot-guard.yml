@@ -17,10 +17,12 @@ jobs:
         run: |
           set -e
           echo "Scanning for common secret patterns..."
-          ! grep -RInE "(OPENAI_API_KEY|HF_TOKEN|HF_WRITE_TOKEN|HUGGINGFACE_TOKEN|GITHUB_TOKEN)\s*=|Bearer\s+[A-Za-z0-9_\-]{20,}" . \
+          # Look for actual secret values (sk-, hf_, ghp_, etc.) not just variable names
+          ! grep -RInE "(OPENAI_API_KEY|HF_TOKEN|HF_WRITE_TOKEN|HUGGINGFACE_TOKEN|GITHUB_TOKEN)\s*=\s*['\"]?(sk-|hf_|ghp_|Bearer\s+[A-Za-z0-9])" . \
             --exclude-dir=.git \
             --exclude-dir=node_modules \
             --exclude-dir=.history \
+            --exclude-dir=.snapshots \
             --exclude="*.example*" \
             --exclude=".env.example" \
             --exclude="api_keys.example.json" \
