@@ -1,24 +1,21 @@
 'use strict';
 
-const config = {
+let config = {
   weatherEndpoint: '/weather/current',
   astrologyEndpoint: '/astrology/forecast',
-  weatherCity: 'London',
-  astrologySign: 'aries',
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-  initApp();
+  void initApp();
 });
 
 async function initApp() {
   // 1) Load header/footer (safe even if containers don't exist)
   try {
     await loadComponent('components/header.html', '#header-container');
+    setupMobileMenu();
   } catch (error) {
     console.error('Error loading header:', error);
-  } finally {
-    setupMobileMenu();
   }
 
   try {
@@ -30,32 +27,24 @@ async function initApp() {
   // 2) Setup navigation (safe)
   setupNavigation();
 
-  // 3) Setup start journey button (remove inline onclick)
-  const startButton = document.querySelector('button[onclick="startJourney()"]');
-  if (startButton) {
-    startButton.removeAttribute('onclick');
-    startButton.addEventListener('click', () => loadPage('pages/home.html'));
-  }
+  // 3) Load initial page (safe)
+  await loadPage('pages/home.html');
 
-  // 4) Load initial page (fire-and-forget; errors handled inside loadPage)
-  loadPage('pages/home.html');
-
-  // 5) Load config (non-fatal)
+  // 4) Load config (non-fatal)
   try {
     const loaded = await fetchConfig();
-    Object.assign(config, loaded || {});
+    config = { ...config, ...(loaded || {}) };
   } catch (e) {
     console.error('Config load failed:', e);
   }
 
-  // 6) Start real-time data updates
+  // 5) Start real-time data updates
   setupRealTimeData();
 }
 
 async function fetchConfig() {
   const res = await fetch('/config');
-  // Config endpoint doesn't exist in API spec - return null to use defaults
-  if (!res.ok) return null;
+  if (!res.ok) throw new Error(`Failed to load config: ${res.status}`);
   return res.json();
 }
 
@@ -72,14 +61,7 @@ async function loadComponent(componentPath, containerSelector) {
     throw new Error(`Failed to load ${componentPath}: ${response.status} ${response.statusText}`);
   }
 
-  const contentType = response.headers.get('Content-Type') || '';
   const html = await response.text();
-
-  // Basic validation to ensure we only inject HTML-like responses
-  const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(html.trim());
-  if (!contentType.toLowerCase().includes('text/html') && !looksLikeHtml) {
-    throw new Error(`Unexpected content type for ${componentPath}: "${contentType}"`);
-  }
   container.innerHTML = html;
 }
 
@@ -97,11 +79,6 @@ async function loadPage(url) {
     if (!response.ok) {
       throw new Error(`Error loading page: ${response.status} ${response.statusText}`);
     }
-
-    const contentType = response.headers.get('Content-Type') || '';
-    if (!contentType.toLowerCase().includes('text/html')) {
-      throw new Error(`Unexpected content type when loading page: ${contentType || 'unknown'}`);
-    }
     const data = await response.text();
     mainContent.innerHTML = data;
   } catch (error) {
@@ -117,7 +94,7 @@ async function loadPage(url) {
 
     const btn = document.getElementById('return-home');
     if (btn) {
-      btn.addEventListener('click', () => loadPage('pages/home.html'));
+      btn.addEventListener('click', () => void loadPage('pages/home.html'));
     }
   }
 }
@@ -129,14 +106,13 @@ function setupNavigation() {
     if (!link) return;
 
     const href = link.getAttribute('href');
+    if (typeof href !== 'string') return;
 
-    // Only intercept internal "pages/" navigation; ignore missing or external links
-    if (!href || !href.startsWith('pages/')) {
-      return;
+    // Only intercept internal "pages/" navigation
+    if (href.startsWith('pages/')) {
+      event.preventDefault();
+      void loadPage(href);
     }
-
-    event.preventDefault();
-    loadPage(href);
   });
 }
 
@@ -150,12 +126,14 @@ function setupMobileMenu() {
   menuButton.addEventListener('click', () => {
     const isHidden = mobileMenu.classList.contains('hidden');
     mobileMenu.classList.toggle('hidden');
-    menuButton.setAttribute('aria-expanded', String(!isHidden));
+    menuButton.setAttribute('aria-expanded', String(isHidden));
   });
 }
 
-// Start journey function removed - replaced with event listener in initApp
-
+// Start journey function (kept for HTML onclick compatibility)
+window.startJourney = function startJourney() {
+  void loadPage('pages/home.html');
+};
 
 // Real-time data setup
 function setupRealTimeData() {
@@ -163,10 +141,10 @@ function setupRealTimeData() {
   setInterval(updateTime, 1000);
 
   // Update weather and astrology every 5 minutes
-  updateWeather();
-  updateAstrology();
-  setInterval(updateWeather, 300000);
-  setInterval(updateAstrology, 300000);
+  void updateWeather();
+  void updateAstrology();
+  setInterval(() => void updateWeather(), 300000);
+  setInterval(() => void updateAstrology(), 300000);
 }
 
 // Time update function
@@ -185,11 +163,8 @@ async function updateWeather() {
   if (!weatherElement) return;
 
   try {
-    const endpoint = config.weatherEndpoint ?? '/weather/current';
-    const city = config.weatherCity ?? 'London';
-    // Add required city query parameter per API spec
-    const url = `${endpoint}?city=${encodeURIComponent(city)}`;
-    const response = await fetch(url);
+    const endpoint = (config && config.weatherEndpoint) ? config.weatherEndpoint : '/weather/current';
+    const response = await fetch(endpoint);
     if (!response.ok) throw new Error(`Weather data unavailable: ${response.status}`);
 
     const data = await response.json();
@@ -211,11 +186,8 @@ async function updateAstrology() {
   if (!astrologyElement) return;
 
   try {
-    const endpoint = config.astrologyEndpoint ?? '/astrology/forecast';
-    const sign = config.astrologySign ?? 'aries';
-    // Add required sign query parameter per API spec
-    const url = `${endpoint}?sign=${encodeURIComponent(sign)}`;
-    const response = await fetch(url);
+    const endpoint = (config && config.astrologyEndpoint) ? config.astrologyEndpoint : '/astrology/forecast';
+    const response = await fetch(endpoint);
     if (!response.ok) throw new Error(`Astrological data unavailable: ${response.status}`);
 
     const data = await response.json();
@@ -232,9 +204,78 @@ async function updateAstrology() {
 
 function escapeHtml(str) {
   return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+// Retry fetch with exponential backoff
+const MAX_RETRY_ATTEMPTS = 2;
+const INITIAL_RETRY_DELAY = 1000;
+
+async function retryFetch(url, options = {}, maxAttempts = MAX_RETRY_ATTEMPTS) {
+  let lastError;
+  
+  for (let attempt = 0; attempt <= maxAttempts; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return response;
+    } catch (error) {
+      lastError = error;
+      
+      if (attempt < maxAttempts) {
+        const delay = INITIAL_RETRY_DELAY * Math.pow(2, attempt);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  throw lastError;
+}
+
+// XSS Protection - Sanitize HTML content
+function sanitizeHTML(htmlString) {
+  if (typeof DOMParser === 'undefined') {
+    // Fallback for non-browser environments - strip all HTML tags
+    return String(htmlString).replace(/<[^>]*>/g, '');
+  }
+  
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlString, 'text/html');
+  
+  // Remove dangerous elements
+  doc.querySelectorAll('script, iframe, object, embed').forEach(el => el.remove());
+  
+  // Remove event handler attributes
+  doc.querySelectorAll('*').forEach(el => {
+    [...el.attributes].forEach(attr => {
+      const attrName = attr.name.toLowerCase();
+      if (attrName.startsWith('on')) {
+        el.removeAttribute(attr.name);
+      }
+    });
+  });
+  
+  return doc.body ? doc.body.innerHTML : '';
+}
+
+// Error display management
+function hideError(container) {
+  if (!container) return;
+  const errorElements = container.querySelectorAll('[data-error="true"]');
+  errorElements.forEach(el => el.remove());
+}
+
+function showError(container, message) {
+  if (!container) return;
+  
+  const errorBox = document.createElement('div');
+  errorBox.className = 'error-message';
+  errorBox.setAttribute('data-error', 'true');
+  errorBox.textContent = message;
+  container.appendChild(errorBox);
 }

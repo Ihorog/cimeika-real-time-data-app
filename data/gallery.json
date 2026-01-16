@@ -1,0 +1,50 @@
+[
+  {
+    "id": "g-aurora",
+    "type": "photo",
+    "date": "2024-11-21T07:20:00Z",
+    "location": "Kyiv, UA",
+    "emotion": "happy",
+    "resonance": 0.86,
+    "tags": [
+      "sunrise",
+      "city",
+      "calm"
+    ],
+    "linked_event": "calendar-walk-001",
+    "note": "Ранковий променад з кавою",
+    "source": "archive"
+  },
+  {
+    "id": "g-river",
+    "type": "video",
+    "date": "2024-10-05T16:45:00Z",
+    "location": "Dnipro River",
+    "emotion": "nostalgic",
+    "resonance": 0.73,
+    "tags": [
+      "water",
+      "family",
+      "autumn"
+    ],
+    "linked_event": "calendar-family-015",
+    "note": "Відео з човна під час дощу",
+    "source": "archive"
+  },
+  {
+    "id": "g-workshop",
+    "type": "photo",
+    "date": "2024-09-14T12:10:00Z",
+    "location": "Lviv, Makerspace",
+    "emotion": "calm",
+    "resonance": 0.65,
+    "tags": [
+      "workshop",
+      "idea",
+      "friends"
+    ],
+    "linked_event": null,
+    "note": "Перший прототип станції Cimeika",
+    "source": "archive"
+  }
+]

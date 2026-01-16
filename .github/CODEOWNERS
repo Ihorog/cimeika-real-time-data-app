@@ -1,0 +1,19 @@
+# Require reviews for critical runtime
+
+# Backend/Server
+/backend/ @Ihorog
+/server.js @Ihorog
+/src/ @Ihorog
+/scripts/ @Ihorog
+
+# Frontend can be lighter (adjust as needed)
+/frontend/ @Ihorog
+/public/ @Ihorog
+
+# Docs
+/docs/ @Ihorog
+
+# Configuration files
+/.github/ @Ihorog
+/package.json @Ihorog
+/requirements.txt @Ihorog
