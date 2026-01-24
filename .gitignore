@@ -27,3 +27,14 @@ __pycache__/
 build/
 dist/
 *.egg-info/
+
+# Audio files (track metadata/README, ignore binary files)
+*.mp3
+*.wav
+*.ogg
+*.m4a
+*.aac
+*.flac
+*.wma
+# Allow README files in audio folders
+!**/audio/README.md
