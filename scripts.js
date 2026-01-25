@@ -199,12 +199,14 @@ function setupMobileMenu() {
 
 // Setup start journey button
 function setupStartJourneyButton() {
-    const startButton = document.getElementById('start-journey-button');
-    if (startButton) {
-        startButton.addEventListener('click', function() {
+    // Use event delegation so the handler works even if the button element
+    // is replaced when page content is reloaded.
+    document.addEventListener('click', function(event) {
+        const startButton = event.target.closest('#start-journey-button');
+        if (startButton) {
             loadPage('pages/home.html');
-        });
-    }
+        }
+    });
 }
 
 // Real-time data setup
