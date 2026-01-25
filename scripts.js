@@ -140,6 +140,7 @@ async function loadPage(url) {
         // Create error display safely without XSS vulnerabilities
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error-message';
+        errorDiv.setAttribute('role', 'alert');
         
         const errorText = document.createElement('p');
         errorText.textContent = `Failed to load page: ${error.message}`;
