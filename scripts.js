@@ -114,6 +114,7 @@ async function loadComponent(componentPath, containerSelector) {
         const container = document.querySelector(containerSelector);
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error-message';
+        errorDiv.setAttribute('role', 'alert');
         errorDiv.textContent = 'Failed to load component. Please try reloading.';
         container.innerHTML = '';
         container.appendChild(errorDiv);
