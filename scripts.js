@@ -118,8 +118,8 @@ async function loadComponent(componentPath, containerSelector) {
         container.innerHTML = '';
         container.appendChild(errorDiv);
         
-        // Show global error with safe text
-        showError(`Failed to load component: ${error.message}. Check your internet connection and try again.`);
+        // Show global error with a user-friendly, non-technical message
+        showError('Failed to load component. Check your internet connection and try again.');
         throw error;
     }
 }
