@@ -78,9 +78,13 @@ function hideError() {
         container.classList.add('hidden');
     }
     
-    // Clear the queue and reset state
-    errorQueue = [];
+    // Reset state for the currently displayed error, but preserve queued errors
     isShowingError = false;
+    
+    // If there are more errors queued, continue displaying them
+    if (errorQueue.length > 0) {
+        displayNextError();
+    }
 }
 
 async function retryFetch(url, options = {}, retries = 2) {
